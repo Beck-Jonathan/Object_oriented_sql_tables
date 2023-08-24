@@ -1,0 +1,237 @@
+﻿using appData2;
+using Data_Access;
+using Data_Objects;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+
+
+namespace Object_oriented_sql_tables
+{
+    public partial class Form1 : Form
+    {
+        public static List<char> these_settings = new List<char>();
+        public Form1()
+        {
+            InitializeComponent();
+            tbx_databasename.Text = "WFTDA_debug";
+            settings.database_name = tbx_databasename.Text;
+            initialize_settings();
+            for (int i = 0; i < 12; i++)
+            {
+                clb_options.SetItemChecked(i, true);
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.InitialDirectory = "c:\\objectoriented\\";
+            openFileDialog.ShowDialog();
+            string filepath = openFileDialog.FileName;
+            settings.path = filepath;
+        }
+
+        private void btn_generateTable_Click(object sender, System.EventArgs e)
+        {
+
+            String database_head = database.print_database_header();
+            file_write.WriteBuddy.Write(database_head);
+            int count = 0;
+            List<Boolean> these_settings = new List<Boolean>();
+
+            foreach (table t in data_tables.all_tables)
+            {
+                these_settings = settings.all_options[count];
+                string s = "";
+                List<String> st = new List<String>();
+                if (these_settings[0])
+                {
+                    s = t.gen_rows();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[1])
+                {
+                    s = t.gen_primary_keys();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[2])
+                {
+                    s = t.gen_foreign_keys();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[3])
+                {
+                    s = t.gen_audit_table();
+                    file_write.WriteBuddy.Write(s);
+                }
+
+                if (these_settings[4])
+                {
+                    s = t.gen_update();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[5])
+                {
+                    s = t.gen_delete();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[6])
+                {
+                    s = t.gen_retreive_by_key();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[7])
+                {
+                    s = t.gen_retreive_by_all();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[8])
+                {
+                    s = t.gen_insert();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[9])
+                {
+                    s = t.gen_insert_trigger();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[10])
+                {
+                    s = t.gen_update_trigger();
+                    file_write.WriteBuddy.Write(s);
+                }
+                if (these_settings[11])
+                {
+                    s = t.gen_delete_trigger();
+                    file_write.WriteBuddy.Write(s);
+                }
+
+
+
+
+                count++;
+            }
+            file_write.WriteBuddy.Flush();
+            MessageBox.Show("generation complete");
+
+
+        }
+
+        private void initialize_settings()
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options1.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options2.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options3.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options4.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options5.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options6.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options7.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options8.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options9.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options10.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options11.Add(true);
+            }
+            for (int i = 0; i < 12; i++)
+            {
+                settings.options12.Add(true);
+            }
+            settings.all_options.Add(settings.options1);
+            settings.all_options.Add(settings.options2);
+            settings.all_options.Add(settings.options3);
+            settings.all_options.Add(settings.options4);
+            settings.all_options.Add(settings.options5);
+            settings.all_options.Add(settings.options6);
+            settings.all_options.Add(settings.options7);
+            settings.all_options.Add(settings.options8);
+            settings.all_options.Add(settings.options9);
+            settings.all_options.Add(settings.options10);
+            settings.all_options.Add(settings.options11);
+            settings.all_options.Add(settings.options12);
+
+
+
+        }
+
+        private void tbx_databasename_TextChanged(object sender, EventArgs e)
+        {
+            settings.database_name = tbx_databasename.Text;
+        }
+
+        private void btn_read_table_Click(object sender, EventArgs e)
+        {
+            file_read.readdata();
+            settings.table_count = data_tables.all_tables.Count;
+            foreach (table t in data_tables.all_tables)
+            {
+                settings.table_names.Add(t.name);
+            }
+            cbx_table_names.DataSource = settings.table_names;
+            cbx_table_names.Enabled = true;
+        }
+
+        private void cbx_table_names_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            clb_options.Enabled = true;
+            List<Boolean> these_settings = settings.all_options[cbx_table_names.SelectedIndex];
+            for (int i = 0; i < these_settings.Count; i++)
+            {
+                clb_options.SetItemChecked(i, these_settings[i]);
+            }
+
+        }
+
+        private void clb_options_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            List<Boolean> these_settings = new List<Boolean>();
+            for (int i = 0; i < 12; i++)
+            {
+                these_settings.Add(clb_options.GetItemChecked(i));
+            }
+            settings.all_options[cbx_table_names.SelectedIndex] = these_settings;
+
+        }
+    }
+}
