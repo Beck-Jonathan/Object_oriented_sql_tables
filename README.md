@@ -50,12 +50,12 @@ BeckJonathanJ@gmail.com
 * 0.1
     * Initial Release
 ### Knwon issues / planned updates
-    * If you wish to create a second script, you have to fully close the program (Fixed, program now closes itself, 9/13 1:30 pm)
-    * The user experiance of which button is active when is misleading (fixed, pathing now logical, 9/13 1:40 pm)
+*If you wish to create a second script, you have to fully close the program (Fixed, program now closes itself, 9/13 1:30 pm)
+* The user experiance of which button is active when is misleading (fixed, pathing now logical, 9/13 1:40 pm)
 * The words "row" and "column" were swapped, and the program needs updating to address this
 * A "select all" , "selected default" "deselect all" button for options needs to be implemented
-* File pathing needs to be updated to work properly on other users computers
+* File pathing needs to be updated to work properly on other users computers (updated 9/13 2:15 pm)
 * The dummy insert script is currently not uploaded, my apologies
-   * Comments need to be added to explain various components (updated 9/13, 1PM) 
+* Comments need to be added to explain various components (updated 9/13, 1PM) 
 * Indentiy/sequence fields are not currently implemented
 * rudamentary joins need to be imploemented
