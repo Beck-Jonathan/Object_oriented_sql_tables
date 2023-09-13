@@ -19,7 +19,7 @@ More details needed here
 ### Executing program
 
 * Click select file
-*   * during the first run, it is suggested to use the derby_database.txt file that was included in the zip
+   * during the first run, it is suggested to use the derby_database.txt file that was included in the zip
     * During later runs, you can modify the derby_database.xlsx file, then "Save as" a tab separated txt file
 * Assign a name to your dtaabse
 * Click "read file" and a list of tables will be displayed
