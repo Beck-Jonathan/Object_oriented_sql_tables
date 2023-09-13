@@ -26,6 +26,11 @@ namespace Object_oriented_sql_tables
             {
                 clb_options.SetItemChecked(i, false);
             }
+            btn_selectfile.Enabled = true;
+            btn_read_table.Enabled = false;
+            cbx_table_names.Enabled = false;
+            btn_generateTable.Enabled = false;
+            clb_options.Enabled = false;
             }
 
         //open file dialog
@@ -36,6 +41,11 @@ namespace Object_oriented_sql_tables
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
             settings.path = filepath;
+            btn_selectfile.Enabled = false;
+            btn_read_table.Enabled = true;
+            cbx_table_names.Enabled = false;
+            btn_generateTable.Enabled = false;
+            clb_options.Enabled = false;
         }
         //generate table button
         private void btn_generateTable_Click(object sender, System.EventArgs e)
@@ -131,6 +141,7 @@ namespace Object_oriented_sql_tables
             }
             file_write.WriteBuddy.Flush();
             MessageBox.Show("generation complete");
+            this.Close();
 
 
         }
@@ -167,6 +178,11 @@ namespace Object_oriented_sql_tables
             }
             cbx_table_names.DataSource = settings.table_names;
             cbx_table_names.Enabled = true;
+            btn_selectfile.Enabled = false;
+            btn_read_table.Enabled = false;
+            
+            btn_generateTable.Enabled = true;
+            clb_options.Enabled = true;
         }
 
         private void cbx_table_names_SelectedIndexChanged(object sender, EventArgs e)
