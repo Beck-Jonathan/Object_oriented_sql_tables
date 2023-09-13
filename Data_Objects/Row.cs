@@ -5,7 +5,7 @@ namespace Data_Objects
 {
     public class Row
     {
-
+        //various components of the row object
         public String row_name { get; set; }
         public String data_type { get; set; }
         public int length { get; set; }
@@ -28,7 +28,7 @@ namespace Data_Objects
         public List<String> primary_keys { set; get; }
         public List<String> foreign_keys { set; get; }
         public String length_text = "";
-        
+        //constructor
 
         public Row(string row_name, string data_type, int length, string default_value, string identity, int start, int increment,
             char nullable, string index, char unique, char primary_key, string foreign_key, string integrity, string references, string description)
@@ -48,6 +48,7 @@ namespace Data_Objects
             this.integrity = integrity;
             this.references = references;
             this.description = description;
+            //override user error on data table
             if (data_type.Equals("nvarchar")&&length==0){ length = 50; }
             if (data_type.Equals("date")){ length = 0; }
             if (length == 0) {
@@ -60,6 +61,7 @@ namespace Data_Objects
 
         public String row_and_key_gen()
         {
+            //generate this as a sql statement, and create an array of primary and foreign keys
             primary_keys = new List<String>();
             foreign_keys = new List<String>();
             String row_text = "";
@@ -78,6 +80,7 @@ namespace Data_Objects
 
         public String audit_row_gen()
         {
+            //generate each row as a sql statement
             String row_text = "";
             row_text = row_text + row_name + "\t";
             row_text = row_text + data_type + length_text+"\t";

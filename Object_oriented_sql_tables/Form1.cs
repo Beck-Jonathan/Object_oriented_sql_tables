@@ -26,17 +26,9 @@ namespace Object_oriented_sql_tables
             {
                 clb_options.SetItemChecked(i, false);
             }
+            }
 
-
-
-
-        }
-
-
-
-
-
-
+        //open file dialog
         private void button1_Click(object sender, System.EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -45,7 +37,7 @@ namespace Object_oriented_sql_tables
             string filepath = openFileDialog.FileName;
             settings.path = filepath;
         }
-
+        //generate table button
         private void btn_generateTable_Click(object sender, System.EventArgs e)
         {
 
@@ -59,62 +51,73 @@ namespace Object_oriented_sql_tables
                 these_settings = settings.all_options[count];
                 string s = "";
                 List<String> st = new List<String>();
+                // if selected, add rows to table
                 if (these_settings[0])
                 {
                     s = t.gen_rows();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add primary keys to table
                 if (these_settings[1])
                 {
                     s = t.gen_primary_keys();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add foreign keys to table
                 if (these_settings[2])
                 {
                     s = t.gen_foreign_keys();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, create a matching audit table
                 if (these_settings[3])
                 {
                     s = t.gen_audit_table();
                     file_write.WriteBuddy.Write(s);
                 }
-
+                // if selected, add an SP_update to table
                 if (these_settings[4])
                 {
                     s = t.gen_update();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add an SP_delete to table
                 if (these_settings[5])
                 {
                     s = t.gen_delete();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add an SP_retreive that requires a PK
                 if (these_settings[6])
                 {
                     s = t.gen_retreive_by_key();
                     file_write.WriteBuddy.Write(s);
                 }
+                //if selected an an SP_retreive that shows all data in table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_all();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add SP_insert to add records to table
                 if (these_settings[8])
                 {
                     s = t.gen_insert();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add a trigger for inserts
                 if (these_settings[9])
                 {
                     s = t.gen_insert_trigger();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add a trigger for updates
                 if (these_settings[10])
                 {
                     s = t.gen_update_trigger();
                     file_write.WriteBuddy.Write(s);
                 }
+                // if selected, add a triger for delets
                 if (these_settings[11])
                 {
                     s = t.gen_delete_trigger();

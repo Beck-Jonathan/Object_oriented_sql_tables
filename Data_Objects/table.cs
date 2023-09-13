@@ -7,6 +7,7 @@ namespace Data_Objects
 {
     public class table
     {
+        //various components of a table
         public String name { set; get; }
         public header Header { set; get; }
         public List<Row> rows { set; get; }
@@ -22,6 +23,7 @@ namespace Data_Objects
 
         public String gen_primary_keys()
         {
+            //generate the primary keys based on key_gen that was done in the rwos
             String key_string = ",CONSTRAINT " + name + "_PK PRIMARY KEY (";
             int count = 0;
             foreach (Row r in rows)
@@ -38,7 +40,7 @@ namespace Data_Objects
             return key_string;
         }
         public String gen_foreign_keys()
-        {
+        {//generate the foreign keys based on key_gen that was done in the rwos
             foreign_keys = new List<String>();
             String output_keys = "";
             foreach (Row r in rows)
@@ -94,7 +96,7 @@ namespace Data_Objects
         }
 
         public String gen_audit_table()
-        {
+        { // to generate the audit table
             int count = 0;
             String x = this.audit_gen_header();
             x = x + "\n";
@@ -113,8 +115,9 @@ namespace Data_Objects
 
             return x;
         }
+        // to generate the SP_update
         public String gen_update()
-        {
+        { 
             String x = " ";
             String comment_text = comment_box_gen.comment_box(name, 3);
             String function_text =
@@ -180,7 +183,7 @@ namespace Data_Objects
             return full_text;
 
         }
-
+        // to generate the SP_delete
         public String gen_delete()
         {
 
@@ -246,7 +249,7 @@ namespace Data_Objects
 
 
         }
-
+        // to generate the SP_retreive using a primary key
         public String gen_retreive_by_key()
         {
 
@@ -304,7 +307,7 @@ namespace Data_Objects
             return full_text;
         }
 
-
+        // to generate the SP_retrive, showing all data in a table
         public String gen_retreive_by_all()
         {
             String gx = " ";
@@ -334,6 +337,7 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
+        // to generate the SP_insert
         public string gen_insert()
         {
             String comment_text = comment_box_gen.comment_box(name, 7);
@@ -388,6 +392,7 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
+        // to generate the on update trigger
         public String gen_update_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 8);
@@ -432,6 +437,7 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
+        // to generate the on insert trigger
         public String gen_insert_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 9);
@@ -476,7 +482,7 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-
+        // to generate the on delete trigger
         public String gen_delete_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 10);

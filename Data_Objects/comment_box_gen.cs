@@ -4,6 +4,7 @@ namespace Data_Objects
 {
     class comment_box_gen
     {
+        //creates various commeent boxes based on table name and function type.
         public static String comment_box(String table, int type)
         {
             String full_comment_box = " ";

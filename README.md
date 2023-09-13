@@ -57,4 +57,4 @@ BeckJonathanJ@gmail.com
 * File pathing needs to be updated to work properly on other users computers
 * The dummy insert script is currently not uploaded, my apologies
 * Comments need to be added to explain various components
-*
+* Indentiy/sequence fields are not currently implemented

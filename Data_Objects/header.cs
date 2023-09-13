@@ -4,6 +4,7 @@ namespace Data_Objects
 {
     public class header
     {
+        //to create the top few lines of a table
         public String table_name { get; set; }
         public String description { get; set; }
         public string full_header { get; private set; }
@@ -13,6 +14,7 @@ namespace Data_Objects
         {
             full_header = "";
         }
+        //create the header for a standardad table
         public String full_header_gen()
         {
             full_header = "";
@@ -25,7 +27,7 @@ namespace Data_Objects
 
             return full_header;
         }
-
+        //creae the header for an audit table
         public string audit_header_gen()
         {
             String audit_header = "";

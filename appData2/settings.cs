@@ -13,6 +13,7 @@ namespace appData2
         public static List<List<Boolean>> all_options = new List<List<Boolean>>();
         public static List<String> table_names = new List<String>();
 
+        // to set all tables to have the first 3 options selected by default
         public static void generate_options() {
             for (int i = 0; i < table_count; i++) {
                 List<Boolean> options = new List<Boolean>();
