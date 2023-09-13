@@ -1,4 +1,4 @@
-# Project Title
+# MySQL table generator
 
 This takes a data dictionary and creates a MySQL script with the charactaristics and stored procedures you request.
 
@@ -25,6 +25,7 @@ More details needed here
 * Click "read file" and a list of tables will be displayed
 * From the drop down, you can choose which table you wish to modify
 * You can modify the additions to each table, such as PK, FK, or various stored procedures
+* I've also included a sql file that has insert scripts of dummy data for these tables.
 ```
 code blocks for commands
 ```
