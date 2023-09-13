@@ -49,4 +49,12 @@ BeckJonathanJ@gmail.com
     * See [commit change]() or See [release history]()
 * 0.1
     * Initial Release
-
+### Knwon issues / planned updates
+* If you wish to create a second script, you have to fully close the program
+* The user experiance of which button is active when is misleading
+* The words "row" and "column" were swapped, and the program needs updating to address this
+* A "select all" or "deselect all" button for options needs to be implemented
+* File pathing needs to be updated to work properly on other users computers
+* The dummy insert script is currently not uploaded, my apologies
+* Comments need to be added to explain various components
+*
