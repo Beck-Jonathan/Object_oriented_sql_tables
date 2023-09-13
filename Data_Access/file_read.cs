@@ -84,7 +84,7 @@ namespace Data_Access
                     char unique = ' ';
                     char primary_key = ' ';
 
-                    String data_type = parts[1];
+                    String data_type = parts[1].Replace("\"","");
                     Int32.TryParse(parts[2], out length);
                     String default_value = parts[3];
                     String identity = parts[4];
