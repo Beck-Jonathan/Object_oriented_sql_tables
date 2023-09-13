@@ -14,6 +14,8 @@ namespace Object_oriented_sql_tables
         public static List<char> these_settings = new List<char>();
         public Form1()
         {
+            settings.app_path = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            settings.app_path = settings.app_path.Substring(0, settings.app_path.Length - 30);
             InitializeComponent();
             tbx_databasename.Text = "WFTDA_debug";
             settings.database_name = tbx_databasename.Text;
@@ -37,7 +39,8 @@ namespace Object_oriented_sql_tables
         private void button1_Click(object sender, System.EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory = "c:\\objectoriented\\";
+            //openFileDialog.InitialDirectory = "c:\\objectoriented\\";
+            openFileDialog.InitialDirectory = settings.app_path;
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
             settings.path = filepath;

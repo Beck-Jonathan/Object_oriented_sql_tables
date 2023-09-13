@@ -7,6 +7,7 @@ namespace appData2
 {
     public class settings
     {
+        public static String app_path;
         public static String path;
         public static String database_name;
         public static int table_count;
