@@ -25,12 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data_Objects", "Data_Object
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "appData2", "appData2\appData2.csproj", "{37E8C934-F475-4F43-A050-BC4DEF110EAC}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Example Data", "Example Data", "{371A1958-3AE8-4668-B237-90ECDC158CC3}"
-	ProjectSection(SolutionItems) = preProject
-		appData2\Example_Data\Full example run.sql = appData2\Example_Data\Full example run.sql
-		appData2\Example_Data\Roller_Database.txt = appData2\Example_Data\Roller_Database.txt
-		appData2\Example_Data\Roller_Database.xlsx = appData2\Example_Data\Roller_Database.xlsx
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example_Data", "Example_Data\Example_Data.csproj", "{4DCE1487-E887-45B9-B6E4-9AB6C3CD6C59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,6 +53,10 @@ Global
 		{37E8C934-F475-4F43-A050-BC4DEF110EAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37E8C934-F475-4F43-A050-BC4DEF110EAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37E8C934-F475-4F43-A050-BC4DEF110EAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DCE1487-E887-45B9-B6E4-9AB6C3CD6C59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DCE1487-E887-45B9-B6E4-9AB6C3CD6C59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DCE1487-E887-45B9-B6E4-9AB6C3CD6C59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DCE1487-E887-45B9-B6E4-9AB6C3CD6C59}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
