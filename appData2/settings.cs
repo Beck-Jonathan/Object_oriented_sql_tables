@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+
 
 namespace appData2
 {
@@ -7,26 +9,25 @@ namespace appData2
     {
         public static String path;
         public static String database_name;
+        public static int table_count;
         public static List<List<Boolean>> all_options = new List<List<Boolean>>();
-        public static List<Boolean> options1 = new List<Boolean>();
-        public static List<Boolean> options2 = new List<Boolean>();
-        public static List<Boolean> options3 = new List<Boolean>();
-        public static List<Boolean> options4 = new List<Boolean>();
-        public static List<Boolean> options5 = new List<Boolean>();
-        public static List<Boolean> options6 = new List<Boolean>();
-        public static List<Boolean> options7 = new List<Boolean>();
-        public static List<Boolean> options8 = new List<Boolean>();
-        public static List<Boolean> options9 = new List<Boolean>();
-        public static List<Boolean> options10 = new List<Boolean>();
-        public static List<Boolean> options11 = new List<Boolean>();
-        public static List<Boolean> options12 = new List<Boolean>();
-        public static int table_count = 0;
         public static List<String> table_names = new List<String>();
 
-
-
-
-
+        public static void generate_options() {
+            for (int i = 0; i < table_count; i++) {
+                List<Boolean> options = new List<Boolean>();
+                for (int j = 0; j < 3; j++) {
+                    options.Add(true);
+                }
+                for (int k = 3; k < 12; k++) {
+                    options.Add(false);
+                }
+                all_options.Add(options);
+            }
+        
+        }
+}
 
     }
-}
+    
+

@@ -44,5 +44,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="settings.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Example_Data\Full example run.sql" />
+    <Content Include="Example_Data\Roller_Database.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Example_Data\Roller_Database.xlsx" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -59,7 +59,7 @@ namespace Data_Objects
                 output_keys = output_keys + s;
             }
 
-            output_keys = output_keys + ");";
+            output_keys = output_keys + ");\n";
             return output_keys;
         }
 

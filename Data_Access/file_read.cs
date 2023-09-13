@@ -3,13 +3,14 @@ using Data_Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq.Expressions;
 
 namespace Data_Access
 {
     public class file_read
     {
         String readpath = settings.path;
-        
+
         public static void readdata()
         {
             int skip_count = 0;
@@ -27,69 +28,83 @@ namespace Data_Access
 
                 string[] parts;
                 parts = ln.Split(separator);
-                if (parts[0].Length == 0 && parts[1].Length == 0)
+                try
                 {
-                    skip_count++;
-                    continue; 
 
-                }
-
-            
-
-                if (parts[1].Length == 0 && count == 0)
-                {
-                    tablename = parts[0];
-                    description = parts[14];
-                    count++;
-                }
-                else if (parts[1].Length == 0 && count > 0)
-                {
-                    table t = new table(tablename, rows);
-                    header h = new header(tablename, parts[14]);
-                    t.Header = h;
-                    List<Row> rowsfortable = new List<Row>();
-                    foreach (Row _row in t.rows)
+                    if (parts[0].Length == 0 && parts[1].Length == 0)
                     {
-                        rowsfortable.Add(_row);
-                    }
-                    t.rows = rowsfortable;
+                        skip_count++;
+                        continue;
 
-                    rows.Clear();
-                    tablename = parts[0];
-                    description = parts[14];
-                    data_tables.all_tables.Add(t);
-                    count++;
+                    }
                 }
+                catch { IndexOutOfRangeException e; }
+
+
+                try
+                {
+                    if (parts[1].Length == 0 && count == 0)
+                    {
+
+                        tablename = parts[0];
+                        description = parts[14];
+                        count++;
+                    }
+
+
+
+                    else if (parts[1].Length == 0 && count > 0)
+                    {
+                        table t = new table(tablename, rows);
+                        header h = new header(tablename, parts[14]);
+                        t.Header = h;
+                        List<Row> rowsfortable = new List<Row>();
+                        foreach (Row _row in t.rows)
+                        {
+                            rowsfortable.Add(_row);
+                        }
+                        t.rows = rowsfortable;
+
+                        rows.Clear();
+                        tablename = parts[0];
+                        description = parts[14];
+                        data_tables.all_tables.Add(t);
+                        count++;
+                    }
+                }
+                catch { IndexOutOfRangeException ex; }
+
                 if (parts[1].Length > 0)
                 {
                     String row_name = parts[0].Replace("\"", "");
                     int length;
                     int start;
                     int increment;
-                    char nullable=' ';
+                    char nullable = ' ';
                     char unique = ' ';
                     char primary_key = ' ';
 
                     String data_type = parts[1];
-                    Int32.TryParse(parts[2],out  length);
+                    Int32.TryParse(parts[2], out length);
                     String default_value = parts[3];
                     String identity = parts[4];
-                    Int32.TryParse(parts[5],out  start);
-                    Int32.TryParse(parts[6], out  increment);
+                    Int32.TryParse(parts[5], out start);
+                    Int32.TryParse(parts[6], out increment);
                     char[] chararray = parts[7].ToCharArray();
                     if (chararray.Length != 0)
                     {
-                       nullable = chararray[0];
+                        nullable = chararray[0];
                     }
 
-                    
+
                     string index = parts[8];
                     char[] chararray2 = parts[9].ToCharArray();
-                    if (chararray2.Length!=0) {                 
+                    if (chararray2.Length != 0)
+                    {
                         unique = chararray2[0];
                     }
                     char[] chararray3 = parts[10].ToCharArray();
-                    if (chararray3.Length!=0)
+                    if (chararray3.Length != 0)
                     {
                         primary_key = chararray3[0];
                     }
@@ -104,7 +119,10 @@ namespace Data_Access
                     rows.Add(_row);
                 }
 
-}
+            }
+            settings.table_count = data_tables.all_tables.Count;
+            settings.generate_options();
         }
     }
 }
+

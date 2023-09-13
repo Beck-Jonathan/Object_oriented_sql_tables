@@ -18,9 +18,13 @@ namespace Object_oriented_sql_tables
             tbx_databasename.Text = "WFTDA_debug";
             settings.database_name = tbx_databasename.Text;
             initialize_settings();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 3; i++)
             {
                 clb_options.SetItemChecked(i, true);
+            }
+            for (int i = 3; i < 12; i++)
+            {
+                clb_options.SetItemChecked(i, false);
             }
 
 
@@ -130,66 +134,12 @@ namespace Object_oriented_sql_tables
 
         private void initialize_settings()
         {
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options1.Add(true);
+            for (int i = 0; i < settings.table_count; i++) {
+                for (int j = 0; j < 12; j++) {
+                    settings.all_options[i][j] = true;
+                }
+            
             }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options2.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options3.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options4.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options5.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options6.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options7.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options8.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options9.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options10.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options11.Add(true);
-            }
-            for (int i = 0; i < 12; i++)
-            {
-                settings.options12.Add(true);
-            }
-            settings.all_options.Add(settings.options1);
-            settings.all_options.Add(settings.options2);
-            settings.all_options.Add(settings.options3);
-            settings.all_options.Add(settings.options4);
-            settings.all_options.Add(settings.options5);
-            settings.all_options.Add(settings.options6);
-            settings.all_options.Add(settings.options7);
-            settings.all_options.Add(settings.options8);
-            settings.all_options.Add(settings.options9);
-            settings.all_options.Add(settings.options10);
-            settings.all_options.Add(settings.options11);
-            settings.all_options.Add(settings.options12);
 
 
 
@@ -203,7 +153,11 @@ namespace Object_oriented_sql_tables
         private void btn_read_table_Click(object sender, EventArgs e)
         {
             file_read.readdata();
+            
             settings.table_count = data_tables.all_tables.Count;
+            for (int i=0; i < settings.table_count; i++) { 
+            
+            }
             foreach (table t in data_tables.all_tables)
             {
                 settings.table_names.Add(t.name);
