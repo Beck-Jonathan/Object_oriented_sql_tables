@@ -402,7 +402,7 @@ namespace Data_Objects
                 + "AFTER UPDATE ON " + name + "\n"
                 + "for each row\n"
                 + "begin\n"
-                + "insert into" + name + "_audit (\n";
+                + "insert into " + name + "_audit (\n";
             int count = 0;
             String comma = "";
 
@@ -447,7 +447,7 @@ namespace Data_Objects
                 + "AFTER insert ON " + name + "\n"
                 + "for each row\n"
                 + "begin\n"
-                + "insert into" + name + "_audit (\n";
+                + "insert into " + name + "_audit (\n";
             int count = 0;
             String comma = "";
 
@@ -492,7 +492,7 @@ namespace Data_Objects
                 + "AFTER delete ON " + name + "\n"
                 + "for each row\n"
                 + "begin\n"
-                + "insert into" + name + "_audit (\n";
+                + "insert into " + name + "_audit (\n";
             int count = 0;
             String comma = "";
 
