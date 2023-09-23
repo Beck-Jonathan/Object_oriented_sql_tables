@@ -1,4 +1,5 @@
-﻿using System;
+﻿using appData2;
+using System;
 using System.Collections.Generic;
 
 
@@ -15,7 +16,13 @@ namespace Data_Objects
         public List<String> foreign_keys { set; get; }
         public table(String name, List<Row> rows)
         {
-            this.name = name;
+            if (settings.TSQLMode) {
+                this.name = "[dbo].[" + name + "]";
+            }
+            else
+            {
+                this.name = name;
+            }
             this.rows = rows;
 
         }
@@ -24,20 +31,43 @@ namespace Data_Objects
         public String gen_primary_keys()
         {
             //generate the primary keys based on key_gen that was done in the rwos
-            String key_string = ",CONSTRAINT " + name + "_PK PRIMARY KEY (";
-            int count = 0;
-            foreach (Row r in rows)
+            if (!settings.TSQLMode)
             {
-                foreach (string s in r.primary_keys)
+                String key_string = ",CONSTRAINT " + name + "_PK PRIMARY KEY (";
+                int count = 0;
+                foreach (Row r in rows)
                 {
-                    if (count > 0) { key_string = key_string + " , "; }
-                    key_string = key_string + s;
-                    count++;
+                    foreach (string s in r.primary_keys)
+                    {
+                        if (count > 0) { key_string = key_string + " , "; }
+                        key_string = key_string + s;
+                        count++;
+                    }
+                }
+                key_string = key_string + ")\n";
+
+                return key_string;
+            }
+            else {
+                {
+                    name = name.Replace("[dbo].[", "");
+                    name = name.Replace("]", "");
+                    String key_string = ",CONSTRAINT [PK_" + name + "] PRIMARY KEY (";
+                    int count = 0;
+                    foreach (Row r in rows)
+                    {
+                        foreach (string s in r.primary_keys)
+                        {
+                            if (count > 0) { key_string = key_string + " , "; }
+                            key_string = key_string + s;
+                            count++;
+                        }
+                    }
+                    key_string = key_string + ")\n";
+
+                    return key_string;
                 }
             }
-            key_string = key_string + ")\n";
-
-            return key_string;
         }
         public String gen_foreign_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
@@ -47,9 +77,9 @@ namespace Data_Objects
             {
                 foreach (string s in r.foreign_keys)
                 {
-                    String[] chunks = s.Split(' ');
-                    String second_table = chunks[1];
-                    String formatted_key = ",CONSTRAINT " + name + "_" + second_table + " foreign key (" + r.row_name + ") " + s + "\n";
+                    String[] chunks = s.Split('.');
+                    String second_table = chunks[0];
+                    String formatted_key = ",CONSTRAINT [fk_" + name + "_" + second_table + "] foreign key ([" +chunks[1]+"]) references ["+ chunks[0] + "]([" + chunks[1] +"])"+ "\n";
 
                     foreign_keys.Add(formatted_key);
                 }
@@ -60,8 +90,11 @@ namespace Data_Objects
                 String s = tuv;
                 output_keys = output_keys + s;
             }
-
-            output_keys = output_keys + ");\n";
+            if (settings.TSQLMode) { output_keys = output_keys + ")\ngo\n"; }
+            else
+            {
+                output_keys = output_keys + ");\n";
+            }
             return output_keys;
         }
 

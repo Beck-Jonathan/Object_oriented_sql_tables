@@ -1,4 +1,5 @@
-﻿using System;
+﻿using appData2;
+using System;
 
 namespace Data_Objects
 {
@@ -11,6 +12,7 @@ namespace Data_Objects
             String start_stars = "/******************\n";
             String end_stars = "\n***************/\n";
             String middle = " ";
+            String PrintStatement = "";
             if (type == 1)
             {
                 middle = "Create the " + table + " table";
@@ -54,9 +56,11 @@ namespace Data_Objects
             {
                 middle = "Create the delete trigger script for the " + table + " table";
             }
+            PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
 
 
             full_comment_box = start_stars + middle + end_stars;
+            if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
             return full_comment_box;
         }
     }

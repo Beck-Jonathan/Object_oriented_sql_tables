@@ -7,6 +7,7 @@ namespace appData2
 {
     public class settings
     {
+        public static bool TSQLMode;
         public static String app_path;
         public static String path;
         public static String database_name;

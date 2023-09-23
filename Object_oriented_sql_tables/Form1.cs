@@ -16,6 +16,7 @@ namespace Object_oriented_sql_tables
         {
             settings.app_path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             settings.app_path = settings.app_path.Substring(0, settings.app_path.Length - 30);
+            settings.TSQLMode = false;
             InitializeComponent();
             tbx_databasename.Text = "WFTDA_debug";
             settings.database_name = tbx_databasename.Text;
@@ -208,6 +209,11 @@ namespace Object_oriented_sql_tables
             }
             settings.all_options[cbx_table_names.SelectedIndex] = these_settings;
 
+        }
+
+        private void cbxTSql_CheckedChanged(object sender, EventArgs e)
+        {
+            settings.TSQLMode= cbxTSql.Checked;
         }
     }
 }

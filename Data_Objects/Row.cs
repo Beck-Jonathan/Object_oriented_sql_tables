@@ -1,4 +1,5 @@
-﻿using System;
+﻿using appData2;
+using System;
 using System.Collections.Generic;
 
 namespace Data_Objects
@@ -33,8 +34,15 @@ namespace Data_Objects
         public Row(string row_name, string data_type, int length, string default_value, string identity, int start, int increment,
             char nullable, string index, char unique, char primary_key, string foreign_key, string integrity, string references, string description)
         {
+            if (settings.TSQLMode)
+            {
+                this.row_name = "[" + row_name + "]";
+                this.data_type = "[" + data_type + "]";
+            }
+            else { 
             this.row_name = row_name;
             this.data_type = data_type;
+            }
             this.length = length;
             this.default_value = default_value;
             this.identity = identity;
@@ -72,8 +80,12 @@ namespace Data_Objects
             //if (auto_increment.Equals('Y') || auto_increment.Equals('y')) { row_text = row_text + "auto_increment\t"; }
             if (unique.Equals('Y') || unique.Equals('y')) { row_text = row_text + "unique\t"; }
             if (primary_key.Equals('Y') || primary_key.Equals('y')) { primary_keys.Add(row_name); }
-            if (foreign_key.Length > 1) { foreign_keys.Add(foreign_key); }
-            row_text = row_text + "comment \'" + description + "\'\n";
+            if (foreign_key.Length >= 1) { foreign_keys.Add(this.references); }
+            if (settings.TSQLMode)
+            {row_text=row_text + "\n";
+            }
+
+            else { row_text = row_text + "comment \'" + description + "\'\n"; }
             return row_text;
 
         }
