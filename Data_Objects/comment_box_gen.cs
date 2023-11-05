@@ -1,5 +1,6 @@
 ﻿using appData2;
 using System;
+using System.Dynamic;
 
 namespace Data_Objects
 {
@@ -56,6 +57,21 @@ namespace Data_Objects
             {
                 middle = "Create the delete trigger script for the " + table + " table";
             }
+
+            if (type == 11) {
+                middle = "Create the I Accessor for the " + table + "table";
+            }
+
+            if (type == 12) {
+                middle = "create the I manager for the " + table + "table;";                   
+              
+            }
+
+            if (type == 13) { middle = "create the Accessor for the " + table + "table"; }
+
+            if (type == 14) { middle = "create the manager for the " + table + "table"; }
+            if (type == 15) { middle = "create the data object for the " + table + "table"; }
+
             PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
 
 

@@ -1,6 +1,7 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
+using Data_Objects;
 
 
 
@@ -77,11 +78,25 @@ namespace Data_Objects
             {
                 foreach (string s in r.foreign_keys)
                 {
-                    String[] chunks = s.Split('.');
-                    String second_table = chunks[0];
-                    String formatted_key = ",CONSTRAINT [fk_" + name + "_" + second_table + "] foreign key ([" +chunks[1]+"]) references ["+ chunks[0] + "]([" + chunks[1] +"])"+ "\n";
+                    if (r.foreign_keys[0].Length > 0)
+                    {
+                        if (settings.TSQLMode)
+                        {
+                            String[] chunks = s.Split('.');
+                            String second_table = chunks[0];
+                            String formatted_key = ",CONSTRAINT [fk_" + name + "_" + second_table + "] foreign key ([" + chunks[1] + "]) references [" + chunks[0] + "]([" + chunks[1] + "])" + "\n";
 
-                    foreign_keys.Add(formatted_key);
+                            foreign_keys.Add(formatted_key);
+                        }
+                        else {
+                            String[] chunks = s.Split('.');
+                            String second_table = chunks[0];
+                            String formatted_key = ",CONSTRAINT fk_" + name + "_" + second_table + " foreign key (" + chunks[1] + ") references " + chunks[0] + " (" + chunks[1] + ")" + "\n";
+
+                            foreign_keys.Add(formatted_key);
+
+                        }
+                    }
                 }
             };
 
@@ -150,130 +165,219 @@ namespace Data_Objects
         }
         // to generate the SP_update
         public String gen_update()
-        { 
-            String x = " ";
+        {
+            string x = "";
+            string full_text = "";
             String comment_text = comment_box_gen.comment_box(name, 3);
-            String function_text =
-                 "DROP PROCEDURE IF EXISTS sp_update_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_update_" + name + "\n"
-                + "(";
             int count = 0;
-            String comma = "";
-            foreach (Row r in rows)
-            {
-                if (count > 0) { comma = ","; }
-                String add = comma + "in " + r.row_name + "_param " + r.data_type + r.length_text + "\n";
-                function_text = function_text + add;
-                count++;
-            }
-            function_text = function_text + ")\n" +
-                "begin \n" +
-                "declare sql_error TINYINT DEFAULT FALSE;\n" +
-                "declare update_count tinyint default 0;\n" +
-                "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
-                "SET sql_error = true;\n" +
-                "START TRANSACTION;\n" +
-                "UPDATE " + name + "\n set "
-                ;
-            comma = "";
-            count = 0;
-            foreach (Row r in rows)
-            {
-                if (count > 0) { comma = ","; }
-                if (!r.primary_key.Equals('y') && !r.primary_key.Equals('Y'))
+            string comma = "";
+            if (settings.TSQLMode) {
+                string function_text = "";
+                function_text=  "CREATE PROCEDURE [DBO].[sp_update_" + name + "]\n(";
+                count = 0;
+                comma = "";
+                foreach (Row r in rows)
                 {
-                    String add = comma + r.row_name + " = " + r.row_name + "_param\n";
+                    if (count > 0) { comma = ","; }
+                    
+                    String add = comma + "@old" + r.row_name.bracketStrip()  + r.data_type + r.length_text + "\n";
+                    if (r.primary_key != 'y' || r.primary_key != 'Y')
+                    {
+                        add = add + ",@new" + r.row_name.bracketStrip() +  r.data_type + r.length_text + "\n";
+                    }
                     function_text = function_text + add;
                     count++;
                 }
-            }
-            int keys_count = 0;
-            String initial_word = "WHERE ";
-            foreach (Row r in rows)
-            {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                {
-                    if (keys_count > 0) { initial_word = "AND "; }
-                    String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
-                    function_text = function_text + add;
-                    keys_count++;
+                comma = "";
+                function_text = function_text + ")\nas\nBEGIN\nUPDATE " + name +"\nSET\n";
+                count = 0;
+                foreach (Row r in rows) {
+                    if (count > 0) { comma = ","; }
+                    if (r.primary_key != 'Y' && r.primary_key != 'y')
+                    {
+                        function_text = function_text + comma + r.row_name.bracketStrip() + " = @new" + r.row_name.bracketStrip() + "\n";
+                        count++;
+                    }
+                
+                
                 }
-            }
-            function_text = function_text + "\n" +
-               " ; if sql_error = FALSE then \n" +
-               " SET update_count = row_count(); \n" +
-               " COMMIT;\n" +
-               " ELSE\n" +
-               " SET update_count = 0;\n" +
-               " ROLLBACK;\n" +
-               " END IF;\n" +
-               " select update_count as 'update count'\n" +
-               " ; END $$\n" +
-               " DELIMITER ;\n";
+                function_text = function_text + "WHERE\n";
+                comma = "";
+                foreach (Row r in rows) {
+                    if (count > 0) { comma = "and "; }
+                    function_text=function_text+comma+r.row_name.bracketStrip() + " = @old" + r.row_name.bracketStrip() + "\n";
+                    count++;
 
-            String full_text = comment_text + function_text;
+                }
+
+
+
+                function_text = function_text + "return @@rowcount\nend\ngo\n";
+                full_text = comment_text + function_text;
+
+            }
+            else { x = " ";
+                
+                string firstLine = "DROP PROCEDURE IF EXISTS sp_update_" + name + ";\n DELIMITER $$\n";
+                if (settings.TSQLMode) {
+                    firstLine = "";
+                }
+                string secondLine = "CREATE PROCEDURE sp_update_" + name + "\n"
+                    + "(";
+                
+                String function_text =
+                     firstLine + secondLine;
+
+                
+                function_text = function_text + ")\n" +
+                    "begin \n" +
+                    "declare sql_error TINYINT DEFAULT FALSE;\n" +
+                    "declare update_count tinyint default 0;\n" +
+                    "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
+                    "SET sql_error = true;\n" +
+                    "START TRANSACTION;\n" +
+                    "UPDATE " + name + "\n set "
+                    ;
+                comma = "";
+                count = 0;
+                foreach (Row r in rows)
+                {
+                    if (count > 0) { comma = ","; }
+                    if (!r.primary_key.Equals('y') && !r.primary_key.Equals('Y'))
+                    {
+                        String add = comma + r.row_name + " = " + r.row_name + "_param\n";
+                        function_text = function_text + add;
+                        count++;
+                    }
+                }
+                int keys_count = 0;
+                String initial_word = "WHERE ";
+                foreach (Row r in rows)
+                {
+                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                    {
+                        if (keys_count > 0) { initial_word = "AND "; }
+                        String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
+                        function_text = function_text + add;
+                        keys_count++;
+                    }
+                }
+                function_text = function_text + "\n" +
+                   " ; if sql_error = FALSE then \n" +
+                   " SET update_count = row_count(); \n" +
+                   " COMMIT;\n" +
+                   " ELSE\n" +
+                   " SET update_count = 0;\n" +
+                   " ROLLBACK;\n" +
+                   " END IF;\n" +
+                   " select update_count as 'update count'\n" +
+                   " ; END $$\n" +
+                   " DELIMITER ;\n";
+
+                full_text = comment_text + function_text;
+            }
             return full_text;
 
         }
         // to generate the SP_delete
         public String gen_delete()
         {
+            String function_text = "";
 
             String comment_text = comment_box_gen.comment_box(name, 4);
-            String function_text =
-                 "DROP PROCEDURE IF EXISTS sp_delete_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_delete_" + name + "\n"
-                + "(";
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
-            foreach (Row r in rows)
-            {
-                if (count > 0) { comma = ","; }
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+            if (settings.TSQLMode) 
+            { function_text = "create procedure [dbo].[sp_delete_" + name + "]\n(\n";
+                int count = 0;
+                String comma = "" ;
+                foreach (Row r in rows)
                 {
-                    String add = comma + r.row_name + "_param " + r.data_type + r.length_text + "\n";
-                    function_text = function_text + add;
-                    count++;
+                    if (count > 0) { comma = ","; }
+                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                    {
+                        String add = comma + "@"+r.row_name.bracketStrip() + " " + r.data_type +" "+ r.length_text + "\n";
+                        function_text = function_text + add;
+                        count++;
+                    }
                 }
-            }
-            count = 0;
-            function_text = function_text + ")\n" +
-                "begin \n" +
-                "declare sql_error TINYINT DEFAULT FALSE;\n" +
-                "declare update_count tinyint default 0;\n" +
-                "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
-                "SET sql_error = true;\n" +
-                "START TRANSACTION;\n" +
-                "DELETE FROM " + name + "\n  "
-                ;
-            comma = "";
-            int keys_count = 0;
-            String initial_word = "WHERE ";
-            foreach (Row r in rows)
+                    function_text = function_text + ")\nas\nbegin\n";
+                    function_text = function_text + "update [" + name+"]\n";
+                    function_text = function_text + "set active = 0\n";
+                count = 0;
+                comma = "where ";
+                    foreach (Row r in rows)
+                    {
+                        if (count > 0) { comma = "and "; }
+                        if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                        {
+                            String add = comma + "@" + r.row_name.bracketStrip() + " =" + r.row_name.bracketStrip()+ "\n";
+                            function_text = function_text + add;
+                            count++;
+                        }
+                    }
+
+                function_text = function_text + "return @@rowcount \n end \n go\n";
+
+
+                }          
+            
+            
+            
+            else
             {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                function_text =
+                     "DROP PROCEDURE IF EXISTS sp_delete_" + name + ";\n"
+                    + "DELIMITER $$\n"
+                    + "CREATE PROCEDURE sp_delete_" + name + "\n"
+                    + "(";
+                int count = 0;
+                String comma = "";
+                comma = "";
+                count = 0;
+                foreach (Row r in rows)
                 {
-                    if (keys_count > 0) { initial_word = "AND "; }
-                    String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
-                    function_text = function_text + add;
-                    keys_count++;
+                    if (count > 0) { comma = ","; }
+                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                    {
+                        String add = comma + r.row_name + "_param " + r.data_type + r.length_text + "\n";
+                        function_text = function_text + add;
+                        count++;
+                    }
                 }
+                count = 0;
+                function_text = function_text + ")\n" +
+                    "begin \n" +
+                    "declare sql_error TINYINT DEFAULT FALSE;\n" +
+                    "declare update_count tinyint default 0;\n" +
+                    "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
+                    "SET sql_error = true;\n" +
+                    "START TRANSACTION;\n" +
+                    "DELETE FROM " + name + "\n  "
+                    ;
+                comma = "";
+                int keys_count = 0;
+                String initial_word = "WHERE ";
+                foreach (Row r in rows)
+                {
+                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                    {
+                        if (keys_count > 0) { initial_word = "AND "; }
+                        String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
+                        function_text = function_text + add;
+                        keys_count++;
+                    }
+                }
+                function_text = function_text + "\n" +
+                   " ; if sql_error = FALSE then \n" +
+                   " SET update_count = row_count(); \n" +
+                   " COMMIT;\n" +
+                   " ELSE\n" +
+                   " SET update_count = 0;\n" +
+                   " ROLLBACK;\n" +
+                   " END IF;\n" +
+                   " select update_count as 'update count'\n" +
+                   " ; END $$\n" +
+                   " DELIMITER ;\n";
             }
-            function_text = function_text + "\n" +
-               " ; if sql_error = FALSE then \n" +
-               " SET update_count = row_count(); \n" +
-               " COMMIT;\n" +
-               " ELSE\n" +
-               " SET update_count = 0;\n" +
-               " ROLLBACK;\n" +
-               " END IF;\n" +
-               " select update_count as 'update count'\n" +
-               " ; END $$\n" +
-               " DELIMITER ;\n";
 
             String full_text = comment_text + function_text;
             return full_text;
@@ -287,12 +391,15 @@ namespace Data_Objects
         {
 
             String comment_text = comment_box_gen.comment_box(name, 5);
-            String function_text =
-                 "DROP PROCEDURE IF EXISTS sp_retreive_by_pk_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_retreive_by_pk_" + name + "\n"
+            String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_pk_" + name + ";\n"
+                + "DELIMITER $$\n";
+            String secondLine = "CREATE PROCEDURE sp_retreive_by_pk_" + name + "\n"
                 + "(\n";
-
+            if (settings.TSQLMode) {
+                firstLine = "";
+                secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_by_pk_" + name + "]\n(";
+            }
+            String function_text = firstLine + secondLine;              
             int count = 0;
             String comma = "";
             comma = "";
@@ -301,7 +408,9 @@ namespace Data_Objects
                 if (count > 0) { comma = ","; }
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
-                    String add = comma + r.row_name + "_param " + r.data_type + r.length_text + "\n";
+                    String add = "";
+                    if (settings.TSQLMode) { add = comma + r.row_name.Replace("]","").Replace("[","@") + " " + r.data_type + r.length_text + "\n"; }
+                    else { add = comma + r.row_name + " " + r.data_type + r.length_text + "\n"; }
                     function_text = function_text + add;
                     count++;
                 }
@@ -310,7 +419,9 @@ namespace Data_Objects
 
             count = 0;
             comma = "";
-            function_text = function_text + "\n Begin \n select \n";
+            String asString = "";
+            if (settings.TSQLMode) { asString = "\nas"; } 
+            function_text = function_text + asString+"\n Begin \n select \n";
             foreach (Row r in rows)
             {
                 if (count > 0) { comma = ","; }
@@ -325,14 +436,26 @@ namespace Data_Objects
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     if (keys_count > 0) { initial_word = "AND "; }
-                    String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
+                    string add = "";
+                    if (settings.TSQLMode) { add = initial_word + r.row_name + "=" + r.row_name.Replace("]", "").Replace("[", "@")+ " \n"; }
+                    else
+                    {
+                        add = initial_word + r.row_name + "=" + r.row_name + "\n";
+                    }
                     function_text = function_text + add;
                     keys_count++;
                 }
             }
 
-            function_text = function_text + " ; END $$\n" +
-               " DELIMITER ;\n";
+            if (settings.TSQLMode) { 
+            function_text=function_text + " END \n" +
+                   " GO\n";
+            }
+            if (!settings.TSQLMode)
+            {
+                function_text = function_text + " ; END $$\n" +
+                   " DELIMITER ;\n";
+            }
 
 
 
@@ -345,10 +468,15 @@ namespace Data_Objects
         {
             String gx = " ";
             String comment_text = comment_box_gen.comment_box(name, 6);
-            String function_text =
-                 "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_retreive_by_all_" + name + "()\n";
+            string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
+                + "DELIMITER $$\n";
+            string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "()\n";
+            if (settings.TSQLMode) { firstLine = "";
+                secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_by_all_" + name + "]\nAS\n";
+            }
+            String function_text = firstLine + secondLine;
+                 
+                
 
             int count = 0;
             String comma = "";
@@ -364,7 +492,9 @@ namespace Data_Objects
                 function_text = function_text + "\n" + comma + r.row_name;
                 count++;
             }
-            function_text = function_text + "\n FROM " + name + "\n ;\n END $$ \n DELIMITER ;\n";
+            if (settings.TSQLMode) { function_text = function_text + "\n FROM " + name + "\n ;\n END  \n GO\n"; }
+            else { function_text = function_text + "\n FROM " + name + "\n ;\n END $$ \n DELIMITER ;\n"; }
+            
 
 
             String full_text = comment_text + function_text;
@@ -374,21 +504,37 @@ namespace Data_Objects
         public string gen_insert()
         {
             String comment_text = comment_box_gen.comment_box(name, 7);
-            String function_text =
+            String firstLine =
                  "DROP PROCEDURE IF EXISTS sp_insert_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_insert_" + name + "(\n";
+                + "DELIMITER $$\n";
+            String secondLine = "CREATE PROCEDURE sp_insert_" + name + "(\n";
 
+            if (settings.TSQLMode)
+            {
+                firstLine = "";
+                secondLine = "CREATE PROCEDURE [DBO].[sp_insert" + name + "]\n(";
+            }
+            String function_text = firstLine + secondLine;
             int count = 0;
             String comma = "";
             foreach (Row r in rows)
             {
                 if (count > 0) { comma = ","; }
-                String add = comma + "in " + r.row_name + "_param " + r.data_type  + r.length_text + "\n";
+                string add = "";
+                if (settings.TSQLMode) { add = comma + "@" + r.row_name.bracketStrip() + " " + r.data_type + r.length_text + "\n"; }
+                else
+                {
+                    add = comma + "in " + r.row_name + "_param " + r.data_type + r.length_text + "\n";
+                }
                 function_text = function_text + add;
                 count++;
             }
-            function_text = function_text + ")\n" +
+            if (settings.TSQLMode) {
+                function_text = function_text + ")as \n begin\n insert into [dbo]." + name + "(\n";
+            }
+            else
+            {
+                function_text = function_text + ")\n" +
                 "begin \n" +
                 "declare sql_error TINYINT DEFAULT FALSE;\n" +
                 "declare update_count tinyint default 0;\n" +
@@ -397,28 +543,46 @@ namespace Data_Objects
                 "START TRANSACTION;\n" +
                 "INSERT INTO  " + name + "\n values \n("
                 ;
+            }
             count = 0;
             comma = "";
+            
             foreach (Row r in rows)
             {
                 if (count > 0) { comma = ","; }
-                String add = comma + r.row_name + "_param" + "\n";
+                String add = comma +   r.row_name   + "\n";
                 function_text = function_text + add;
                 count++;
             }
+            if (settings.TSQLMode)
+            {
+                function_text = function_text + ")\n VALUES (\n";
+                comma = "";
+                count = 0;
+                foreach (Row r in rows)
+                {
+                    if (count > 0) { comma = ","; }
+                    function_text = function_text + comma + "@" + r.row_name.bracketStrip()+"\n";
+                    count++;
 
-            function_text = function_text + ")\n" +
-               " ; if sql_error = FALSE then \n" +
-               " SET update_count = row_count(); \n" +
-               " COMMIT;\n" +
-               " ELSE\n" +
-               " SET update_count = 0;\n" +
-               " ROLLBACK;\n" +
-               " END IF;\n" +
-               " select update_count as 'update count'\n" +
-               " ; END $$\n" +
-               " DELIMITER ;\n";
-
+                }
+                function_text = function_text + ")\n";
+            }
+            if (!settings.TSQLMode)
+            {
+                function_text = function_text + ")\n" +
+                   " ; if sql_error = FALSE then \n" +
+                   " SET update_count = row_count(); \n" +
+                   " COMMIT;\n" +
+                   " ELSE\n" +
+                   " SET update_count = 0;\n" +
+                   " ROLLBACK;\n" +
+                   " END IF;\n" +
+                   " select update_count as 'update count'\n" +
+                   " ; END $$\n" +
+                   " DELIMITER ;\n";
+            }
+            else {function_text = function_text + "return @@rowcount\nend\nGo\n"; }
 
 
 
@@ -561,6 +725,157 @@ namespace Data_Objects
             return full_text;
         }
 
+        public String gen_IThingAccessor()
+        {
+            int count = 0;
+            string comma = "";
+            string output = "";
+            string comment = comment_box_gen.comment_box(name, 11);
+            string header = "public interface I"+name+"Accessor \n{\n";
+
+            string insertThing = "int insert"+name+"(";
+            foreach (Row r in rows)
+            {
+                if (count > 0) { comma = " , "; }
+                String add = comma +r.data_type.toCSharpDataType()+" "+ r.row_name.bracketStrip();
+                insertThing = insertThing + add;
+                count++;
+            }
+            insertThing = insertThing + ");\n";
+
+            string selectThingbyPK = name+ " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
+            string selectallThing = "List<"+name+"> selectAll"+name+"();\n";
+
+
+
+            comma = "";
+            count = 0;
+            string updateThing = "int update" + name +"(";
+            foreach (Row r in rows) {
+                if (count > 0) { comma = " , "; }
+                String add = comma + r.data_type.toCSharpDataType() + " old" + r.row_name.bracketStrip();
+                updateThing = updateThing + add;
+                count++;
+            }
+            foreach (Row r in rows)
+            {
+                if (count > 0) { comma = " , "; }
+                if (r.primary_key != 'y' && r.primary_key != 'Y')
+                {
+                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.row_name.bracketStrip();
+
+                    updateThing = updateThing + add;
+                }
+                count++;
+            }
+            updateThing = updateThing + ");\n";
+            string deleteThing = "int delete"+name+"(string "+name+"ID);\n";
+            output =comment+ header + insertThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
+
+
+
+            return output;
+
+        }
+
+        public String gen_ThingAccessor() {
+
+            //nneds proper number and code choice
+            string comment = comment_box_gen.comment_box(name, 13);
+            //good
+            string header = genAccessorClassHeader();
+            //good
+            string insertThing = genAccessorCreate();
+            //good
+            string selectThingbyPK = genAccessorRetreiveByKey();
+            //needs implemented
+            string selectallThing = genAccessorRetreiveAll();
+            //good
+            string updateThing = genAccessorUpdate(); 
+            //good
+            string deleteThing = genAccessorDelete();
+            //good
+            string output = comment + header + insertThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
+            //good
+
+
+            return output;
+
+
+        }
+        public String gen_IThingManager()
+        {
+            int count = 0;
+            string comma = "";
+            string output = "";
+            string comment = comment_box_gen.comment_box(name, 12);
+            string header = "public interface I" + name + "Manager \n{\n";
+
+            string addThing = "int add" + name + "(" +name +" _"+name+");\n";
+            
+            
+
+            string getThingbyPK = name + " get" + name + "ByPrimaryKey(string " + name + "ID);\n";
+            string getallThing = "List<" + name + "> getAll" + name + "();\n";
+
+
+
+            comma = "";
+            count = 0;
+            string editThing = "int edit" + name + "(";
+            editThing  = editThing + name + "_old"+name+" , " +name +" _new" + name;
+            editThing = editThing + ");\n";
+            string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
+            output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + "}\n\n";
+
+
+
+            return output;
+
+        }
+
+
+        public String gen_DataObject() {
+
+            string output = "";
+            output = comment_box_gen.comment_box(name,15);
+            output = "public class " + name+"\n{\n";
+            int count = 0;
+
+
+            foreach (Row r in rows)
+            {
+                String add = "public " + r.data_type.toCSharpDataType() + " " + r.row_name.bracketStrip()+ "{ set; get; }\n";
+                output = output + add;
+                count++;
+            }
+            output = output + "\n}\n";
+
+            if (foreign_keys.Count > 0)
+            {
+                output = output + "public class" + name + "VM: " + name + "\n{\n";
+                foreach (Row r in rows)
+                {
+
+                    if (r.foreign_key == "y" || r.foreign_key == "Y")
+                    {
+                        int dotPosition = r.references.IndexOf('.');
+                        string keytype = r.references.Substring(0, dotPosition);
+                        output = output + "public " + keytype + " _" + keytype.ToLower() + "{ get ; set; }\n";
+
+                    }
+
+                }
+                output = output + "}\n";
+            }
+
+
+
+
+            return output;
+        
+        
+        }
         public String gen_functions()
         {
             string x = " ";
@@ -569,8 +884,315 @@ namespace Data_Objects
 
 
         }
+        private string genAccessorClassHeader() {
+            string header = "";
+            int count = 0;
+            string comma = "";
+            string output = "";
+            string comment = comment_box_gen.comment_box(name, 11);
+            header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
+
+
+            return header;
+        
+        
+        }
+        private String genSPHeaderA(string commandText) {
+            //for update, insert, delete
+            String output = "";
+            output= "int rows = 0;\n"
+            +"// start with a connection object\n"
+            +"var conn = SqlConnectionProvider.GetConnection();\n"
+            +"// set the command text\n"
+            +"var commandText = \""+commandText+"\";\n"
+            + "// create the command object\n"
+            + "var cmd = new SqlCommand(commandText, conn);\n"
+            + "// set the command type\n"
+            + "cmd.CommandType = CommandType.StoredProcedure;\n"
+            + "// we need to add parameters to the command\n";
+
+
+            return output;        
+        
+        }
+        private String genSPHeaderB(string DataObject, string commandText) {
+            //for single data object
+            string output = "";
+            output = DataObject+" output = new "+DataObject+"();\n"
+            + "// start with a connection object\n"
+            + "var conn = SqlConnectionProvider.GetConnection();\n"
+            + "// set the command text\n"
+            + "var commandText = \"" + commandText + "\";\n"
+            + "// create the command object\n"
+            + "var cmd = new SqlCommand(commandText, conn);\n"
+            + "// set the command type\n"
+            + "cmd.CommandType = CommandType.StoredProcedure;\n"
+            + "// we need to add parameters to the command\n";
+
+
+            return output;
+        }
+        private String genSPHeaderC(string DataObject, string commandText)
+        {
+            //for list of data object
+            string output = "";
+            output ="List<"+ DataObject + "> output = new " +"List<"+ DataObject + ">();\n"
+            + "// start with a connection object\n"
+            + "var conn = SqlConnectionProvider.GetConnection();\n"
+            + "// set the command text\n"
+            + "var commandText = \"" + commandText + "\";\n"
+            + "// create the command object\n"
+            + "var cmd = new SqlCommand(commandText, conn);\n"
+            + "// set the command type\n"
+            + "cmd.CommandType = CommandType.StoredProcedure;\n"
+            + "// There are no parameters to set or add\n";
+            return output;
+        }
+        private string genSPfooter(int mode) {
+                     
+            string returntype = "output";
+            if (mode == 2) { returntype = "rows"; }
+            string output = "";
+            output = " \ncatch (Exception ex)\n"
+            + "{\n"
+            + "    throw ex;\n"
+            + "}\n"
+            + "finally\n"
+            + "{\n"
+            + "    conn.Close();\n"
+            + "}\n"
+            +"return "+ returntype+";\n}\n";
+            return output;
+        }
+        private string genAccessorCreate() {
+            string createThing = "";
+            int count = 0;
+            string comma = "";
+            createThing = "public int add" + name + "(";
+            foreach (Row r in rows)
+            {
+                if (count > 0) { comma = " , "; }
+                String add = comma + r.data_type.toCSharpDataType() + " " + r.row_name.bracketStrip();
+                createThing = createThing + add;
+                count++;
+            }
+            createThing = createThing + "){\n";
+            createThing = createThing + genSPHeaderA("sp_insert_" + name);
+            //add parameters
+            foreach (Row r in rows) {
+                createThing = createThing + "cmd.Parameters.Add(\"@" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+            }
+            //setting parameters
+            createThing = createThing + "\n //We need to set the parameter values\n";
+            foreach (Row r in rows) {
+                createThing = createThing + "cmd.Parameters[\"@" + r.row_name.bracketStrip() + "\"].Value = " + r.row_name.bracketStrip()+";\n";
+            }
+            //excute the quuery
+            createThing = createThing + "try \n { \n //open the connection \n conn.Open();  ";
+            createThing = createThing + "//execute the command and capture result\n";
+            createThing = createThing + "rows = cmd.ExecuteNonQuery();\n}\n";
+            //capture reuslts
+            createThing = createThing + "";
+
+            //cath block and onwards
+            createThing = createThing + genSPfooter(2);
+
+
+
+
+            return createThing;
+        }
+
+        private string genAccessorRetreiveByKey() {
+            string retreiveThing = "";
+            int count = 0;
+            string comma = "";
+            retreiveThing = "public "+name +" select" + name + "ByPrimaryKey(";
+            foreach (Row r in rows)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    if (count > 0) { comma = "  "; }
+                    String add = comma + r.data_type.toCSharpDataType() + " " + r.row_name.bracketStrip();
+                    retreiveThing = retreiveThing + add;
+                    count++;
+                }
+            }
+            retreiveThing = retreiveThing + "){\n";
+            retreiveThing = retreiveThing + genSPHeaderB(name, "sp_retreive_by_pk_" + name);
+            //add parameters
+            foreach (Row r in rows)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    retreiveThing = retreiveThing + "cmd.Parameters.Add(\"@" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                }
+                }
+            //setting parameters
+            retreiveThing = retreiveThing + "\n //We need to set the parameter values\n";
+            foreach (Row r in rows)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    retreiveThing = retreiveThing + "cmd.Parameters[\"@" + r.row_name.bracketStrip() + "\"].Value = " + r.row_name.bracketStrip() + ";\n";
+                }
+            }
+            //excute the quuery
+            retreiveThing = retreiveThing + "try \n { \n //open the connection \n conn.Open();  ";
+            retreiveThing = retreiveThing + "//execute the command and capture result\n";
+
+            retreiveThing = retreiveThing + "var reader = cmd.ExecuteReader();\n";
+            
+            //capture reuslts
+            retreiveThing = retreiveThing + "//process the results\n";
+            retreiveThing = retreiveThing + "if (reader.HasRows)\n if (reader.Read())\n{";
+            count = 0;
+            foreach (Row r in rows) { 
+            retreiveThing = retreiveThing + "output."+r.row_name.bracketStrip()+" = reader.Get"+r.data_type.toSqlReaderDataType()+"("+count + ");\n";
+                count++;
+            
+            }
+            retreiveThing = retreiveThing + "\n}\n";
+            retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" +name+ " not found\");\n}\n}";
+
+            //cath block and onwards
+            retreiveThing = retreiveThing + genSPfooter(0);
+
+
+
+
+            return retreiveThing;
+
+
+        }
+
+        private string genAccessorRetreiveAll() {
+            
+            int count = 0;
+            string comma = "";
+            string retreiveAllThing = "";
+             retreiveAllThing = "public List<" + name + "> selectAll" + name + "(){\n";
+            
+            
+            retreiveAllThing = retreiveAllThing + genSPHeaderC(name, "sp_retreive_by_all_" + name);
+            //no paramaters to set or add
+            
+            
+           
+            //excute the quuery
+            retreiveAllThing = retreiveAllThing + "try \n { \n //open the connection \n conn.Open();  ";
+            retreiveAllThing = retreiveAllThing + "//execute the command and capture result\n";
+
+            retreiveAllThing = retreiveAllThing + "var reader = cmd.ExecuteReader();\n";
+
+            //capture reuslts
+            retreiveAllThing = retreiveAllThing + "//process the results\n";
+            retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n if (reader.Read())\n{";
+            retreiveAllThing = retreiveAllThing + "var _" + name + "= new "+ name+"();\n";
+            count = 0;
+            foreach (Row r in rows)
+            {
+                retreiveAllThing = retreiveAllThing + "_"+name+"." + r.row_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
+                count++;
+
+            }
+            retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
+            retreiveAllThing = retreiveAllThing + "\n}\n}";
+
+            //cath block and onwards
+            retreiveAllThing = retreiveAllThing + genSPfooter(0);
+
+
+            return retreiveAllThing;
+            
+        
+        }
+
+        private string genAccessorUpdate() {
+            string updateThing = "";
+            int count = 0;
+            string comma = "";
+            updateThing = "public int update" + name + "(";
+            foreach (Row r in rows)
+            {
+                if (count > 0) { comma = " , "; }
+                String add = comma + r.data_type.toCSharpDataType() + " old" + r.row_name.bracketStrip();
+                updateThing = updateThing + add;
+                count++;
+            }
+            foreach (Row r in rows)
+            {
+                if (r.primary_key != 'y' && r.primary_key != 'Y')
+                {
+                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.row_name.bracketStrip();
+                    updateThing = updateThing + add;
+                    count++;
+                }
+            }
+            updateThing = updateThing + "){\n";
+            updateThing = updateThing + genSPHeaderA("sp_update_" + name);
+            //add parameters
+            foreach (Row r in rows)
+            {
+                updateThing = updateThing + "cmd.Parameters.Add(\"@old" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+
+                if (r.primary_key != 'y' && r.primary_key != 'Y')
+                {
+                    updateThing = updateThing + "cmd.Parameters.Add(\"@new" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                }
+            }
+            //setting parameters
+            updateThing = updateThing + "\n //We need to set the parameter values\n";
+            foreach (Row r in rows)
+            {
+                updateThing = updateThing + "cmd.Parameters[\"@old" + r.row_name.bracketStrip() + "\"].Value = old" + r.row_name.bracketStrip() + ";\n";
+                if (r.primary_key != 'y' && r.primary_key != 'Y')
+                {
+                    updateThing = updateThing + "cmd.Parameters[\"@new" + r.row_name.bracketStrip() + "\"].Value = new" + r.row_name.bracketStrip() + ";\n";
+                }
+            }
+            //excute the quuery
+            updateThing = updateThing + "try \n { \n //open the connection \n conn.Open();  ";
+            updateThing = updateThing + "//execute the command and capture result\n";
+            updateThing = updateThing + "rows = cmd.ExecuteNonQuery();\n";
+            updateThing = updateThing + "if (rows == 0) {\n //treat failed update as exception \n ";
+            updateThing = updateThing + "throw new ArgumentException(\"invalid values, update failed\");\n}\n}";
+            //capture reuslts
+            updateThing = updateThing + "";
+
+            //cath block and onwards
+            updateThing = updateThing + genSPfooter(2);
+
+
+
+
+            return updateThing;
+
+        }
+
+        private string genAccessorDelete() {
+            string deleteThing = "public int delete" + name + "(string " + name + "ID){\n";
+            deleteThing = deleteThing + genSPHeaderA("sp_delete_" + name);
+            //add parameters bit
+            deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + name + "ID\", SqlDbType.NVarChar, 50);";
+            deleteThing = deleteThing + "cmd.Parameters[\"@" + name + "ID\"].Value =" + name + "ID;\n";
+            deleteThing = deleteThing + "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
+            deleteThing = deleteThing + "if (rows == 0){\n";
+            deleteThing = deleteThing + "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
+            deleteThing = deleteThing + genSPfooter(2);
+            return deleteThing;
+            }
+
+
+
+
+
+            
+        
+        }
+
 
     }
-}
+
 
 

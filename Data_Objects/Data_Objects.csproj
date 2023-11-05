@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="comment_box_gen.cs" />
     <Compile Include="database.cs" />
+    <Compile Include="DataTypeConverter.cs" />
     <Compile Include="data_tables.cs" />
     <Compile Include="header.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

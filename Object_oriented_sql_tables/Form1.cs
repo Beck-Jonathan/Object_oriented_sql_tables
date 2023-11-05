@@ -40,8 +40,8 @@ namespace Object_oriented_sql_tables
         private void button1_Click(object sender, System.EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            //openFileDialog.InitialDirectory = "c:\\objectoriented\\";
-            openFileDialog.InitialDirectory = settings.app_path;
+            openFileDialog.InitialDirectory = "C:\\Users\\jjbec\\Desktop\\classes\\structured_systems\\";
+            //openFileDialog.InitialDirectory = settings.app_path;
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
             settings.path = filepath;
@@ -99,6 +99,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[5])
                 {
                     s = t.gen_delete();
+
                     file_write.WriteBuddy.Write(s);
                 }
                 // if selected, add an SP_retreive that requires a PK
@@ -137,6 +138,30 @@ namespace Object_oriented_sql_tables
                     s = t.gen_delete_trigger();
                     file_write.WriteBuddy.Write(s);
                 }
+                if (these_settings[12]) {
+                    s = t.gen_IThingAccessor();
+                    file_write.CSharpBuddy.Write(s);
+                }
+                if (these_settings[13])
+                {
+                    s = t.gen_ThingAccessor();
+                    file_write.CSharpBuddy.Write(s);
+                }
+                if (these_settings[14])
+                {
+                    s = t.gen_IThingManager();
+                    file_write.CSharpBuddy.Write(s);
+                }
+                if (these_settings[15])
+                {
+                    //s=t.realMananger
+                    //file_write.CSharpBuddy.Write(s)
+                }
+                if (these_settings[16])
+                {
+                    s=t.gen_DataObject();
+                    file_write.CSharpBuddy.Write(s);
+                }
 
 
 
@@ -144,6 +169,7 @@ namespace Object_oriented_sql_tables
                 count++;
             }
             file_write.WriteBuddy.Flush();
+            file_write.CSharpBuddy.Flush();
             MessageBox.Show("generation complete");
             this.Close();
 
@@ -153,7 +179,7 @@ namespace Object_oriented_sql_tables
         private void initialize_settings()
         {
             for (int i = 0; i < settings.table_count; i++) {
-                for (int j = 0; j < 12; j++) {
+                for (int j = 0; j < 17; j++) {
                     settings.all_options[i][j] = true;
                 }
             
@@ -203,7 +229,7 @@ namespace Object_oriented_sql_tables
         private void clb_options_SelectedIndexChanged(object sender, EventArgs e)
         {
             List<Boolean> these_settings = new List<Boolean>();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 17; i++)
             {
                 these_settings.Add(clb_options.GetItemChecked(i));
             }
@@ -215,5 +241,13 @@ namespace Object_oriented_sql_tables
         {
             settings.TSQLMode= cbxTSql.Checked;
         }
+
+        private void btn_cSharp_Click(object sender, EventArgs e)
+        {
+           // csharpsettings();
+
+        }
+
+        
     }
 }

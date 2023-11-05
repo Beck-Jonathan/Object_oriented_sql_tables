@@ -32,6 +32,7 @@ namespace Data_Access
                 string[] parts;
                 //split each line in the file into it's component parts
                 parts = ln.Split(separator);
+                //if (parts[0].Equals("dummy")) { break; }
                 try
                 {
                     //catch a fully blank line and ignore it

@@ -37,6 +37,7 @@ namespace Object_oriented_sql_tables
             this.cbx_table_names = new System.Windows.Forms.ComboBox();
             this.clb_options = new System.Windows.Forms.CheckedListBox();
             this.cbxTSql = new System.Windows.Forms.CheckBox();
+            this.btn_cSharp = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // label1
@@ -52,7 +53,7 @@ namespace Object_oriented_sql_tables
             // btn_selectfile
             // 
             this.btn_selectfile.Location = new System.Drawing.Point(67, 83);
-            this.btn_selectfile.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_selectfile.Margin = new System.Windows.Forms.Padding(2);
             this.btn_selectfile.Name = "btn_selectfile";
             this.btn_selectfile.Size = new System.Drawing.Size(56, 19);
             this.btn_selectfile.TabIndex = 1;
@@ -62,8 +63,8 @@ namespace Object_oriented_sql_tables
             // 
             // btn_generateTable
             // 
-            this.btn_generateTable.Location = new System.Drawing.Point(370, 74);
-            this.btn_generateTable.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_generateTable.Location = new System.Drawing.Point(361, 23);
+            this.btn_generateTable.Margin = new System.Windows.Forms.Padding(2);
             this.btn_generateTable.Name = "btn_generateTable";
             this.btn_generateTable.Size = new System.Drawing.Size(179, 19);
             this.btn_generateTable.TabIndex = 2;
@@ -74,7 +75,7 @@ namespace Object_oriented_sql_tables
             // tbx_databasename
             // 
             this.tbx_databasename.Location = new System.Drawing.Point(67, 120);
-            this.tbx_databasename.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tbx_databasename.Margin = new System.Windows.Forms.Padding(2);
             this.tbx_databasename.Name = "tbx_databasename";
             this.tbx_databasename.Size = new System.Drawing.Size(76, 20);
             this.tbx_databasename.TabIndex = 3;
@@ -83,7 +84,7 @@ namespace Object_oriented_sql_tables
             // btn_read_table
             // 
             this.btn_read_table.Location = new System.Drawing.Point(168, 83);
-            this.btn_read_table.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.btn_read_table.Margin = new System.Windows.Forms.Padding(2);
             this.btn_read_table.Name = "btn_read_table";
             this.btn_read_table.Size = new System.Drawing.Size(56, 19);
             this.btn_read_table.TabIndex = 4;
@@ -97,7 +98,7 @@ namespace Object_oriented_sql_tables
             this.cbx_table_names.Enabled = false;
             this.cbx_table_names.FormattingEnabled = true;
             this.cbx_table_names.Location = new System.Drawing.Point(156, 171);
-            this.cbx_table_names.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.cbx_table_names.Margin = new System.Windows.Forms.Padding(2);
             this.cbx_table_names.Name = "cbx_table_names";
             this.cbx_table_names.Size = new System.Drawing.Size(92, 21);
             this.cbx_table_names.TabIndex = 5;
@@ -119,11 +120,16 @@ namespace Object_oriented_sql_tables
             "SP_insert",
             "Trigger_Update",
             "Trigger_Insert",
-            "Trigger_Delete"});
-            this.clb_options.Location = new System.Drawing.Point(361, 136);
-            this.clb_options.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            "Trigger_Delete",
+            "IAccessor",
+            "RealAccessor",
+            "IManager",
+            "RealManager",
+            "DataObject"});
+            this.clb_options.Location = new System.Drawing.Point(363, 79);
+            this.clb_options.Margin = new System.Windows.Forms.Padding(2);
             this.clb_options.Name = "clb_options";
-            this.clb_options.Size = new System.Drawing.Size(177, 184);
+            this.clb_options.Size = new System.Drawing.Size(187, 259);
             this.clb_options.TabIndex = 6;
             this.clb_options.SelectedIndexChanged += new System.EventHandler(this.clb_options_SelectedIndexChanged);
             // 
@@ -138,11 +144,22 @@ namespace Object_oriented_sql_tables
             this.cbxTSql.UseVisualStyleBackColor = true;
             this.cbxTSql.CheckedChanged += new System.EventHandler(this.cbxTSql_CheckedChanged);
             // 
+            // btn_cSharp
+            // 
+            this.btn_cSharp.Location = new System.Drawing.Point(168, 135);
+            this.btn_cSharp.Name = "btn_cSharp";
+            this.btn_cSharp.Size = new System.Drawing.Size(116, 23);
+            this.btn_cSharp.TabIndex = 8;
+            this.btn_cSharp.Text = "cSharpOutput";
+            this.btn_cSharp.UseVisualStyleBackColor = true;
+            this.btn_cSharp.Click += new System.EventHandler(this.btn_cSharp_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 366);
+            this.Controls.Add(this.btn_cSharp);
             this.Controls.Add(this.cbxTSql);
             this.Controls.Add(this.clb_options);
             this.Controls.Add(this.cbx_table_names);
@@ -151,7 +168,7 @@ namespace Object_oriented_sql_tables
             this.Controls.Add(this.btn_generateTable);
             this.Controls.Add(this.btn_selectfile);
             this.Controls.Add(this.label1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -169,6 +186,7 @@ namespace Object_oriented_sql_tables
         private System.Windows.Forms.ComboBox cbx_table_names;
         private System.Windows.Forms.CheckedListBox clb_options;
         private System.Windows.Forms.CheckBox cbxTSql;
+        private System.Windows.Forms.Button btn_cSharp;
     }
 }
 
