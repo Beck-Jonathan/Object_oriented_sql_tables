@@ -12,10 +12,10 @@ namespace Data_Objects
         //various components of a table
         public String name { set; get; }
         public header Header { set; get; }
-        public List<Row> rows { set; get; }
+        public List<Column> columns { set; get; }
         public List<String> primary_keys { set; get; }
         public List<String> foreign_keys { set; get; }
-        public table(String name, List<Row> rows)
+        public table(String name, List<Column> columns)
         {
             if (settings.TSQLMode) {
                 this.name = "[dbo].[" + name + "]";
@@ -24,7 +24,7 @@ namespace Data_Objects
             {
                 this.name = name;
             }
-            this.rows = rows;
+            this.columns = columns;
 
         }
 
@@ -36,7 +36,7 @@ namespace Data_Objects
             {
                 String key_string = ",CONSTRAINT " + name + "_PK PRIMARY KEY (";
                 int count = 0;
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     foreach (string s in r.primary_keys)
                     {
@@ -55,7 +55,7 @@ namespace Data_Objects
                     name = name.Replace("]", "");
                     String key_string = ",CONSTRAINT [PK_" + name + "] PRIMARY KEY (";
                     int count = 0;
-                    foreach (Row r in rows)
+                    foreach (Column r in columns)
                     {
                         foreach (string s in r.primary_keys)
                         {
@@ -74,7 +74,7 @@ namespace Data_Objects
         {//generate the foreign keys based on key_gen that was done in the rwos
             foreign_keys = new List<String>();
             String output_keys = "";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 foreach (string s in r.foreign_keys)
                 {
@@ -124,15 +124,15 @@ namespace Data_Objects
             Header.table_name = this.name;
             return this.Header.audit_header_gen();
         }
-        public String gen_rows()
+        public String gen_columns()
         {
 
             int count = 0;
             String x = this.gen_header();
             x = x + "\n";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
-                String rowtext = r.row_and_key_gen();
+                String rowtext = r.column_and_key_gen();
                 if (count > 0) { x = x + ","; }
                 x = x + rowtext;
                 count++;
@@ -148,9 +148,9 @@ namespace Data_Objects
             int count = 0;
             String x = this.audit_gen_header();
             x = x + "\n";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
-                String rowtext = r.audit_row_gen();
+                String rowtext = r.Column_row_gen();
                 if (count > 0) { x = x + ","; }
                 x = x + rowtext;
                 count++;
@@ -176,14 +176,14 @@ namespace Data_Objects
                 function_text=  "CREATE PROCEDURE [DBO].[sp_update_" + name + "]\n(";
                 count = 0;
                 comma = "";
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
                     
-                    String add = comma + "@old" + r.row_name.bracketStrip()  + r.data_type + r.length_text + "\n";
+                    String add = comma + "@old" + r.column_name.bracketStrip()  + r.data_type + r.length_text + "\n";
                     if (r.primary_key != 'y' || r.primary_key != 'Y')
                     {
-                        add = add + ",@new" + r.row_name.bracketStrip() +  r.data_type + r.length_text + "\n";
+                        add = add + ",@new" + r.column_name.bracketStrip() +  r.data_type + r.length_text + "\n";
                     }
                     function_text = function_text + add;
                     count++;
@@ -191,11 +191,11 @@ namespace Data_Objects
                 comma = "";
                 function_text = function_text + ")\nas\nBEGIN\nUPDATE " + name +"\nSET\n";
                 count = 0;
-                foreach (Row r in rows) {
+                foreach (Column r in columns) {
                     if (count > 0) { comma = ","; }
                     if (r.primary_key != 'Y' && r.primary_key != 'y')
                     {
-                        function_text = function_text + comma + r.row_name.bracketStrip() + " = @new" + r.row_name.bracketStrip() + "\n";
+                        function_text = function_text + comma + r.column_name.bracketStrip() + " = @new" + r.column_name.bracketStrip() + "\n";
                         count++;
                     }
                 
@@ -203,9 +203,9 @@ namespace Data_Objects
                 }
                 function_text = function_text + "WHERE\n";
                 comma = "";
-                foreach (Row r in rows) {
+                foreach (Column r in columns) {
                     if (count > 0) { comma = "and "; }
-                    function_text=function_text+comma+r.row_name.bracketStrip() + " = @old" + r.row_name.bracketStrip() + "\n";
+                    function_text=function_text+comma+r.column_name.bracketStrip() + " = @old" + r.column_name.bracketStrip() + "\n";
                     count++;
 
                 }
@@ -240,24 +240,24 @@ namespace Data_Objects
                     ;
                 comma = "";
                 count = 0;
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
                     if (!r.primary_key.Equals('y') && !r.primary_key.Equals('Y'))
                     {
-                        String add = comma + r.row_name + " = " + r.row_name + "_param\n";
+                        String add = comma + r.column_name + " = " + r.column_name + "_param\n";
                         function_text = function_text + add;
                         count++;
                     }
                 }
                 int keys_count = 0;
                 String initial_word = "WHERE ";
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
                         if (keys_count > 0) { initial_word = "AND "; }
-                        String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
+                        String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
                         function_text = function_text + add;
                         keys_count++;
                     }
@@ -289,12 +289,12 @@ namespace Data_Objects
             { function_text = "create procedure [dbo].[sp_delete_" + name + "]\n(\n";
                 int count = 0;
                 String comma = "" ;
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
-                        String add = comma + "@"+r.row_name.bracketStrip() + " " + r.data_type +" "+ r.length_text + "\n";
+                        String add = comma + "@"+r.column_name.bracketStrip() + " " + r.data_type +" "+ r.length_text + "\n";
                         function_text = function_text + add;
                         count++;
                     }
@@ -304,12 +304,12 @@ namespace Data_Objects
                     function_text = function_text + "set active = 0\n";
                 count = 0;
                 comma = "where ";
-                    foreach (Row r in rows)
+                    foreach (Column r in columns)
                     {
                         if (count > 0) { comma = "and "; }
                         if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                         {
-                            String add = comma + "@" + r.row_name.bracketStrip() + " =" + r.row_name.bracketStrip()+ "\n";
+                            String add = comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip()+ "\n";
                             function_text = function_text + add;
                             count++;
                         }
@@ -333,12 +333,12 @@ namespace Data_Objects
                 String comma = "";
                 comma = "";
                 count = 0;
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
-                        String add = comma + r.row_name + "_param " + r.data_type + r.length_text + "\n";
+                        String add = comma + r.column_name + "_param " + r.data_type + r.length_text + "\n";
                         function_text = function_text + add;
                         count++;
                     }
@@ -356,12 +356,12 @@ namespace Data_Objects
                 comma = "";
                 int keys_count = 0;
                 String initial_word = "WHERE ";
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
                         if (keys_count > 0) { initial_word = "AND "; }
-                        String add = initial_word + r.row_name + "=" + r.row_name + "_param\n";
+                        String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
                         function_text = function_text + add;
                         keys_count++;
                     }
@@ -403,14 +403,14 @@ namespace Data_Objects
             int count = 0;
             String comma = "";
             comma = "";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     String add = "";
-                    if (settings.TSQLMode) { add = comma + r.row_name.Replace("]","").Replace("[","@") + " " + r.data_type + r.length_text + "\n"; }
-                    else { add = comma + r.row_name + " " + r.data_type + r.length_text + "\n"; }
+                    if (settings.TSQLMode) { add = comma + r.column_name.Replace("]","").Replace("[","@") + " " + r.data_type + r.length_text + "\n"; }
+                    else { add = comma + r.column_name + " " + r.data_type + r.length_text + "\n"; }
                     function_text = function_text + add;
                     count++;
                 }
@@ -422,25 +422,25 @@ namespace Data_Objects
             String asString = "";
             if (settings.TSQLMode) { asString = "\nas"; } 
             function_text = function_text + asString+"\n Begin \n select \n";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.row_name + " \n";
+                function_text = function_text + comma + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n FROM " + name + "\n";
             String initial_word = "where ";
             int keys_count = 0;
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     if (keys_count > 0) { initial_word = "AND "; }
                     string add = "";
-                    if (settings.TSQLMode) { add = initial_word + r.row_name + "=" + r.row_name.Replace("]", "").Replace("[", "@")+ " \n"; }
+                    if (settings.TSQLMode) { add = initial_word + r.column_name + "=" + r.column_name.Replace("]", "").Replace("[", "@")+ " \n"; }
                     else
                     {
-                        add = initial_word + r.row_name + "=" + r.row_name + "\n";
+                        add = initial_word + r.column_name + "=" + r.column_name + "\n";
                     }
                     function_text = function_text + add;
                     keys_count++;
@@ -486,10 +486,10 @@ namespace Data_Objects
             count = 0;
             comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + "\n" + comma + r.row_name;
+                function_text = function_text + "\n" + comma + r.column_name;
                 count++;
             }
             if (settings.TSQLMode) { function_text = function_text + "\n FROM " + name + "\n ;\n END  \n GO\n"; }
@@ -517,14 +517,14 @@ namespace Data_Objects
             String function_text = firstLine + secondLine;
             int count = 0;
             String comma = "";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
                 string add = "";
-                if (settings.TSQLMode) { add = comma + "@" + r.row_name.bracketStrip() + " " + r.data_type + r.length_text + "\n"; }
+                if (settings.TSQLMode) { add = comma + "@" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + "\n"; }
                 else
                 {
-                    add = comma + "in " + r.row_name + "_param " + r.data_type + r.length_text + "\n";
+                    add = comma + "in " + r.column_name + "_param " + r.data_type + r.length_text + "\n";
                 }
                 function_text = function_text + add;
                 count++;
@@ -547,10 +547,10 @@ namespace Data_Objects
             count = 0;
             comma = "";
             
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                String add = comma +   r.row_name   + "\n";
+                String add = comma +   r.column_name   + "\n";
                 function_text = function_text + add;
                 count++;
             }
@@ -559,10 +559,10 @@ namespace Data_Objects
                 function_text = function_text + ")\n VALUES (\n";
                 comma = "";
                 count = 0;
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
-                    function_text = function_text + comma + "@" + r.row_name.bracketStrip()+"\n";
+                    function_text = function_text + comma + "@" + r.column_name.bracketStrip()+"\n";
                     count++;
 
                 }
@@ -603,10 +603,10 @@ namespace Data_Objects
             int count = 0;
             String comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.row_name + " \n";
+                function_text = function_text + comma + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n, action_type"
@@ -616,10 +616,10 @@ namespace Data_Objects
             count = 0;
             comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "new." + r.row_name + " \n";
+                function_text = function_text + comma + "new." + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n , 'update'-- action_type"
@@ -648,10 +648,10 @@ namespace Data_Objects
             int count = 0;
             String comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.row_name + " \n";
+                function_text = function_text + comma + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n, action_type"
@@ -661,10 +661,10 @@ namespace Data_Objects
             count = 0;
             comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "new." + r.row_name + " \n";
+                function_text = function_text + comma + "new." + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n , 'insert'-- action_type"
@@ -693,10 +693,10 @@ namespace Data_Objects
             int count = 0;
             String comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.row_name + " \n";
+                function_text = function_text + comma + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n, action_type"
@@ -706,10 +706,10 @@ namespace Data_Objects
             count = 0;
             comma = "";
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "old." + r.row_name + " \n";
+                function_text = function_text + comma + "old." + r.column_name + " \n";
                 count++;
             }
             function_text = function_text + "\n , 'delete'-- action_type"
@@ -733,15 +733,15 @@ namespace Data_Objects
             string comment = comment_box_gen.comment_box(name, 11);
             string header = "public interface I"+name+"Accessor \n{\n";
 
-            string insertThing = "int insert"+name+"(";
-            foreach (Row r in rows)
+            string addThing = "int add "+name+"(";
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = " , "; }
-                String add = comma +r.data_type.toCSharpDataType()+" "+ r.row_name.bracketStrip();
-                insertThing = insertThing + add;
+                String add = comma +r.data_type.toCSharpDataType()+" "+ r.column_name.bracketStrip();
+                addThing = addThing + add;
                 count++;
             }
-            insertThing = insertThing + ");\n";
+            addThing = addThing + ");\n";
 
             string selectThingbyPK = name+ " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
             string selectallThing = "List<"+name+"> selectAll"+name+"();\n";
@@ -751,18 +751,18 @@ namespace Data_Objects
             comma = "";
             count = 0;
             string updateThing = "int update" + name +"(";
-            foreach (Row r in rows) {
+            foreach (Column r in columns) {
                 if (count > 0) { comma = " , "; }
-                String add = comma + r.data_type.toCSharpDataType() + " old" + r.row_name.bracketStrip();
+                String add = comma + r.data_type.toCSharpDataType() + " old" + r.column_name.bracketStrip();
                 updateThing = updateThing + add;
                 count++;
             }
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = " , "; }
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
-                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.row_name.bracketStrip();
+                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.column_name.bracketStrip();
 
                     updateThing = updateThing + add;
                 }
@@ -770,7 +770,7 @@ namespace Data_Objects
             }
             updateThing = updateThing + ");\n";
             string deleteThing = "int delete"+name+"(string "+name+"ID);\n";
-            output =comment+ header + insertThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
+            output =comment+ header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
 
 
 
@@ -785,7 +785,7 @@ namespace Data_Objects
             //good
             string header = genAccessorClassHeader();
             //good
-            string insertThing = genAccessorCreate();
+            string addThing = genAccessorAdd();
             //good
             string selectThingbyPK = genAccessorRetreiveByKey();
             //needs implemented
@@ -795,7 +795,7 @@ namespace Data_Objects
             //good
             string deleteThing = genAccessorDelete();
             //good
-            string output = comment + header + insertThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
             //good
 
 
@@ -843,9 +843,9 @@ namespace Data_Objects
             int count = 0;
 
 
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
-                String add = "public " + r.data_type.toCSharpDataType() + " " + r.row_name.bracketStrip()+ "{ set; get; }\n";
+                String add = "public " + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip()+ "{ set; get; }\n";
                 output = output + add;
                 count++;
             }
@@ -854,7 +854,7 @@ namespace Data_Objects
             if (foreign_keys.Count > 0)
             {
                 output = output + "public class" + name + "VM: " + name + "\n{\n";
-                foreach (Row r in rows)
+                foreach (Column r in columns)
                 {
 
                     if (r.foreign_key == "y" || r.foreign_key == "Y")
@@ -964,28 +964,28 @@ namespace Data_Objects
             +"return "+ returntype+";\n}\n";
             return output;
         }
-        private string genAccessorCreate() {
+        private string genAccessorAdd() {
             string createThing = "";
             int count = 0;
             string comma = "";
             createThing = "public int add" + name + "(";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = " , "; }
-                String add = comma + r.data_type.toCSharpDataType() + " " + r.row_name.bracketStrip();
+                String add = comma + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip();
                 createThing = createThing + add;
                 count++;
             }
             createThing = createThing + "){\n";
             createThing = createThing + genSPHeaderA("sp_insert_" + name);
             //add parameters
-            foreach (Row r in rows) {
-                createThing = createThing + "cmd.Parameters.Add(\"@" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+            foreach (Column r in columns) {
+                createThing = createThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
             }
             //setting parameters
             createThing = createThing + "\n //We need to set the parameter values\n";
-            foreach (Row r in rows) {
-                createThing = createThing + "cmd.Parameters[\"@" + r.row_name.bracketStrip() + "\"].Value = " + r.row_name.bracketStrip()+";\n";
+            foreach (Column r in columns) {
+                createThing = createThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip()+";\n";
             }
             //excute the quuery
             createThing = createThing + "try \n { \n //open the connection \n conn.Open();  ";
@@ -1008,12 +1008,12 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             retreiveThing = "public "+name +" select" + name + "ByPrimaryKey(";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     if (count > 0) { comma = "  "; }
-                    String add = comma + r.data_type.toCSharpDataType() + " " + r.row_name.bracketStrip();
+                    String add = comma + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip();
                     retreiveThing = retreiveThing + add;
                     count++;
                 }
@@ -1021,20 +1021,20 @@ namespace Data_Objects
             retreiveThing = retreiveThing + "){\n";
             retreiveThing = retreiveThing + genSPHeaderB(name, "sp_retreive_by_pk_" + name);
             //add parameters
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
-                    retreiveThing = retreiveThing + "cmd.Parameters.Add(\"@" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                    retreiveThing = retreiveThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
                 }
                 }
             //setting parameters
             retreiveThing = retreiveThing + "\n //We need to set the parameter values\n";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
-                    retreiveThing = retreiveThing + "cmd.Parameters[\"@" + r.row_name.bracketStrip() + "\"].Value = " + r.row_name.bracketStrip() + ";\n";
+                    retreiveThing = retreiveThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
                 }
             }
             //excute the quuery
@@ -1047,8 +1047,8 @@ namespace Data_Objects
             retreiveThing = retreiveThing + "//process the results\n";
             retreiveThing = retreiveThing + "if (reader.HasRows)\n if (reader.Read())\n{";
             count = 0;
-            foreach (Row r in rows) { 
-            retreiveThing = retreiveThing + "output."+r.row_name.bracketStrip()+" = reader.Get"+r.data_type.toSqlReaderDataType()+"("+count + ");\n";
+            foreach (Column r in columns) { 
+            retreiveThing = retreiveThing + "output."+r.column_name.bracketStrip()+" = reader.Get"+r.data_type.toSqlReaderDataType()+"("+count + ");\n";
                 count++;
             
             }
@@ -1090,9 +1090,9 @@ namespace Data_Objects
             retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n if (reader.Read())\n{";
             retreiveAllThing = retreiveAllThing + "var _" + name + "= new "+ name+"();\n";
             count = 0;
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
-                retreiveAllThing = retreiveAllThing + "_"+name+"." + r.row_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
+                retreiveAllThing = retreiveAllThing + "_"+name+"." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
                 count++;
 
             }
@@ -1113,18 +1113,18 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             updateThing = "public int update" + name + "(";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (count > 0) { comma = " , "; }
-                String add = comma + r.data_type.toCSharpDataType() + " old" + r.row_name.bracketStrip();
+                String add = comma + r.data_type.toCSharpDataType() + " old" + r.column_name.bracketStrip();
                 updateThing = updateThing + add;
                 count++;
             }
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
-                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.row_name.bracketStrip();
+                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.column_name.bracketStrip();
                     updateThing = updateThing + add;
                     count++;
                 }
@@ -1132,23 +1132,23 @@ namespace Data_Objects
             updateThing = updateThing + "){\n";
             updateThing = updateThing + genSPHeaderA("sp_update_" + name);
             //add parameters
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
-                updateThing = updateThing + "cmd.Parameters.Add(\"@old" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                updateThing = updateThing + "cmd.Parameters.Add(\"@old" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
 
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
-                    updateThing = updateThing + "cmd.Parameters.Add(\"@new" + r.row_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                    updateThing = updateThing + "cmd.Parameters.Add(\"@new" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
                 }
             }
             //setting parameters
             updateThing = updateThing + "\n //We need to set the parameter values\n";
-            foreach (Row r in rows)
+            foreach (Column r in columns)
             {
-                updateThing = updateThing + "cmd.Parameters[\"@old" + r.row_name.bracketStrip() + "\"].Value = old" + r.row_name.bracketStrip() + ";\n";
+                updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = old" + r.column_name.bracketStrip() + ";\n";
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
-                    updateThing = updateThing + "cmd.Parameters[\"@new" + r.row_name.bracketStrip() + "\"].Value = new" + r.row_name.bracketStrip() + ";\n";
+                    updateThing = updateThing + "cmd.Parameters[\"@new" + r.column_name.bracketStrip() + "\"].Value = new" + r.column_name.bracketStrip() + ";\n";
                 }
             }
             //excute the quuery

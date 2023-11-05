@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Data_Objects
 {
-    public class Row
+    public class Column
     {
         //various components of the row object
-        public String row_name { get; set; }
+        public String column_name { get; set; }
         public String data_type { get; set; }
         public int length { get; set; }
         public String default_value { get; set; }
@@ -25,22 +25,22 @@ namespace Data_Objects
         public String references { get; set; }
         public String description { get; set; }
 
-        public String row_text { get; set; }
+        public String Column_text { get; set; }
         public List<String> primary_keys { set; get; }
         public List<String> foreign_keys { set; get; }
         public String length_text = "";
         //constructor
 
-        public Row(string row_name, string data_type, int length, string default_value, string identity, int start, int increment,
+        public Column(string column_name, string data_type, int length, string default_value, string identity, int start, int increment,
             char nullable, string index, char unique, char primary_key, string foreign_key, string integrity, string references, string description)
         {
             if (settings.TSQLMode)
             {
-                this.row_name = "[" + row_name + "]";
+                this.column_name = "[" + column_name + "]";
                 this.data_type = "[" + data_type + "]";
             }
             else { 
-            this.row_name = row_name;
+            this.column_name = column_name;
             this.data_type = data_type;
             }
             this.length = length;
@@ -67,40 +67,40 @@ namespace Data_Objects
             };
         }
 
-        public String row_and_key_gen()
+        public String column_and_key_gen()
         {
             //generate this as a sql statement, and create an array of primary and foreign keys
             primary_keys = new List<String>();
             foreign_keys = new List<String>();
-            String row_text = "";
-            row_text = row_text + row_name + "\t";
-            row_text = row_text + data_type + length_text+"\t";
-            if (nullable.Equals('Y') || nullable.Equals('y')) { row_text = row_text + "null\t"; }
-            else { row_text = row_text + "not null\t"; }
-            //if (auto_increment.Equals('Y') || auto_increment.Equals('y')) { row_text = row_text + "auto_increment\t"; }
-            if (unique.Equals('Y') || unique.Equals('y')) { row_text = row_text + "unique\t"; }
-            if (primary_key.Equals('Y') || primary_key.Equals('y')) { primary_keys.Add(row_name); }
+            String Column_text = "";
+            Column_text = Column_text + column_name + "\t";
+            Column_text = Column_text + data_type + length_text+"\t";
+            if (nullable.Equals('Y') || nullable.Equals('y')) { Column_text = Column_text + "null\t"; }
+            else { Column_text = Column_text + "not null\t"; }
+            //if (auto_increment.Equals('Y') || auto_increment.Equals('y')) { Column_Text = Column_Text + "auto_increment\t"; }
+            if (unique.Equals('Y') || unique.Equals('y')) { Column_text = Column_text + "unique\t"; }
+            if (primary_key.Equals('Y') || primary_key.Equals('y')) { primary_keys.Add(column_name); }
             if (foreign_key.Length >= 1) { foreign_keys.Add(this.references); }
             if (settings.TSQLMode)
-            {row_text=row_text + "\n";
+            {Column_text=Column_text + "\n";
             }
 
-            else { row_text = row_text + "comment \'" + description + "\'\n"; }
-            return row_text;
+            else { Column_text = Column_text + "comment \'" + description + "\'\n"; }
+            return Column_text;
 
         }
 
-        public String audit_row_gen()
+        public String Column_row_gen()
         {
             //generate each row as a sql statement
-            String row_text = "";
-            row_text = row_text + row_name + "\t";
-            row_text = row_text + data_type + length_text+"\t";
-            if (nullable.Equals('Y') || nullable.Equals('y')) { row_text = row_text + "null\t"; }
-            else { row_text = row_text + "not null\t"; }
-            if (unique.Equals('Y') || unique.Equals('y')) { row_text = row_text + "unique\t"; }
-            row_text = row_text + "comment \'" + description + "\'\n";
-            return row_text;
+            String Column_Text = "";
+            Column_Text = Column_Text + column_name + "\t";
+            Column_Text = Column_Text + data_type + length_text+"\t";
+            if (nullable.Equals('Y') || nullable.Equals('y')) { Column_Text = Column_Text + "null\t"; }
+            else { Column_Text = Column_Text + "not null\t"; }
+            if (unique.Equals('Y') || unique.Equals('y')) { Column_Text = Column_Text + "unique\t"; }
+            Column_Text = Column_Text + "comment \'" + description + "\'\n";
+            return Column_Text;
 
 
         }

@@ -68,7 +68,7 @@ namespace Object_oriented_sql_tables
                 // if selected, add rows to table
                 if (these_settings[0])
                 {
-                    s = t.gen_rows();
+                    s = t.gen_columns();
                     file_write.WriteBuddy.Write(s);
                 }
                 // if selected, add primary keys to table

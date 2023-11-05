@@ -21,7 +21,7 @@ namespace Data_Access
             string description;
             char[] separator = { '\t' };
             char[] audit_seperator = { ' ' };
-            List<Row> rows = new List<Row>();
+            List<Column> rows = new List<Column>();
             int count = 0;
             SqlBuddy.ReadLine();
             //skip first line since it's just heading data
@@ -64,12 +64,12 @@ namespace Data_Access
                         table t = new table(tablename, rows);
                         header h = new header(tablename, parts[14]);
                         t.Header = h;
-                        List<Row> rowsfortable = new List<Row>();
-                        foreach (Row _row in t.rows)
+                        List<Column> rowsfortable = new List<Column>();
+                        foreach (Column _row in t.columns)
                         {
                             rowsfortable.Add(_row);
                         }
-                        t.rows = rowsfortable;
+                        t.columns = rowsfortable;
 
                         rows.Clear();
                         tablename = parts[0];
@@ -125,7 +125,7 @@ namespace Data_Access
 
                     description = parts[14];
                     //create the row
-                    Row _row = new Row(row_name, data_type, length, default_value, identity, start, increment,
+                    Column _row = new Column(row_name, data_type, length, default_value, identity, start, increment,
                          nullable, index, unique, primary_key, foreign_key, integrity, references, description);
                     //add row to row array
                     rows.Add(_row);
