@@ -733,15 +733,9 @@ namespace Data_Objects
             string comment = comment_box_gen.comment_box(name, 11);
             string header = "public interface I"+name+"Accessor \n{\n";
 
-            string addThing = "int add "+name+"(";
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = " , "; }
-                String add = comma +r.data_type.toCSharpDataType()+" "+ r.column_name.bracketStrip();
-                addThing = addThing + add;
-                count++;
-            }
-            addThing = addThing + ");\n";
+            string addThing = "int add "+name+"(" + name + " _" + name + ");\n";
+
+            
 
             string selectThingbyPK = name+ " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
             string selectallThing = "List<"+name+"> selectAll"+name+"();\n";
@@ -751,24 +745,11 @@ namespace Data_Objects
             comma = "";
             count = 0;
             string updateThing = "int update" + name +"(";
-            foreach (Column r in columns) {
-                if (count > 0) { comma = " , "; }
-                String add = comma + r.data_type.toCSharpDataType() + " old" + r.column_name.bracketStrip();
-                updateThing = updateThing + add;
-                count++;
-            }
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = " , "; }
-                if (r.primary_key != 'y' && r.primary_key != 'Y')
-                {
-                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.column_name.bracketStrip();
 
-                    updateThing = updateThing + add;
-                }
-                count++;
-            }
+            updateThing = updateThing + name + "_old" + name + " , " + name + " _new" + name;
             updateThing = updateThing + ");\n";
+
+           
             string deleteThing = "int delete"+name+"(string "+name+"ID);\n";
             output =comment+ header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
 
@@ -823,7 +804,7 @@ namespace Data_Objects
             comma = "";
             count = 0;
             string editThing = "int edit" + name + "(";
-            editThing  = editThing + name + "_old"+name+" , " +name +" _new" + name;
+            editThing  = editThing + name + " _old"+name+" , " +name +" _new" + name;
             editThing = editThing + ");\n";
             string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
             output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + "}\n\n";
@@ -968,14 +949,8 @@ namespace Data_Objects
             string createThing = "";
             int count = 0;
             string comma = "";
-            createThing = "public int add" + name + "(";
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = " , "; }
-                String add = comma + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip();
-                createThing = createThing + add;
-                count++;
-            }
+            createThing = "public int add" + name + "("+name+" _"+name.ToLower();
+           
             createThing = createThing + "){\n";
             createThing = createThing + genSPHeaderA("sp_insert_" + name);
             //add parameters
@@ -985,7 +960,7 @@ namespace Data_Objects
             //setting parameters
             createThing = createThing + "\n //We need to set the parameter values\n";
             foreach (Column r in columns) {
-                createThing = createThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip()+";\n";
+                createThing = createThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " +"_"+name.ToLower()+"."+ r.column_name.bracketStrip()+";\n";
             }
             //excute the quuery
             createThing = createThing + "try \n { \n //open the connection \n conn.Open();  ";
@@ -1087,7 +1062,7 @@ namespace Data_Objects
 
             //capture reuslts
             retreiveAllThing = retreiveAllThing + "//process the results\n";
-            retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n if (reader.Read())\n{";
+            retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n while (reader.Read())\n{";
             retreiveAllThing = retreiveAllThing + "var _" + name + "= new "+ name+"();\n";
             count = 0;
             foreach (Column r in columns)
@@ -1113,23 +1088,11 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             updateThing = "public int update" + name + "(";
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = " , "; }
-                String add = comma + r.data_type.toCSharpDataType() + " old" + r.column_name.bracketStrip();
-                updateThing = updateThing + add;
-                count++;
-            }
-            foreach (Column r in columns)
-            {
-                if (r.primary_key != 'y' && r.primary_key != 'Y')
-                {
-                    String add = comma + r.data_type.toCSharpDataType() + " new" + r.column_name.bracketStrip();
-                    updateThing = updateThing + add;
-                    count++;
-                }
-            }
-            updateThing = updateThing + "){\n";
+            
+
+            updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
+            updateThing = updateThing + ");\n";
+            
             updateThing = updateThing + genSPHeaderA("sp_update_" + name);
             //add parameters
             foreach (Column r in columns)
@@ -1145,10 +1108,10 @@ namespace Data_Objects
             updateThing = updateThing + "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
-                updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = old" + r.column_name.bracketStrip() + ";\n";
+                updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = _old"+name+"." + r.column_name.bracketStrip() + ";\n";
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
-                    updateThing = updateThing + "cmd.Parameters[\"@new" + r.column_name.bracketStrip() + "\"].Value = new" + r.column_name.bracketStrip() + ";\n";
+                    updateThing = updateThing + "cmd.Parameters[\"@new" + r.column_name.bracketStrip() + "\"].Value = _new" + name + "." + r.column_name.bracketStrip() + ";\n";
                 }
             }
             //excute the quuery

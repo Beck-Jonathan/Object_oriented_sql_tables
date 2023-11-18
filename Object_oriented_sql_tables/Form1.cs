@@ -140,17 +140,17 @@ namespace Object_oriented_sql_tables
                 }
                 if (these_settings[12]) {
                     s = t.gen_IThingAccessor();
-                    file_write.CSharpBuddy.Write(s);
+                    file_write.WriteBuddy.Write(s);
                 }
                 if (these_settings[13])
                 {
                     s = t.gen_ThingAccessor();
-                    file_write.CSharpBuddy.Write(s);
+                    file_write.WriteBuddy.Write(s);
                 }
                 if (these_settings[14])
                 {
                     s = t.gen_IThingManager();
-                    file_write.CSharpBuddy.Write(s);
+                    file_write.WriteBuddy.Write(s);
                 }
                 if (these_settings[15])
                 {
@@ -160,7 +160,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[16])
                 {
                     s=t.gen_DataObject();
-                    file_write.CSharpBuddy.Write(s);
+                    file_write.WriteBuddy.Write(s);
                 }
 
 
