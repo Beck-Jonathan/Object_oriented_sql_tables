@@ -292,7 +292,7 @@ namespace Data_Objects
                 foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
-                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                    if (true)
                     {
                         String add = comma + "@"+r.column_name.bracketStrip() + " " + r.data_type +" "+ r.length_text + "\n";
                         function_text = function_text + add;
@@ -307,7 +307,7 @@ namespace Data_Objects
                     foreach (Column r in columns)
                     {
                         if (count > 0) { comma = "and "; }
-                        if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                        if (true)
                         {
                             String add = comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip()+ "\n";
                             function_text = function_text + add;
@@ -359,6 +359,114 @@ namespace Data_Objects
                 foreach (Column r in columns)
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                    {
+                        if (keys_count > 0) { initial_word = "AND "; }
+                        String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
+                        function_text = function_text + add;
+                        keys_count++;
+                    }
+                }
+                function_text = function_text + "\n" +
+                   " ; if sql_error = FALSE then \n" +
+                   " SET update_count = row_count(); \n" +
+                   " COMMIT;\n" +
+                   " ELSE\n" +
+                   " SET update_count = 0;\n" +
+                   " ROLLBACK;\n" +
+                   " END IF;\n" +
+                   " select update_count as 'update count'\n" +
+                   " ; END $$\n" +
+                   " DELIMITER ;\n";
+            }
+
+            String full_text = comment_text + function_text;
+            return full_text;
+
+
+
+
+        }
+
+        public String gen_undelete()
+        {
+            String function_text = "";
+
+            String comment_text = comment_box_gen.comment_box(name, 4);
+            if (settings.TSQLMode)
+            {
+                function_text = "create procedure [dbo].[sp_undelete_" + name + "]\n(\n";
+                int count = 0;
+                String comma = "";
+                foreach (Column r in columns)
+                {
+                    if (count > 0) { comma = ","; }
+                    if (true)
+                    {
+                        String add = comma + "@" + r.column_name.bracketStrip() + " " + r.data_type + " " + r.length_text + "\n";
+                        function_text = function_text + add;
+                        count++;
+                    }
+                }
+                function_text = function_text + ")\nas\nbegin\n";
+                function_text = function_text + "update [" + name + "]\n";
+                function_text = function_text + "set active = 1\n";
+                count = 0;
+                comma = "where ";
+                foreach (Column r in columns)
+                {
+                    if (count > 0) { comma = "and "; }
+                    if (true)
+                    {
+                        String add = comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip() + "\n";
+                        function_text = function_text + add;
+                        count++;
+                    }
+                }
+
+                function_text = function_text + "return @@rowcount \n end \n go\n";
+
+
+            }
+
+
+
+            else
+            {
+                function_text =
+                     "DROP PROCEDURE IF EXISTS sp_undelete_" + name + ";\n"
+                    + "DELIMITER $$\n"
+                    + "CREATE PROCEDURE sp_undelete_" + name + "\n"
+                    + "(";
+                int count = 0;
+                String comma = "";
+                comma = "";
+                count = 0;
+                foreach (Column r in columns)
+                {
+                    if (count > 0) { comma = ","; }
+                    if (true)
+                    {
+                        String add = comma + r.column_name + "_param " + r.data_type + r.length_text + "\n";
+                        function_text = function_text + add;
+                        count++;
+                    }
+                }
+                count = 0;
+                function_text = function_text + ")\n" +
+                    "begin \n" +
+                    "declare sql_error TINYINT DEFAULT FALSE;\n" +
+                    "declare update_count tinyint default 0;\n" +
+                    "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
+                    "SET sql_error = true;\n" +
+                    "START TRANSACTION;\n" +
+                    "DELETE FROM " + name + "\n  "
+                    ;
+                comma = "";
+                int keys_count = 0;
+                String initial_word = "WHERE ";
+                foreach (Column r in columns)
+                {
+                    if (true)
                     {
                         if (keys_count > 0) { initial_word = "AND "; }
                         String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
@@ -750,8 +858,9 @@ namespace Data_Objects
             updateThing = updateThing + ");\n";
 
            
-            string deleteThing = "int delete"+name+"(string "+name+"ID);\n";
-            output =comment+ header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
+            string deleteThing = "int delete"+name+ "(" + name + " _" + name + ");\n";
+            string undeleteThing = "int delete" + name + "(" + name + " _" + name + ");\n";
+            output =comment+ header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + undeleteThing+"}\n\n";
 
 
 
@@ -776,6 +885,7 @@ namespace Data_Objects
             //good
             string deleteThing = genAccessorDelete();
             //good
+            string undeleteThing = genAccessorUndelete();
             string output = comment + header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
             //good
 
@@ -807,7 +917,8 @@ namespace Data_Objects
             editThing  = editThing + name + " _old"+name+" , " +name +" _new" + name;
             editThing = editThing + ");\n";
             string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
-            output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + "}\n\n";
+            string unPurgeThing = "int unpurge" + name + "(string " + name + "ID);\n";
+            output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + unPurgeThing+ "}\n\n";
 
 
 
@@ -1134,11 +1245,19 @@ namespace Data_Objects
         }
 
         private string genAccessorDelete() {
-            string deleteThing = "public int delete" + name + "(string " + name + "ID){\n";
+            string deleteThing = "public int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing = deleteThing + genSPHeaderA("sp_delete_" + name);
             //add parameters bit
-            deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + name + "ID\", SqlDbType.NVarChar, 50);";
-            deleteThing = deleteThing + "cmd.Parameters[\"@" + name + "ID\"].Value =" + name + "ID;\n";
+            foreach (Column r in columns)
+            {
+                deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+            }
+            //setting parameters
+            deleteThing = deleteThing + "\n //We need to set the parameter values\n";
+            foreach (Column r in columns)
+            {
+                deleteThing = deleteThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
+            }
             deleteThing = deleteThing + "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
             deleteThing = deleteThing + "if (rows == 0){\n";
             deleteThing = deleteThing + "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
@@ -1146,13 +1265,212 @@ namespace Data_Objects
             return deleteThing;
             }
 
+        private string genAccessorUndelete()
+        {
+            string deleteThing = "public int undelete" + name + "("+name+" _"+name.ToLower()+"){\n";
+            deleteThing = deleteThing + genSPHeaderA("sp_undelete_" + name);
+            //add parameters bit
+            //add parameters
+            foreach (Column r in columns)
+            {
+                    deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+            }
+                //setting parameters
+                deleteThing = deleteThing + "\n //We need to set the parameter values\n";
+            foreach (Column r in columns)
+            {
+                    deleteThing = deleteThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
+            }
+            deleteThing = deleteThing + "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
+            deleteThing = deleteThing + "if (rows == 0){\n";
+            deleteThing = deleteThing + "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
+            deleteThing = deleteThing + genSPfooter(2);
+            return deleteThing;
+        }
+
+        public string genXAMLWindow() {
+            string comment = comment_box_gen.comment_box(name, 16);
+            string WindowCode = comment;
+            int rows = columns.Count+3;
+            int width = 4;
+            int height = rows * 50+100;
+            WindowCode += "< !--set window height to "+height+"-- >\n";
+            WindowCode += "< Menu Grid.Row = \"0\" Padding = \"20px, 0px\" >\n";
+            WindowCode += " < MenuItem x: Name = \"mnuFile\" Header = \"File\" >\n";
+            WindowCode += "< MenuItem x: Name = \"mnuExit\" Header = \"Exit\" Click = \"mnuExit_Click\" />\n";
+            WindowCode += "</ MenuItem >\n";
+            WindowCode += " < MenuItem x: Name = \"mnuHelp\" Header = \"Help\" >\n";
+            WindowCode += "< MenuItem x: Name = \"mnuAbout\" Header = \"About\" />\n";
+            WindowCode += "</ MenuItem > \n </Menu>";
+            WindowCode += "<Grid>\n";
+            WindowCode += "<Grid.RowDefinitions>\n";
+            for (int i = 0; i < rows; i++) {
+                WindowCode += "<RowDefinition Height=\"50\"/>\n";
+            }
+            WindowCode += "</Grid.RowDefinitions>\n";
+            WindowCode += "<Grid.ColumnDefinitions>\n";
+            for (int i = 0; i < width; i++)
+            {
+                WindowCode += "<ColumnDefinition />\n";
+            }
+            WindowCode += "</Grid.ColumnDefinitions>\n";
+
+            for (int i = 0; i < columns.Count; i++) { 
+            WindowCode += "< Label x:Name = \"lbl"+name+columns[i].column_name.bracketStrip()+"\" Grid.Column = \"1\" Grid.Row = \""+(i+1)+"\" Content = \"" +columns[i].column_name+" \" />\n";
+                if (columns[i].foreign_key == "y" || columns[i].foreign_key == "Y")
+                {
+                    WindowCode += "< ComboBox x:Name = \"cbx" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"2\" Grid.Row = \"" + (i + 1) + "\" />\n";
+                }
+                else if (columns[i].column_name.bracketStrip().ToLower() == "active") 
+                {
+                    WindowCode += "< CheckBox x:Name = \"chk" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"2\" Grid.Row = \"" + (i + 1) + "\" />\n";
+                }
+                else
+                {
+                    WindowCode += "< TextBox x:Name = \"tbx" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"2\" Grid.Row = \"" + (i + 1) + "\" />\n";
+                }
+
+            }
+            WindowCode += "<Button x:Name=\"btnUpdate" + name + "\" Grid.Column=\"2\" Grid.Row=\""+(rows-1)+"\" Content=\"Edit " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
+            WindowCode += "<Button x:Name=\"btnAdd" + name + "\" Grid.Column=\"3\" Grid.Row=\"" + (rows - 1) + "\" Content=\"Add " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
+            WindowCode += "< StatusBar Grid.Row =" + rows + ">\n";
 
 
-
-
-            
+            WindowCode += "< StatusBarItem x: Name = \"statMessage\" Content = \"Welcome, please login to continue\" Padding = \"20px, 0px\" />\n </ StatusBar >\n </Grid>\n";
+            return WindowCode;
+        
         
         }
+
+        public string genWindowCSharp() {
+
+            string result = "";
+            result=result+ comment_box_gen.comment_box(name, 17);
+            result = result + genStaticVariables();
+            result = result + genConstructor();
+            result = result + genWinLoad();
+            result = result + genAddButton();
+            result = result + genEditButton();
+            return result;
+
+
+
+
+
+
+        }
+
+        private string genAddButton() {
+            string result = "";
+            
+            //else if (columns[i].column_name.bracketStrip().ToLower() == "active") 
+            // else   //this means textbox
+
+            result = result + "private void btnAdd" + name + "_click(object sender, RoutedEventArgs e)\n";
+            result = result + "if((string)btnAdd" + name + ".Content == \"Add " + name + "\")\n";
+            foreach (Column c in columns) {
+                if (c.foreign_key == "y" || c.foreign_key == "Y")
+                {
+                    result = result + "cbx" + name + c.column_name.bracketStrip() + ".IsEnabled=true;\n";
+                    result = result + "cbx" + name + c.column_name.bracketStrip() + ".SelectedItem=null;\n";
+
+                }
+                else if (c.column_name.bracketStrip().ToLower() == "active")
+                {
+                    result = result + "chk" + name + c.column_name.bracketStrip() + ".IsEnabled=true;\n";
+                    result = result + "chk" + name + c.column_name.bracketStrip() + ".IsChecked=true;\n";
+
+                }
+                else
+                {
+                    result = result + "tbx" + name + c.column_name.bracketStrip() + ".IsEnabled=true;\n";
+                    result = result + "tbx" + name + c.column_name.bracketStrip() + ".Text=\"\";\n";
+                }
+            }
+                result = result + "else\n{\nif (validInputs())\n{\n";
+                
+                result = result + name + " new" + name + " = new " + name + "();\n";
+                foreach (Column c in columns) {
+                if (c.foreign_key == "y" || c.foreign_key == "Y")
+                {
+                    
+                    result = result + "new" + name + "." + c.column_name.bracketStrip() + " = " + "cbx" + name + c.column_name.bracketStrip() + ".Text;\n";
+                }
+                else if (c.column_name.bracketStrip().ToLower() == "active")
+                {
+                    result = result + "new" + name + "." + c.column_name.bracketStrip() + " =  true;\n";
+                }
+                else
+                {
+                    result = result + "new" + name + "." + c.column_name.bracketStrip() + " = " + "tbx" + name + c.column_name.bracketStrip() + ".Text;\n";
+                }                   
+                
+                }
+            result = result + "try\n{\n";
+            result = result + "bool result = _" + name.Substring(0, 1).ToLower() + "m.add" + name + "(new" + name + ");\n";
+            result = result + "if (result)\n{\n MessageBox.Show(\"added!\");\n";
+            result = result + "this.DialogResult=true;\n}\n";
+            result = result + "else \n { throw new ApplicationException();\n}\n}\n";
+            result = result + "catch (Exception ex)\n{\n MessageBox.Show(\"add failed\");";
+            result = result + "this.DialogResult=false\n}\n}";
+            result = result + "\nelse{\nMessageBox.Show(\"invalid inputs\");\n}\n}\n}";
+            return result;
+        
+        }
+
+        private string genEditButton()
+        {
+            string result = "";
+
+            return result;
+
+        }
+        private string genValidInputs()
+        {
+            string result = "";
+
+            return result;
+
+        }
+
+        private string genConstructor()
+        {
+            string result = "";
+            result = "public " + name + "AddEditDelete(" + name +" "+ name.Substring(0, 1).ToLower();
+            result = result + ")\n{\n";
+            result = result + " InitializeComponent();\n";
+            result=result+"_"+name.ToLower() +"="+ name.Substring(0, 1).ToLower()+";\n";
+            result = result + "_" + name.Substring(0, 1).ToLower() + "m = new" + name + "Manager();\n}\n";
+            
+
+            return result;
+
+        }
+
+        private string genWinLoad()
+        {
+            string result = "";
+
+            return result;
+
+        }
+
+        private string genStaticVariables()
+        {
+            string result = "";
+            result = "public" + name + " _" + name.ToLower() + "= null;\n";
+            result = "public" + name + "Manager+ _" + name.Substring(0,1) + "m = null;\n";
+            return result;
+
+        }
+
+
+
+
+
+
+
+    }
 
 
     }

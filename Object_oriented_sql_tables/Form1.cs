@@ -95,12 +95,17 @@ namespace Object_oriented_sql_tables
                     s = t.gen_update();
                     file_write.WriteBuddy.Write(s);
                 }
-                // if selected, add an SP_delete to table
+                // if selected, add an SP_delete and su_undelete to table
                 if (these_settings[5])
                 {
                     s = t.gen_delete();
 
                     file_write.WriteBuddy.Write(s);
+                    s = t.gen_undelete();
+
+                    file_write.WriteBuddy.Write(s);
+
+
                 }
                 // if selected, add an SP_retreive that requires a PK
                 if (these_settings[6])
@@ -162,6 +167,16 @@ namespace Object_oriented_sql_tables
                     s=t.gen_DataObject();
                     file_write.WriteBuddy.Write(s);
                 }
+                if (true) //change this to these setings 17
+                {
+                    s = t.genXAMLWindow();
+                    file_write.XAMLBuddy.Write(s);
+                }
+                if (true) //change this to these setings 18
+                {
+                    s = t.genWindowCSharp();
+                    file_write.XAMLBuddy.Write(s);
+                }
 
 
 
@@ -170,6 +185,7 @@ namespace Object_oriented_sql_tables
             }
             file_write.WriteBuddy.Flush();
             file_write.CSharpBuddy.Flush();
+            file_write.XAMLBuddy.Flush();
             MessageBox.Show("generation complete");
             this.Close();
 
@@ -179,7 +195,7 @@ namespace Object_oriented_sql_tables
         private void initialize_settings()
         {
             for (int i = 0; i < settings.table_count; i++) {
-                for (int j = 0; j < 17; j++) {
+                for (int j = 0; j < 18; j++) {
                     settings.all_options[i][j] = true;
                 }
             
@@ -229,7 +245,7 @@ namespace Object_oriented_sql_tables
         private void clb_options_SelectedIndexChanged(object sender, EventArgs e)
         {
             List<Boolean> these_settings = new List<Boolean>();
-            for (int i = 0; i < 17; i++)
+            for (int i = 0; i < 18; i++)
             {
                 these_settings.Add(clb_options.GetItemChecked(i));
             }

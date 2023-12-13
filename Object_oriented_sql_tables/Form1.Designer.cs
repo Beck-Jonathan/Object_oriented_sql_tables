@@ -125,11 +125,12 @@ namespace Object_oriented_sql_tables
             "RealAccessor",
             "IManager",
             "RealManager",
-            "DataObject"});
+            "DataObject",
+            "XAMLWindow"});
             this.clb_options.Location = new System.Drawing.Point(363, 79);
             this.clb_options.Margin = new System.Windows.Forms.Padding(2);
             this.clb_options.Name = "clb_options";
-            this.clb_options.Size = new System.Drawing.Size(187, 259);
+            this.clb_options.Size = new System.Drawing.Size(187, 274);
             this.clb_options.TabIndex = 6;
             this.clb_options.SelectedIndexChanged += new System.EventHandler(this.clb_options_SelectedIndexChanged);
             // 

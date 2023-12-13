@@ -71,6 +71,8 @@ namespace Data_Objects
 
             if (type == 14) { middle = "create the manager for the " + table + "table"; }
             if (type == 15) { middle = "create the data object for the " + table + "table"; }
+            if (type == 16) { middle = "create the XAML Window for the " + table + "table"; }
+            if (type == 17) { middle = "create the c# Window for the " + table + "table"; }
 
             PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
 

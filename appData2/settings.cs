@@ -22,7 +22,7 @@ namespace appData2
                 for (int j = 0; j < 3; j++) {
                     options.Add(true);
                 }
-                for (int k = 3; k < 17; k++) {
+                for (int k = 3; k < 18; k++) {
                     options.Add(false);
                 }
                 all_options.Add(options);
