@@ -1,12 +1,82 @@
 ﻿using appData2;
 using System;
-using System.Dynamic;
 
 namespace Data_Objects
 {
     class comment_box_gen
     {
-        //creates various commeent boxes based on table name and function type.
+        public static String JavaDocComment(int type, string tableName)
+        {
+            string result = "";
+            string layerText = "";
+
+            String methodComment = "/// <summary>" +
+             "///A method that ________________\n" +
+             "///_____________.\n" +
+             "///</ summary >\n" +
+             "///< param name = \"a\" > \n" +
+             "///____________\n" +
+             "///</ param >\n" +
+             "///< returns >\n" +
+             "///< see cref = \"int\" > int </ see >: ____________.\n" +
+             "///</ returns >\n" +
+             "///< remarks >\n" +
+             "///Parameters:\n" +
+             "///< br />\n" +
+             "///< see cref = \"int\" > int </ see > a: _______________" +
+             "///< br />< br />\n" +
+             "///Exceptions:\n" +
+             "///< br /> \n" +
+             "///< see cref = \"ArgumentOutOfRangeException\" > ArgumentOutOfRangeException </ see >:____________.\n" +
+             "///< br />< br /> \n" +
+             "///CONTRIBUTOR: Jonathan Beck \n" +
+             "///< br /> \n" +
+             "///CREATED: " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "\n" +
+             "///< br />< br />\n";
+
+            String classComment = " /// <summary>\n" +
+     "///AUTHOR: Jonathan Beck\n" +
+     "///<br />\n" +
+     "///CREATED: " + DateTime.Now.Day + "/" + DateTime.Now.Month + "/" + DateTime.Now.Year + "\n" +
+     "///< br />\n" +
+      "///An example class to show how code is expected to be written and documented.\n" +
+      "///This is where a description of what your file is supposed to contain goes.\n" +
+       "///e.g., \"Class with helper methods for input validation.\",\n" +
+     "///Class that defines " + tableName + " Objects.\n" +
+     "///</summary>\n" +
+
+    "///< remarks>\n" +
+    "///UPDATER: updater_name\n" +
+     "///< br />\n" +
+     "/// UPDATED: yyyy-MM-dd \n" +
+     "/// < br />\n" +
+     "/// Update comments go here, include method or methods were changed or added\n" +
+       " /// A new remark should be added for each update.\n" +
+     "///</remarks>\n";
+
+            switch (type)
+            {
+                case 0:; return methodComment;
+                case 1:; return classComment;
+
+                default: return "";
+
+            }
+
+
+
+
+        }
+
+
+
+
+
+
+
+
+        //creates various commeent boxes based on
+        //table name and function type.
         public static String comment_box(String table, int type)
         {
             String full_comment_box = " ";
@@ -58,21 +128,28 @@ namespace Data_Objects
                 middle = "Create the delete trigger script for the " + table + " table";
             }
 
-            if (type == 11) {
-                middle = "Create the I Accessor for the " + table + "table";
+            if (type == 11)
+            {
+                middle = "Create the I Accessor for the " + table + " table";
             }
 
-            if (type == 12) {
-                middle = "create the I manager for the " + table + "table;";                   
-              
+            if (type == 12)
+            {
+                middle = "create the I manager for the " + table + " table;";
+
             }
 
-            if (type == 13) { middle = "create the Accessor for the " + table + "table"; }
+            if (type == 13) { middle = "create the Accessor for the " + table + " table"; }
 
-            if (type == 14) { middle = "create the manager for the " + table + "table"; }
-            if (type == 15) { middle = "create the data object for the " + table + "table"; }
-            if (type == 16) { middle = "create the XAML Window for the " + table + "table"; }
-            if (type == 17) { middle = "create the c# Window for the " + table + "table"; }
+            if (type == 14) { middle = "create the manager for the " + table + " table"; }
+            if (type == 15) { middle = "create the data object for the " + table + " table"; }
+            if (type == 16) { middle = "create the XAML Window for the " + table + " table"; }
+            if (type == 17) { middle = "create the c# Window for the " + table + " table"; }
+            if (type == 18) { middle = "Insert Sample Data For The  " + table + " table"; }
+            if (type == 19) { middle = "Create the JSP  For adding to The  " + table + " table"; }
+            if (type == 20) { middle = "Create the JSP  For Viewing All of The  " + table + " table"; }
+            if (type == 21) { middle = "Create the Servlet  For adding to The  " + table + " table"; }
+            if (type == 22) { middle = "Create the Servlet  For Viewing all of the  " + table + " table"; }
 
             PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
 

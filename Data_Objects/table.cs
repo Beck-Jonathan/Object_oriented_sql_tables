@@ -1,7 +1,6 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
-using Data_Objects;
 
 
 
@@ -15,9 +14,11 @@ namespace Data_Objects
         public List<Column> columns { set; get; }
         public List<String> primary_keys { set; get; }
         public List<String> foreign_keys { set; get; }
+        public List<String> alternate_keys { set; get; }
         public table(String name, List<Column> columns)
         {
-            if (settings.TSQLMode) {
+            if (settings.TSQLMode)
+            {
                 this.name = "[dbo].[" + name + "]";
             }
             else
@@ -29,809 +30,6 @@ namespace Data_Objects
         }
 
 
-        public String gen_primary_keys()
-        {
-            //generate the primary keys based on key_gen that was done in the rwos
-            if (!settings.TSQLMode)
-            {
-                String key_string = ",CONSTRAINT " + name + "_PK PRIMARY KEY (";
-                int count = 0;
-                foreach (Column r in columns)
-                {
-                    foreach (string s in r.primary_keys)
-                    {
-                        if (count > 0) { key_string = key_string + " , "; }
-                        key_string = key_string + s;
-                        count++;
-                    }
-                }
-                key_string = key_string + ")\n";
-
-                return key_string;
-            }
-            else {
-                {
-                    name = name.Replace("[dbo].[", "");
-                    name = name.Replace("]", "");
-                    String key_string = ",CONSTRAINT [PK_" + name + "] PRIMARY KEY (";
-                    int count = 0;
-                    foreach (Column r in columns)
-                    {
-                        foreach (string s in r.primary_keys)
-                        {
-                            if (count > 0) { key_string = key_string + " , "; }
-                            key_string = key_string + s;
-                            count++;
-                        }
-                    }
-                    key_string = key_string + ")\n";
-
-                    return key_string;
-                }
-            }
-        }
-        public String gen_foreign_keys()
-        {//generate the foreign keys based on key_gen that was done in the rwos
-            foreign_keys = new List<String>();
-            String output_keys = "";
-            foreach (Column r in columns)
-            {
-                foreach (string s in r.foreign_keys)
-                {
-                    if (r.foreign_keys[0].Length > 0)
-                    {
-                        if (settings.TSQLMode)
-                        {
-                            String[] chunks = s.Split('.');
-                            String second_table = chunks[0];
-                            String formatted_key = ",CONSTRAINT [fk_" + name + "_" + second_table + "] foreign key ([" + chunks[1] + "]) references [" + chunks[0] + "]([" + chunks[1] + "])" + "\n";
-
-                            foreign_keys.Add(formatted_key);
-                        }
-                        else {
-                            String[] chunks = s.Split('.');
-                            String second_table = chunks[0];
-                            String formatted_key = ",CONSTRAINT fk_" + name + "_" + second_table + " foreign key (" + chunks[1] + ") references " + chunks[0] + " (" + chunks[1] + ")" + "\n";
-
-                            foreign_keys.Add(formatted_key);
-
-                        }
-                    }
-                }
-            };
-
-            foreach (string tuv in foreign_keys)
-            {
-                String s = tuv;
-                output_keys = output_keys + s;
-            }
-            if (settings.TSQLMode) { output_keys = output_keys + ")\ngo\n"; }
-            else
-            {
-                output_keys = output_keys + ");\n";
-            }
-            return output_keys;
-        }
-
-        public String gen_header()
-        {
-            Header.table_name = this.name;
-            return this.Header.full_header_gen();
-        }
-
-        public String audit_gen_header()
-        {
-            Header.table_name = this.name;
-            return this.Header.audit_header_gen();
-        }
-        public String gen_columns()
-        {
-
-            int count = 0;
-            String x = this.gen_header();
-            x = x + "\n";
-            foreach (Column r in columns)
-            {
-                String rowtext = r.column_and_key_gen();
-                if (count > 0) { x = x + ","; }
-                x = x + rowtext;
-                count++;
-            }
-            ;
-
-
-            return x;
-        }
-
-        public String gen_audit_table()
-        { // to generate the audit table
-            int count = 0;
-            String x = this.audit_gen_header();
-            x = x + "\n";
-            foreach (Column r in columns)
-            {
-                String rowtext = r.Column_row_gen();
-                if (count > 0) { x = x + ","; }
-                x = x + rowtext;
-                count++;
-            }
-            x = x + ",action_type VARCHAR(50) NOT NULL COMMENT 'insert update or delete'\n" +
-                ", action_date DATETIME NOT NULL COMMENT 'when it happened'\n" +
-                ", action_user VARCHAR(255) NOT NULL COMMENT 'Who did it'\n";
-            x = x + ");\n";
-
-
-            return x;
-        }
-        // to generate the SP_update
-        public String gen_update()
-        {
-            string x = "";
-            string full_text = "";
-            String comment_text = comment_box_gen.comment_box(name, 3);
-            int count = 0;
-            string comma = "";
-            if (settings.TSQLMode) {
-                string function_text = "";
-                function_text=  "CREATE PROCEDURE [DBO].[sp_update_" + name + "]\n(";
-                count = 0;
-                comma = "";
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    
-                    String add = comma + "@old" + r.column_name.bracketStrip()  + r.data_type + r.length_text + "\n";
-                    if (r.primary_key != 'y' || r.primary_key != 'Y')
-                    {
-                        add = add + ",@new" + r.column_name.bracketStrip() +  r.data_type + r.length_text + "\n";
-                    }
-                    function_text = function_text + add;
-                    count++;
-                }
-                comma = "";
-                function_text = function_text + ")\nas\nBEGIN\nUPDATE " + name +"\nSET\n";
-                count = 0;
-                foreach (Column r in columns) {
-                    if (count > 0) { comma = ","; }
-                    if (r.primary_key != 'Y' && r.primary_key != 'y')
-                    {
-                        function_text = function_text + comma + r.column_name.bracketStrip() + " = @new" + r.column_name.bracketStrip() + "\n";
-                        count++;
-                    }
-                
-                
-                }
-                function_text = function_text + "WHERE\n";
-                comma = "";
-                foreach (Column r in columns) {
-                    if (count > 0) { comma = "and "; }
-                    function_text=function_text+comma+r.column_name.bracketStrip() + " = @old" + r.column_name.bracketStrip() + "\n";
-                    count++;
-
-                }
-
-
-
-                function_text = function_text + "return @@rowcount\nend\ngo\n";
-                full_text = comment_text + function_text;
-
-            }
-            else { x = " ";
-                
-                string firstLine = "DROP PROCEDURE IF EXISTS sp_update_" + name + ";\n DELIMITER $$\n";
-                if (settings.TSQLMode) {
-                    firstLine = "";
-                }
-                string secondLine = "CREATE PROCEDURE sp_update_" + name + "\n"
-                    + "(";
-                
-                String function_text =
-                     firstLine + secondLine;
-
-                
-                function_text = function_text + ")\n" +
-                    "begin \n" +
-                    "declare sql_error TINYINT DEFAULT FALSE;\n" +
-                    "declare update_count tinyint default 0;\n" +
-                    "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
-                    "SET sql_error = true;\n" +
-                    "START TRANSACTION;\n" +
-                    "UPDATE " + name + "\n set "
-                    ;
-                comma = "";
-                count = 0;
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    if (!r.primary_key.Equals('y') && !r.primary_key.Equals('Y'))
-                    {
-                        String add = comma + r.column_name + " = " + r.column_name + "_param\n";
-                        function_text = function_text + add;
-                        count++;
-                    }
-                }
-                int keys_count = 0;
-                String initial_word = "WHERE ";
-                foreach (Column r in columns)
-                {
-                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                    {
-                        if (keys_count > 0) { initial_word = "AND "; }
-                        String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
-                        function_text = function_text + add;
-                        keys_count++;
-                    }
-                }
-                function_text = function_text + "\n" +
-                   " ; if sql_error = FALSE then \n" +
-                   " SET update_count = row_count(); \n" +
-                   " COMMIT;\n" +
-                   " ELSE\n" +
-                   " SET update_count = 0;\n" +
-                   " ROLLBACK;\n" +
-                   " END IF;\n" +
-                   " select update_count as 'update count'\n" +
-                   " ; END $$\n" +
-                   " DELIMITER ;\n";
-
-                full_text = comment_text + function_text;
-            }
-            return full_text;
-
-        }
-        // to generate the SP_delete
-        public String gen_delete()
-        {
-            String function_text = "";
-
-            String comment_text = comment_box_gen.comment_box(name, 4);
-            if (settings.TSQLMode) 
-            { function_text = "create procedure [dbo].[sp_delete_" + name + "]\n(\n";
-                int count = 0;
-                String comma = "" ;
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    if (true)
-                    {
-                        String add = comma + "@"+r.column_name.bracketStrip() + " " + r.data_type +" "+ r.length_text + "\n";
-                        function_text = function_text + add;
-                        count++;
-                    }
-                }
-                    function_text = function_text + ")\nas\nbegin\n";
-                    function_text = function_text + "update [" + name+"]\n";
-                    function_text = function_text + "set active = 0\n";
-                count = 0;
-                comma = "where ";
-                    foreach (Column r in columns)
-                    {
-                        if (count > 0) { comma = "and "; }
-                        if (true)
-                        {
-                            String add = comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip()+ "\n";
-                            function_text = function_text + add;
-                            count++;
-                        }
-                    }
-
-                function_text = function_text + "return @@rowcount \n end \n go\n";
-
-
-                }          
-            
-            
-            
-            else
-            {
-                function_text =
-                     "DROP PROCEDURE IF EXISTS sp_delete_" + name + ";\n"
-                    + "DELIMITER $$\n"
-                    + "CREATE PROCEDURE sp_delete_" + name + "\n"
-                    + "(";
-                int count = 0;
-                String comma = "";
-                comma = "";
-                count = 0;
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                    {
-                        String add = comma + r.column_name + "_param " + r.data_type + r.length_text + "\n";
-                        function_text = function_text + add;
-                        count++;
-                    }
-                }
-                count = 0;
-                function_text = function_text + ")\n" +
-                    "begin \n" +
-                    "declare sql_error TINYINT DEFAULT FALSE;\n" +
-                    "declare update_count tinyint default 0;\n" +
-                    "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
-                    "SET sql_error = true;\n" +
-                    "START TRANSACTION;\n" +
-                    "DELETE FROM " + name + "\n  "
-                    ;
-                comma = "";
-                int keys_count = 0;
-                String initial_word = "WHERE ";
-                foreach (Column r in columns)
-                {
-                    if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                    {
-                        if (keys_count > 0) { initial_word = "AND "; }
-                        String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
-                        function_text = function_text + add;
-                        keys_count++;
-                    }
-                }
-                function_text = function_text + "\n" +
-                   " ; if sql_error = FALSE then \n" +
-                   " SET update_count = row_count(); \n" +
-                   " COMMIT;\n" +
-                   " ELSE\n" +
-                   " SET update_count = 0;\n" +
-                   " ROLLBACK;\n" +
-                   " END IF;\n" +
-                   " select update_count as 'update count'\n" +
-                   " ; END $$\n" +
-                   " DELIMITER ;\n";
-            }
-
-            String full_text = comment_text + function_text;
-            return full_text;
-
-
-
-
-        }
-
-        public String gen_undelete()
-        {
-            String function_text = "";
-
-            String comment_text = comment_box_gen.comment_box(name, 4);
-            if (settings.TSQLMode)
-            {
-                function_text = "create procedure [dbo].[sp_undelete_" + name + "]\n(\n";
-                int count = 0;
-                String comma = "";
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    if (true)
-                    {
-                        String add = comma + "@" + r.column_name.bracketStrip() + " " + r.data_type + " " + r.length_text + "\n";
-                        function_text = function_text + add;
-                        count++;
-                    }
-                }
-                function_text = function_text + ")\nas\nbegin\n";
-                function_text = function_text + "update [" + name + "]\n";
-                function_text = function_text + "set active = 1\n";
-                count = 0;
-                comma = "where ";
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = "and "; }
-                    if (true)
-                    {
-                        String add = comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip() + "\n";
-                        function_text = function_text + add;
-                        count++;
-                    }
-                }
-
-                function_text = function_text + "return @@rowcount \n end \n go\n";
-
-
-            }
-
-
-
-            else
-            {
-                function_text =
-                     "DROP PROCEDURE IF EXISTS sp_undelete_" + name + ";\n"
-                    + "DELIMITER $$\n"
-                    + "CREATE PROCEDURE sp_undelete_" + name + "\n"
-                    + "(";
-                int count = 0;
-                String comma = "";
-                comma = "";
-                count = 0;
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    if (true)
-                    {
-                        String add = comma + r.column_name + "_param " + r.data_type + r.length_text + "\n";
-                        function_text = function_text + add;
-                        count++;
-                    }
-                }
-                count = 0;
-                function_text = function_text + ")\n" +
-                    "begin \n" +
-                    "declare sql_error TINYINT DEFAULT FALSE;\n" +
-                    "declare update_count tinyint default 0;\n" +
-                    "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
-                    "SET sql_error = true;\n" +
-                    "START TRANSACTION;\n" +
-                    "DELETE FROM " + name + "\n  "
-                    ;
-                comma = "";
-                int keys_count = 0;
-                String initial_word = "WHERE ";
-                foreach (Column r in columns)
-                {
-                    if (true)
-                    {
-                        if (keys_count > 0) { initial_word = "AND "; }
-                        String add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
-                        function_text = function_text + add;
-                        keys_count++;
-                    }
-                }
-                function_text = function_text + "\n" +
-                   " ; if sql_error = FALSE then \n" +
-                   " SET update_count = row_count(); \n" +
-                   " COMMIT;\n" +
-                   " ELSE\n" +
-                   " SET update_count = 0;\n" +
-                   " ROLLBACK;\n" +
-                   " END IF;\n" +
-                   " select update_count as 'update count'\n" +
-                   " ; END $$\n" +
-                   " DELIMITER ;\n";
-            }
-
-            String full_text = comment_text + function_text;
-            return full_text;
-
-
-
-
-        }
-        // to generate the SP_retreive using a primary key
-        public String gen_retreive_by_key()
-        {
-
-            String comment_text = comment_box_gen.comment_box(name, 5);
-            String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_pk_" + name + ";\n"
-                + "DELIMITER $$\n";
-            String secondLine = "CREATE PROCEDURE sp_retreive_by_pk_" + name + "\n"
-                + "(\n";
-            if (settings.TSQLMode) {
-                firstLine = "";
-                secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_by_pk_" + name + "]\n(";
-            }
-            String function_text = firstLine + secondLine;              
-            int count = 0;
-            String comma = "";
-            comma = "";
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                {
-                    String add = "";
-                    if (settings.TSQLMode) { add = comma + r.column_name.Replace("]","").Replace("[","@") + " " + r.data_type + r.length_text + "\n"; }
-                    else { add = comma + r.column_name + " " + r.data_type + r.length_text + "\n"; }
-                    function_text = function_text + add;
-                    count++;
-                }
-            }
-            function_text = function_text + ")";
-
-            count = 0;
-            comma = "";
-            String asString = "";
-            if (settings.TSQLMode) { asString = "\nas"; } 
-            function_text = function_text + asString+"\n Begin \n select \n";
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n FROM " + name + "\n";
-            String initial_word = "where ";
-            int keys_count = 0;
-            foreach (Column r in columns)
-            {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                {
-                    if (keys_count > 0) { initial_word = "AND "; }
-                    string add = "";
-                    if (settings.TSQLMode) { add = initial_word + r.column_name + "=" + r.column_name.Replace("]", "").Replace("[", "@")+ " \n"; }
-                    else
-                    {
-                        add = initial_word + r.column_name + "=" + r.column_name + "\n";
-                    }
-                    function_text = function_text + add;
-                    keys_count++;
-                }
-            }
-
-            if (settings.TSQLMode) { 
-            function_text=function_text + " END \n" +
-                   " GO\n";
-            }
-            if (!settings.TSQLMode)
-            {
-                function_text = function_text + " ; END $$\n" +
-                   " DELIMITER ;\n";
-            }
-
-
-
-            String full_text = comment_text + function_text;
-            return full_text;
-        }
-
-        // to generate the SP_retrive, showing all data in a table
-        public String gen_retreive_by_all()
-        {
-            String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 6);
-            string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
-                + "DELIMITER $$\n";
-            string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "()\n";
-            if (settings.TSQLMode) { firstLine = "";
-                secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_by_all_" + name + "]\nAS\n";
-            }
-            String function_text = firstLine + secondLine;
-                 
-                
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
-            function_text = function_text + "begin \n SELECT \n";
-            count = 0;
-            comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + "\n" + comma + r.column_name;
-                count++;
-            }
-            if (settings.TSQLMode) { function_text = function_text + "\n FROM " + name + "\n ;\n END  \n GO\n"; }
-            else { function_text = function_text + "\n FROM " + name + "\n ;\n END $$ \n DELIMITER ;\n"; }
-            
-
-
-            String full_text = comment_text + function_text;
-            return full_text;
-        }
-        // to generate the SP_insert
-        public string gen_insert()
-        {
-            String comment_text = comment_box_gen.comment_box(name, 7);
-            String firstLine =
-                 "DROP PROCEDURE IF EXISTS sp_insert_" + name + ";\n"
-                + "DELIMITER $$\n";
-            String secondLine = "CREATE PROCEDURE sp_insert_" + name + "(\n";
-
-            if (settings.TSQLMode)
-            {
-                firstLine = "";
-                secondLine = "CREATE PROCEDURE [DBO].[sp_insert" + name + "]\n(";
-            }
-            String function_text = firstLine + secondLine;
-            int count = 0;
-            String comma = "";
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                string add = "";
-                if (settings.TSQLMode) { add = comma + "@" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + "\n"; }
-                else
-                {
-                    add = comma + "in " + r.column_name + "_param " + r.data_type + r.length_text + "\n";
-                }
-                function_text = function_text + add;
-                count++;
-            }
-            if (settings.TSQLMode) {
-                function_text = function_text + ")as \n begin\n insert into [dbo]." + name + "(\n";
-            }
-            else
-            {
-                function_text = function_text + ")\n" +
-                "begin \n" +
-                "declare sql_error TINYINT DEFAULT FALSE;\n" +
-                "declare update_count tinyint default 0;\n" +
-                "DECLARE CONTINUE HANDLER FOR SQLEXCEPTION\n" +
-                "SET sql_error = true;\n" +
-                "START TRANSACTION;\n" +
-                "INSERT INTO  " + name + "\n values \n("
-                ;
-            }
-            count = 0;
-            comma = "";
-            
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                String add = comma +   r.column_name   + "\n";
-                function_text = function_text + add;
-                count++;
-            }
-            if (settings.TSQLMode)
-            {
-                function_text = function_text + ")\n VALUES (\n";
-                comma = "";
-                count = 0;
-                foreach (Column r in columns)
-                {
-                    if (count > 0) { comma = ","; }
-                    function_text = function_text + comma + "@" + r.column_name.bracketStrip()+"\n";
-                    count++;
-
-                }
-                function_text = function_text + ")\n";
-            }
-            if (!settings.TSQLMode)
-            {
-                function_text = function_text + ")\n" +
-                   " ; if sql_error = FALSE then \n" +
-                   " SET update_count = row_count(); \n" +
-                   " COMMIT;\n" +
-                   " ELSE\n" +
-                   " SET update_count = 0;\n" +
-                   " ROLLBACK;\n" +
-                   " END IF;\n" +
-                   " select update_count as 'update count'\n" +
-                   " ; END $$\n" +
-                   " DELIMITER ;\n";
-            }
-            else {function_text = function_text + "return @@rowcount\nend\nGo\n"; }
-
-
-
-            String full_text = comment_text + function_text;
-            return full_text;
-        }
-        // to generate the on update trigger
-        public String gen_update_trigger()
-        {
-            String comment_text = comment_box_gen.comment_box(name, 8);
-            String function_text = "DELIMITER $$\n"
-                + "DROP TRIGGER IF EXISTS tr_" + name + "_after_update $$\n"
-                + "CREATE TRIGGER tr_" + name + "_after_update\n"
-                + "AFTER UPDATE ON " + name + "\n"
-                + "for each row\n"
-                + "begin\n"
-                + "insert into " + name + "_audit (\n";
-            int count = 0;
-            String comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n, action_type"
-                + "\n, action_date"
-                 + "\n, action_user"
-                + "\n) values(\n";
-            count = 0;
-            comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "new." + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n , 'update'-- action_type"
-                 + "\n, NOW()-- action_date"
-                + "\n,  CURRENT_USER()-- action_user"
-                + "\n)"
-                + "\n;"
-                + "\nend  $$"
-                + "\nDELIMITER ;"
-                + "\n   ;\n";
-
-            String full_text = comment_text + function_text;
-            return full_text;
-        }
-        // to generate the on insert trigger
-        public String gen_insert_trigger()
-        {
-            String comment_text = comment_box_gen.comment_box(name, 9);
-            String function_text = "DELIMITER $$\n"
-                + "DROP TRIGGER IF EXISTS tr_" + name + "_after_insert $$\n"
-                + "CREATE TRIGGER tr_" + name + "_after_insert\n"
-                + "AFTER insert ON " + name + "\n"
-                + "for each row\n"
-                + "begin\n"
-                + "insert into " + name + "_audit (\n";
-            int count = 0;
-            String comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n, action_type"
-                + "\n, action_date"
-                 + "\n, action_user"
-                + "\n) values(\n";
-            count = 0;
-            comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "new." + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n , 'insert'-- action_type"
-                 + "\n, NOW()-- action_date"
-                + "\n,  CURRENT_USER()-- action_user"
-                + "\n)"
-                + "\n;"
-                + "\nend  $$"
-                + "\nDELIMITER ;"
-                + "\n   ;\n";
-
-            String full_text = comment_text + function_text;
-            return full_text;
-        }
-        // to generate the on delete trigger
-        public String gen_delete_trigger()
-        {
-            String comment_text = comment_box_gen.comment_box(name, 10);
-            String function_text = "DELIMITER $$\n"
-                + "DROP TRIGGER IF EXISTS tr_" + name + "_after_delete $$\n"
-                + "CREATE TRIGGER tr_" + name + "_after_delete\n"
-                + "AFTER delete ON " + name + "\n"
-                + "for each row\n"
-                + "begin\n"
-                + "insert into " + name + "_audit (\n";
-            int count = 0;
-            String comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n, action_type"
-                + "\n, action_date"
-                 + "\n, action_user"
-                + "\n) values(\n";
-            count = 0;
-            comma = "";
-
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "old." + r.column_name + " \n";
-                count++;
-            }
-            function_text = function_text + "\n , 'delete'-- action_type"
-                 + "\n, NOW()-- action_date"
-                + "\n,  CURRENT_USER()-- action_user"
-                + "\n)"
-                + "\n;"
-                + "\nend  $$"
-                + "\nDELIMITER ;"
-                + "\n   ;\n";
-
-            String full_text = comment_text + function_text;
-            return full_text;
-        }
 
         public String gen_IThingAccessor()
         {
@@ -839,36 +37,45 @@ namespace Data_Objects
             string comma = "";
             string output = "";
             string comment = comment_box_gen.comment_box(name, 11);
-            string header = "public interface I"+name+"Accessor \n{\n";
+            string header = "public interface I" + name + "Accessor \n{\n";
 
-            string addThing = "int add "+name+"(" + name + " _" + name + ");\n";
+            string addThing = "int add " + name + "(" + name + " _" + name + ");\n";
 
-            
 
-            string selectThingbyPK = name+ " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
-            string selectallThing = "List<"+name+"> selectAll"+name+"();\n";
+
+            string selectThingbyPK = name + " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
+            string selectallThing = "List<" + name + "> selectAll" + name + "();\n";
 
 
 
             comma = "";
             count = 0;
-            string updateThing = "int update" + name +"(";
+            string updateThing = "int update" + name + "(";
 
             updateThing = updateThing + name + "_old" + name + " , " + name + " _new" + name;
             updateThing = updateThing + ");\n";
 
-           
-            string deleteThing = "int delete"+name+ "(" + name + " _" + name + ");\n";
-            string undeleteThing = "int delete" + name + "(" + name + " _" + name + ");\n";
-            output =comment+ header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + undeleteThing+"}\n\n";
 
+            string deleteThing = "int delete" + name + "(" + name + " _" + name + ");\n";
+            string undeleteThing = "int delete" + name + "(" + name + " _" + name + ");\n";
+            output = comment + header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + undeleteThing + "}\n\n";
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable == name)
+                {
+                    output = output + "List<" + key.mainTable + "> selectAll" + key.mainTable + "by" + name + "();\n";
+
+                }
+            }
 
 
             return output;
-
         }
 
-        public String gen_ThingAccessor() {
+
+
+        public String gen_ThingAccessor()
+        {
 
             //nneds proper number and code choice
             string comment = comment_box_gen.comment_box(name, 13);
@@ -881,13 +88,14 @@ namespace Data_Objects
             //needs implemented
             string selectallThing = genAccessorRetreiveAll();
             //good
-            string updateThing = genAccessorUpdate(); 
+            string updateThing = genAccessorUpdate();
             //good
             string deleteThing = genAccessorDelete();
             //good
             string undeleteThing = genAccessorUndelete();
             string output = comment + header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + "}\n\n";
             //good
+
 
 
             return output;
@@ -898,13 +106,13 @@ namespace Data_Objects
         {
             int count = 0;
             string comma = "";
-            string output = "";
+            string output = comment_box_gen.JavaDocComment(1, name);
             string comment = comment_box_gen.comment_box(name, 12);
             string header = "public interface I" + name + "Manager \n{\n";
 
-            string addThing = "int add" + name + "(" +name +" _"+name+");\n";
-            
-            
+            string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
+
+
 
             string getThingbyPK = name + " get" + name + "ByPrimaryKey(string " + name + "ID);\n";
             string getallThing = "List<" + name + "> getAll" + name + "();\n";
@@ -914,12 +122,19 @@ namespace Data_Objects
             comma = "";
             count = 0;
             string editThing = "int edit" + name + "(";
-            editThing  = editThing + name + " _old"+name+" , " +name +" _new" + name;
+            editThing = editThing + name + " _old" + name + " , " + name + " _new" + name;
             editThing = editThing + ");\n";
             string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
             string unPurgeThing = "int unpurge" + name + "(string " + name + "ID);\n";
-            output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + unPurgeThing+ "}\n\n";
+            output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + unPurgeThing + "}\n\n";
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable == name)
+                {
+                    output = output + "List<" + key.mainTable + "> getAll" + key.mainTable + "by" + name + "();\n";
 
+                }
+            }
 
 
             return output;
@@ -927,17 +142,18 @@ namespace Data_Objects
         }
 
 
-        public String gen_DataObject() {
+        public String gen_DataObject()
+        {
 
             string output = "";
-            output = comment_box_gen.comment_box(name,15);
-            output = "public class " + name+"\n{\n";
+            output = comment_box_gen.JavaDocComment(1, name);
+            output = "public class " + name + "\n{\n";
             int count = 0;
 
 
             foreach (Column r in columns)
             {
-                String add = "public " + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip()+ "{ set; get; }\n";
+                String add = "public " + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip() + "{ set; get; }\n";
                 output = output + add;
                 count++;
             }
@@ -965,8 +181,8 @@ namespace Data_Objects
 
 
             return output;
-        
-        
+
+
         }
         public String gen_functions()
         {
@@ -976,27 +192,29 @@ namespace Data_Objects
 
 
         }
-        private string genAccessorClassHeader() {
+        private string genAccessorClassHeader()
+        {
             string header = "";
             int count = 0;
             string comma = "";
             string output = "";
-            string comment = comment_box_gen.comment_box(name, 11);
+            string comment = comment_box_gen.JavaDocComment(1, name);
             header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
 
 
             return header;
-        
-        
+
+
         }
-        private String genSPHeaderA(string commandText) {
+        private String genSPHeaderA(string commandText)
+        {
             //for update, insert, delete
             String output = "";
-            output= "int rows = 0;\n"
-            +"// start with a connection object\n"
-            +"var conn = SqlConnectionProvider.GetConnection();\n"
-            +"// set the command text\n"
-            +"var commandText = \""+commandText+"\";\n"
+            output = "int rows = 0;\n"
+            + "// start with a connection object\n"
+            + "var conn = SqlConnectionProvider.GetConnection();\n"
+            + "// set the command text\n"
+            + "var commandText = \"" + commandText + "\";\n"
             + "// create the command object\n"
             + "var cmd = new SqlCommand(commandText, conn);\n"
             + "// set the command type\n"
@@ -1004,13 +222,14 @@ namespace Data_Objects
             + "// we need to add parameters to the command\n";
 
 
-            return output;        
-        
+            return output;
+
         }
-        private String genSPHeaderB(string DataObject, string commandText) {
+        private String genSPHeaderB(string DataObject, string commandText)
+        {
             //for single data object
             string output = "";
-            output = DataObject+" output = new "+DataObject+"();\n"
+            output = DataObject + " output = new " + DataObject + "();\n"
             + "// start with a connection object\n"
             + "var conn = SqlConnectionProvider.GetConnection();\n"
             + "// set the command text\n"
@@ -1028,7 +247,7 @@ namespace Data_Objects
         {
             //for list of data object
             string output = "";
-            output ="List<"+ DataObject + "> output = new " +"List<"+ DataObject + ">();\n"
+            output = "List<" + DataObject + "> output = new " + "List<" + DataObject + ">();\n"
             + "// start with a connection object\n"
             + "var conn = SqlConnectionProvider.GetConnection();\n"
             + "// set the command text\n"
@@ -1040,8 +259,9 @@ namespace Data_Objects
             + "// There are no parameters to set or add\n";
             return output;
         }
-        private string genSPfooter(int mode) {
-                     
+        private string genSPfooter(int mode)
+        {
+
             string returntype = "output";
             if (mode == 2) { returntype = "rows"; }
             string output = "";
@@ -1053,25 +273,28 @@ namespace Data_Objects
             + "{\n"
             + "    conn.Close();\n"
             + "}\n"
-            +"return "+ returntype+";\n}\n";
+            + "return " + returntype + ";\n}\n";
             return output;
         }
-        private string genAccessorAdd() {
-            string createThing = "";
+        private string genAccessorAdd()
+        {
+            string createThing = comment_box_gen.JavaDocComment(0, name);
             int count = 0;
             string comma = "";
-            createThing = "public int add" + name + "("+name+" _"+name.ToLower();
-           
+            createThing = "\npublic int add" + name + "(" + name + " _" + name.ToLower();
+
             createThing = createThing + "){\n";
             createThing = createThing + genSPHeaderA("sp_insert_" + name);
             //add parameters
-            foreach (Column r in columns) {
+            foreach (Column r in columns)
+            {
                 createThing = createThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
             }
             //setting parameters
             createThing = createThing + "\n //We need to set the parameter values\n";
-            foreach (Column r in columns) {
-                createThing = createThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " +"_"+name.ToLower()+"."+ r.column_name.bracketStrip()+";\n";
+            foreach (Column r in columns)
+            {
+                createThing = createThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
             }
             //excute the quuery
             createThing = createThing + "try \n { \n //open the connection \n conn.Open();  ";
@@ -1089,11 +312,12 @@ namespace Data_Objects
             return createThing;
         }
 
-        private string genAccessorRetreiveByKey() {
-            string retreiveThing = "";
+        private string genAccessorRetreiveByKey()
+        {
+            string retreiveThing = comment_box_gen.JavaDocComment(0, name);
             int count = 0;
             string comma = "";
-            retreiveThing = "public "+name +" select" + name + "ByPrimaryKey(";
+            retreiveThing = "\npublic " + name + " select" + name + "ByPrimaryKey(";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
@@ -1113,7 +337,7 @@ namespace Data_Objects
                 {
                     retreiveThing = retreiveThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
                 }
-                }
+            }
             //setting parameters
             retreiveThing = retreiveThing + "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
@@ -1128,18 +352,27 @@ namespace Data_Objects
             retreiveThing = retreiveThing + "//execute the command and capture result\n";
 
             retreiveThing = retreiveThing + "var reader = cmd.ExecuteReader();\n";
-            
+
             //capture reuslts
             retreiveThing = retreiveThing + "//process the results\n";
             retreiveThing = retreiveThing + "if (reader.HasRows)\n if (reader.Read())\n{";
             count = 0;
-            foreach (Column r in columns) { 
-            retreiveThing = retreiveThing + "output."+r.column_name.bracketStrip()+" = reader.Get"+r.data_type.toSqlReaderDataType()+"("+count + ");\n";
-                count++;
-            
+            foreach (Column r in columns)
+            {
+                if (r.nullable.Equals('n') || r.nullable.Equals("N"))
+                {
+                    retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
+                    count++;
+                }
+                else
+                {
+                    retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + count + ") ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
+                    count++;
+                }
+
             }
             retreiveThing = retreiveThing + "\n}\n";
-            retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" +name+ " not found\");\n}\n}";
+            retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" + name + " not found\");\n}\n}";
 
             //cath block and onwards
             retreiveThing = retreiveThing + genSPfooter(0);
@@ -1152,19 +385,20 @@ namespace Data_Objects
 
         }
 
-        private string genAccessorRetreiveAll() {
-            
+        private string genAccessorRetreiveAll()
+        {
+
             int count = 0;
             string comma = "";
-            string retreiveAllThing = "";
-             retreiveAllThing = "public List<" + name + "> selectAll" + name + "(){\n";
-            
-            
+            string retreiveAllThing = comment_box_gen.JavaDocComment(0, name);
+            retreiveAllThing = "\npublic List<" + name + "> selectAll" + name + "(){\n";
+
+
             retreiveAllThing = retreiveAllThing + genSPHeaderC(name, "sp_retreive_by_all_" + name);
             //no paramaters to set or add
-            
-            
-           
+
+
+
             //excute the quuery
             retreiveAllThing = retreiveAllThing + "try \n { \n //open the connection \n conn.Open();  ";
             retreiveAllThing = retreiveAllThing + "//execute the command and capture result\n";
@@ -1174,11 +408,11 @@ namespace Data_Objects
             //capture reuslts
             retreiveAllThing = retreiveAllThing + "//process the results\n";
             retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n while (reader.Read())\n{";
-            retreiveAllThing = retreiveAllThing + "var _" + name + "= new "+ name+"();\n";
+            retreiveAllThing = retreiveAllThing + "var _" + name + "= new " + name + "();\n";
             count = 0;
             foreach (Column r in columns)
             {
-                retreiveAllThing = retreiveAllThing + "_"+name+"." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
+                retreiveAllThing = retreiveAllThing + "_" + name + "." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
                 count++;
 
             }
@@ -1190,20 +424,21 @@ namespace Data_Objects
 
 
             return retreiveAllThing;
-            
-        
+
+
         }
 
-        private string genAccessorUpdate() {
-            string updateThing = "";
+        private string genAccessorUpdate()
+        {
+            string updateThing = comment_box_gen.JavaDocComment(0, name);
             int count = 0;
             string comma = "";
-            updateThing = "public int update" + name + "(";
-            
+            updateThing = "\npublic int update" + name + "(";
+
 
             updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
             updateThing = updateThing + ");\n";
-            
+
             updateThing = updateThing + genSPHeaderA("sp_update_" + name);
             //add parameters
             foreach (Column r in columns)
@@ -1219,7 +454,7 @@ namespace Data_Objects
             updateThing = updateThing + "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
-                updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = _old"+name+"." + r.column_name.bracketStrip() + ";\n";
+                updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = _old" + name + "." + r.column_name.bracketStrip() + ";\n";
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
                     updateThing = updateThing + "cmd.Parameters[\"@new" + r.column_name.bracketStrip() + "\"].Value = _new" + name + "." + r.column_name.bracketStrip() + ";\n";
@@ -1244,8 +479,10 @@ namespace Data_Objects
 
         }
 
-        private string genAccessorDelete() {
-            string deleteThing = "public int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
+        private string genAccessorDelete()
+        {
+            string deleteThing = comment_box_gen.JavaDocComment(0, name);
+            deleteThing += "\npublic int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing = deleteThing + genSPHeaderA("sp_delete_" + name);
             //add parameters bit
             foreach (Column r in columns)
@@ -1263,23 +500,24 @@ namespace Data_Objects
             deleteThing = deleteThing + "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
             deleteThing = deleteThing + genSPfooter(2);
             return deleteThing;
-            }
+        }
 
         private string genAccessorUndelete()
         {
-            string deleteThing = "public int undelete" + name + "("+name+" _"+name.ToLower()+"){\n";
+            string deleteThing = comment_box_gen.JavaDocComment(0, name);
+            deleteThing = deleteThing + "\n public int undelete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing = deleteThing + genSPHeaderA("sp_undelete_" + name);
             //add parameters bit
             //add parameters
             foreach (Column r in columns)
             {
-                    deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
             }
-                //setting parameters
-                deleteThing = deleteThing + "\n //We need to set the parameter values\n";
+            //setting parameters
+            deleteThing = deleteThing + "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
-                    deleteThing = deleteThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
+                deleteThing = deleteThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
             }
             deleteThing = deleteThing + "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
             deleteThing = deleteThing + "if (rows == 0){\n";
@@ -1288,13 +526,14 @@ namespace Data_Objects
             return deleteThing;
         }
 
-        public string genXAMLWindow() {
+        public string genXAMLWindow()
+        {
             string comment = comment_box_gen.comment_box(name, 16);
             string WindowCode = comment;
-            int rows = columns.Count+3;
+            int rows = columns.Count + 3;
             int width = 4;
-            int height = rows * 50+100;
-            WindowCode += "< !--set window height to "+height+"-- >\n";
+            int height = rows * 50 + 100;
+            WindowCode += "< !--set window height to " + height + "-- >\n";
             WindowCode += "< Menu Grid.Row = \"0\" Padding = \"20px, 0px\" >\n";
             WindowCode += " < MenuItem x: Name = \"mnuFile\" Header = \"File\" >\n";
             WindowCode += "< MenuItem x: Name = \"mnuExit\" Header = \"Exit\" Click = \"mnuExit_Click\" />\n";
@@ -1304,7 +543,8 @@ namespace Data_Objects
             WindowCode += "</ MenuItem > \n </Menu>";
             WindowCode += "<Grid>\n";
             WindowCode += "<Grid.RowDefinitions>\n";
-            for (int i = 0; i < rows; i++) {
+            for (int i = 0; i < rows; i++)
+            {
                 WindowCode += "<RowDefinition Height=\"50\"/>\n";
             }
             WindowCode += "</Grid.RowDefinitions>\n";
@@ -1315,13 +555,14 @@ namespace Data_Objects
             }
             WindowCode += "</Grid.ColumnDefinitions>\n";
 
-            for (int i = 0; i < columns.Count; i++) { 
-            WindowCode += "< Label x:Name = \"lbl"+name+columns[i].column_name.bracketStrip()+"\" Grid.Column = \"1\" Grid.Row = \""+(i+1)+"\" Content = \"" +columns[i].column_name+" \" />\n";
+            for (int i = 0; i < columns.Count; i++)
+            {
+                WindowCode += "< Label x:Name = \"lbl" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"1\" Grid.Row = \"" + (i + 1) + "\" Content = \"" + columns[i].column_name + " \" />\n";
                 if (columns[i].foreign_key == "y" || columns[i].foreign_key == "Y")
                 {
                     WindowCode += "< ComboBox x:Name = \"cbx" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"2\" Grid.Row = \"" + (i + 1) + "\" />\n";
                 }
-                else if (columns[i].column_name.bracketStrip().ToLower() == "active") 
+                else if (columns[i].column_name.bracketStrip().ToLower() == "active")
                 {
                     WindowCode += "< CheckBox x:Name = \"chk" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"2\" Grid.Row = \"" + (i + 1) + "\" />\n";
                 }
@@ -1331,21 +572,22 @@ namespace Data_Objects
                 }
 
             }
-            WindowCode += "<Button x:Name=\"btnUpdate" + name + "\" Grid.Column=\"2\" Grid.Row=\""+(rows-1)+"\" Content=\"Edit " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
+            WindowCode += "<Button x:Name=\"btnUpdate" + name + "\" Grid.Column=\"2\" Grid.Row=\"" + (rows - 1) + "\" Content=\"Edit " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
             WindowCode += "<Button x:Name=\"btnAdd" + name + "\" Grid.Column=\"3\" Grid.Row=\"" + (rows - 1) + "\" Content=\"Add " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
             WindowCode += "< StatusBar Grid.Row =" + rows + ">\n";
 
 
             WindowCode += "< StatusBarItem x: Name = \"statMessage\" Content = \"Welcome, please login to continue\" Padding = \"20px, 0px\" />\n </ StatusBar >\n </Grid>\n";
             return WindowCode;
-        
-        
+
+
         }
 
-        public string genWindowCSharp() {
+        public string genWindowCSharp()
+        {
 
             string result = "";
-            result=result+ comment_box_gen.comment_box(name, 17);
+            result = result + comment_box_gen.comment_box(name, 17);
             result = result + genStaticVariables();
             result = result + genConstructor();
             result = result + genWinLoad();
@@ -1360,15 +602,17 @@ namespace Data_Objects
 
         }
 
-        private string genAddButton() {
+        private string genAddButton()
+        {
             string result = "";
-            
+
             //else if (columns[i].column_name.bracketStrip().ToLower() == "active") 
             // else   //this means textbox
 
             result = result + "private void btnAdd" + name + "_click(object sender, RoutedEventArgs e)\n";
             result = result + "if((string)btnAdd" + name + ".Content == \"Add " + name + "\")\n";
-            foreach (Column c in columns) {
+            foreach (Column c in columns)
+            {
                 if (c.foreign_key == "y" || c.foreign_key == "Y")
                 {
                     result = result + "cbx" + name + c.column_name.bracketStrip() + ".IsEnabled=true;\n";
@@ -1387,13 +631,14 @@ namespace Data_Objects
                     result = result + "tbx" + name + c.column_name.bracketStrip() + ".Text=\"\";\n";
                 }
             }
-                result = result + "else\n{\nif (validInputs())\n{\n";
-                
-                result = result + name + " new" + name + " = new " + name + "();\n";
-                foreach (Column c in columns) {
+            result = result + "else\n{\nif (validInputs())\n{\n";
+
+            result = result + name + " new" + name + " = new " + name + "();\n";
+            foreach (Column c in columns)
+            {
                 if (c.foreign_key == "y" || c.foreign_key == "Y")
                 {
-                    
+
                     result = result + "new" + name + "." + c.column_name.bracketStrip() + " = " + "cbx" + name + c.column_name.bracketStrip() + ".Text;\n";
                 }
                 else if (c.column_name.bracketStrip().ToLower() == "active")
@@ -1403,9 +648,9 @@ namespace Data_Objects
                 else
                 {
                     result = result + "new" + name + "." + c.column_name.bracketStrip() + " = " + "tbx" + name + c.column_name.bracketStrip() + ".Text;\n";
-                }                   
-                
                 }
+
+            }
             result = result + "try\n{\n";
             result = result + "bool result = _" + name.Substring(0, 1).ToLower() + "m.add" + name + "(new" + name + ");\n";
             result = result + "if (result)\n{\n MessageBox.Show(\"added!\");\n";
@@ -1415,7 +660,7 @@ namespace Data_Objects
             result = result + "this.DialogResult=false\n}\n}";
             result = result + "\nelse{\nMessageBox.Show(\"invalid inputs\");\n}\n}\n}";
             return result;
-        
+
         }
 
         private string genEditButton()
@@ -1436,12 +681,12 @@ namespace Data_Objects
         private string genConstructor()
         {
             string result = "";
-            result = "public " + name + "AddEditDelete(" + name +" "+ name.Substring(0, 1).ToLower();
+            result = "public " + name + "AddEditDelete(" + name + " " + name.Substring(0, 1).ToLower();
             result = result + ")\n{\n";
             result = result + " InitializeComponent();\n";
-            result=result+"_"+name.ToLower() +"="+ name.Substring(0, 1).ToLower()+";\n";
+            result = result + "_" + name.ToLower() + "=" + name.Substring(0, 1).ToLower() + ";\n";
             result = result + "_" + name.Substring(0, 1).ToLower() + "m = new" + name + "Manager();\n}\n";
-            
+
 
             return result;
 
@@ -1458,8 +703,603 @@ namespace Data_Objects
         private string genStaticVariables()
         {
             string result = "";
-            result = "public" + name + " _" + name.ToLower() + "= null;\n";
-            result = "public" + name + "Manager+ _" + name.Substring(0,1) + "m = null;\n";
+            result = "public " + name + " _" + name.ToLower() + "= null;\n";
+            result = "public " + name + "Manager+ _" + name.Substring(0, 1) + "m = null;\n";
+            return result;
+
+        }
+
+        public string genJavaModel()
+        {
+            string result = "";
+            result = result + genJavaHeader();
+            result = result + genJavaInstanceVariables();
+            result = result + genJavaContructor();
+            result = result + genJavaSetterAndGetter();
+            result = result + genJavaFooter();
+
+            return result;
+        }
+
+        private string genJavaHeader()
+        {
+            string result = comment_box_gen.JavaDocComment(1, name);
+            result = result + "\n public class " + name + " {\n";
+            return result;
+
+        }
+        private string genJavaInstanceVariables()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                result = result + "private " + r.data_type.toJavaDataType() + " " + r.column_name + ";\n";
+
+            }
+            return result;
+
+        }
+        private string genJavaContructor()
+        {
+            string result = "";
+            string defaultConstructor = "\npublic " + name + "(){}\n";
+            string ParamConsctructor = "\npublic " + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                ParamConsctructor = ParamConsctructor + comma + r.data_type.toJavaDataType() + " " + r.column_name;
+                comma = ", ";
+            }
+            ParamConsctructor = ParamConsctructor + ") {\n";
+            foreach (Column r in columns)
+            {
+
+                ParamConsctructor = ParamConsctructor + "\nthis." + r.column_name + " = " + r.column_name + ";";
+            }
+            ParamConsctructor = ParamConsctructor + "\n}\n";
+            result = defaultConstructor + ParamConsctructor;
+            return result;
+
+        }
+
+        private string genJavaSetterAndGetter()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                string getter = "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
+                string setter = "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ") {\n";
+                if (r.data_type == "nvarchar")
+                {
+                    setter = setter + "if(" + r.column_name + ".length()<4){\n";
+                    setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too short.\");\n}\n";
+                    setter = setter + "if(" + r.column_name + ".length()>" + r.length + "){\n";
+                    setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too long.\");\n}\n";
+                }
+                if (r.data_type == "int")
+                {
+
+                }
+                setter = setter + "this." + r.column_name + " = " + r.column_name + ";\n}";
+                result = result + getter + "\n" + setter + "\n";
+            }
+            return result;
+
+        }
+        private string genJavaFooter()
+        {
+            string result = "\n}\n";
+
+            return result;
+
+        }
+
+        public string genJavaDAO()
+        {
+            string result = "";
+            result = result + genJavaDAOHeader();        //works
+            result = result + genJavaDAOCreate();       //returns ""
+            result = result + genJavaDAORetreiveByKey(); // works
+            result = result + genJavaDAORetreiveAll(); // wokring on it now
+            result = result + genJavaDAOUpdate(); //rturns ""
+            result = result + genJavaDelete(); //returns ""
+            result = result + genJavaDAOFooter(); //work
+
+            return result;
+
+
+        }
+        private string genJavaDAOHeader()
+        {
+            string result = comment_box_gen.JavaDocComment(1, name + "DAO");
+            result=result+"import com.beck.javaiii_kirkwood.personal_project.models."+name+";\n"+
+
+                "import java.sql.CallableStatement;\n"+
+                "import java.sql.Connection;\n"+
+                "import java.sql.ResultSet;\n"+
+                "import java.sql.SQLException;\n"+
+                "import java.util.ArrayList;\n"+
+                "import java.util.List;\n"+
+
+                "import static com.beck.javaiii_kirkwood.personal_project.data.Database.getConnection;\n";
+
+
+            result = result + "public class " + name + "DAO {\n\n";
+            return result;
+
+
+        }
+        private string genJavaDAOFooter()
+        {
+            string result = "\n}\n";
+            return result;
+
+
+        }
+        private string genJavaDAORetreiveByKey()
+        {
+            string result = "";
+            // result = comment_box_gen.JavaDocComment(0, name);
+            string nullValue = "";
+            string comma = "";
+            result = result + "public static " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
+            result = result + name + " result = null;\n";
+            result = result + "try(Connection connection = getConnection()) {\n";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_pk_" + name + "(?)}\")) {\n";
+            for (int i = 0; i < columns.Count; i++)
+                if (columns[i].primary_key == 'y' || columns[i].primary_key == 'Y')
+                {
+                    result = result + "statement.setString(1, _" + name.ToLower() + ".get" + columns[i].column_name + "().toString());\n";
+                }
+            result = result + "\ntry (ResultSet resultSet = statement.executeQuery()){";
+            result = result + "\nif(resultSet.next()){";
+            foreach (Column r in columns)
+            {
+
+
+                result = result + r.data_type.toJavaDataType() + " " + r.column_name + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + r.column_name + "\");\n";
+                if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
+                {
+
+                    result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
+                }
+            }
+            result = result + "result = new " + name + "(";
+            foreach (Column r in columns)
+            {
+                result = result + comma + " " + r.column_name;
+                comma = ",";
+            }
+
+            result = result + ");";
+            result = result + "}\n}\n}\n";
+            result = result + "} catch (SQLException e) {\n";
+            result = result + " throw new RuntimeException(e);\n}\n";
+            result = result + "return result;\n}\n";
+
+
+
+
+            return result;
+
+
+        }
+
+        private string genJavaDAORetreiveAll()
+        {
+            string nullValue = "\"\"";
+            string result = "";
+            //result = comment_box_gen.JavaDocComment(0, name);
+            string comma = "";
+            result = result + "public static List<" + name + "> getAll" + name + "() {\n";
+            result = result + "List<" + name + "> result = new ArrayList<>();\n";
+            result = result + "try (Connection connection = getConnection()) { \n";
+            result = result + "if (connection != null) {\n";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "()}\")) {";
+            result = result + "try(ResultSet resultSet = statement.executeQuery()) {\n";
+            result = result + "while (resultSet.next()) {";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toJavaDataType().Equals("Integer"))
+                {
+                    nullValue = "0";
+                }
+                else { nullValue = "\"\""; }
+                result = result + r.data_type.toJavaDataType() + " " + r.column_name + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + r.column_name + "\");\n";
+                if (r.nullable == 'y' || r.nullable == 'Y')
+                {
+
+                    result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
+                }
+            }
+            result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
+            foreach (Column r in columns)
+            {
+                result = result + comma + " " + r.column_name;
+                comma = ",";
+            }
+            result = result + ");";
+            result = result + "\n result.add(_" + name.ToLower() + ");\n}\n}\n}\n}\n";
+            result = result + "} catch (SQLException e) {\n";
+            result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
+            result = result + "}\n";
+
+            result = result + "return result;}\n";
+
+            return result;
+
+
+        }
+
+        private string genJavaDAOUpdate()
+        {
+            string result = "";
+            //result = comment_box_gen.JavaDocComment(0, name);
+            return result;
+
+
+        }
+
+        private string genJavaDelete()
+        {
+            string result = "";
+            //result = comment_box_gen.JavaDocComment(0, name);
+            return result;
+
+
+        }
+
+        private string genJavaDAOCreate()
+        {
+            string result = "";
+            // result = comment_box_gen.JavaDocComment(0, name);
+            string comma = "";
+            result = result + "public static int add(" + name + " _" + name.ToLower() + ") {\n";
+            result = result + "int numRowsAffected=0;";
+            result = result + "try (Connection connection = getConnection()) {\n";
+            result = result + "if (connection != null) {\n";
+            result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_insert_" + name + "(";
+            foreach (Column r in columns)
+            {
+                if (r.identity == "")
+                {
+                    result = result + comma + " ?";
+                    comma = ",";
+                }
+            }
+            result = result + ")}\")){\n";
+            int count = 1;
+            foreach (Column r in columns)
+            {
+                if (r.identity == "")
+                {
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    count++;
+                }
+            }
+            result = result + "numRowsAffected = statement.executeUpdate();\n";
+            result = result + "if (numRowsAffected == 0) {\n";
+            result = result + "throw new RuntimeException(\"Could not add " + name + ". Try again later\");\n}\n";
+            result = result + "} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {\n";
+            result = result + "throw new RuntimeException(\"Could not add  " + name + ". Try again later\");\n}\n}\n";
+            result = result + "} catch (SQLException e) {\n";
+            result = result + "throw new RuntimeException(\"Could not add " + name + ". Try again later\");\n}\n";
+            result = result + "return numRowsAffected;\n}";
+            result = result + "\n";
+            return result;
+
+
+        }
+
+        public string getBatch()
+        {
+            string result = "";
+            result = result + "sqlcmd -S localhost -E -i " + name + ".sql\n";
+            result = result + "ECHO .\n";
+            return result;
+
+
+
+        }
+
+        public string genCreateserveket()
+        {
+            //do get
+            string result = comment_box_gen.comment_box(name, 21);
+            result = result + "\n@WebServlet(\"/add" + name + "\")\n";
+            result = result + "public class add" + name + "servlet extends HttpServlet{\n";
+
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.references.Split('.');
+
+                    result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
+                    //grab a list of the parents, assign and create a static variable
+                }
+            }
+            result = result + "\n @Override\n";
+            result = result + "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    //grab a list of the parents, assign them to the already existing static variable
+                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
+                    //set them to the req attribute
+                    result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
+
+
+                }
+            }
+
+
+            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "}\n";
+
+
+
+
+
+            //this only creates the doPost method
+            result += "\n";
+            //gen header
+            result = result + "@Override\n";
+            result = result + "  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            //get data
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    string fieldname = "input" + name.ToLower() + r.column_name;
+                    result = result + "String _" + r.column_name + " = req.getParameter(\"" + fieldname + "\");\n";
+                }
+            }
+            //toss it in a hashmap
+            result = result + "Map<String, String> results = new HashMap<>();\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    result = result + "results.put(\"" + r.column_name + "\",_" + r.column_name + ");\n";
+                }
+            }
+            //generate an object, and set errors
+            result = result + name + " " + name.ToLower() + " = new " + name + "();\n";
+            result = result + "int errors =0;\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+
+                    string errorname = name.ToLower() + r.column_name + "error";
+                    result = result + "try {\n";
+                    if (r.data_type.ToLower().Equals("int"))
+                    {
+                        result = result + name.ToLower() + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
+                    }
+                    else if (r.data_type.ToLower().Equals("datetime"))
+                    {
+                        result = result + name.ToLower() + ".set" + r.column_name + "(LocalDate.parse(_" + r.column_name + "));\n";
+                    }
+                    else
+                    {
+                        result = result + name.ToLower() + ".set" + r.column_name + "(_" + r.column_name + ");\n";
+                    }
+                    result = result + "} catch(IllegalArgumentException e) {";
+                    result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
+                    result = result + "errors++;\n";
+                    result = result + "}\n";
+
+                }
+
+
+
+            }
+            //add it to the databsae, maybe?
+
+            result = result + "int result=0;\n";
+            result = result + "if (errors==0){\n";
+            result = result + "try{\nresult=" + name + "DAO.add(" + name.ToLower() + ");\n}";
+            result = result + "catch(Exception ex){\n";
+            result = result + "results.put(\"dbStatus\",\"Database Error\");\n";
+            result = result + "}\n";
+            result = result + "if (result>0){\n";
+            result = result + "results.put(\"dbStatus\",\"" + name + " Added\");\n";
+            result = result + "} else {\n";
+            result = result + "results.put(\"dbStatus\",\"" + name + " Not Added\");\n";
+            result = result + "\n}\n";
+            //set db message
+            result = result + "}\n";
+
+            //send it back
+            result = result + "req.setAttribute(\"results\", results);\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Create a " + name + " \");\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "\n}\n}\n";
+
+
+            //get_buttons
+            //get_footer
+
+
+
+
+            return result;
+
+        }
+
+        public string genviewAllJSP()
+        {
+            //comment box
+            string result = comment_box_gen.comment_box(name, 20);
+            //header comment
+            //gen header
+            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            //gen form
+            result = result + "<div class = \"container\">\n";
+            result = result + "<div class=\"row\">\n";
+            result = result + "<div class=\"col-12\">\n";
+            result = result + "<h1>All Roller " + name + "s</h1>\n";
+            result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name + "s{" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+            result = result + "<c:if test=\"$" + name + "s.size() > 0}\">\n";
+            result = result + "<div class=\"table-responsive\">";
+            result = result + "<table class=\"table table-bordered\">\n";
+            result = result + "<thead>\n";
+            result = result + "<tr>\n";
+            foreach (Column r in columns)
+            {
+                result = result + "<th scope=\"col\">" + r.column_name + "</th>\n";
+            }
+            result = result + "</tr>\n";
+            result = result + "</thead>\n";
+            result = result + "<tbody>\n";
+            result = result + "<c:forEach items=\"${" + name + "s}\" var=\"" + name.ToLower() + "\">\n";
+            result = result + "<tr>\n";
+            foreach (Column r in columns)
+            {
+                result = result + "<td>${" + name.ToLower() + "." + r.column_name.ToLower() + "}</td>\n";
+            }
+            result = result + "</tr>\n";
+            result = result + "</c:forEach>\n";
+            result = result + "</tbody>\n";
+            result = result + "</table>\n";
+            result = result + "</div>\n";
+            result = result + "</c:if>\n";
+            result = result + "</div>\n";
+            result = result + "</div>\n";
+            result = result + "</div>\n";
+            result = result + "</main>\n";
+            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+
+
+            //gen_header
+            //gen_fileds
+            //get_buttons
+            //get_footer
+
+
+
+
+            return result;
+
+        }
+
+        public string genCreateJSP()
+        {
+            int rowcount = 0;
+            //comment box
+            string result = comment_box_gen.comment_box(name, 19);
+            //header comment
+            //gen header
+            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            //gen form
+            result = result + "<div class = \"container\">\n";
+            result = result + "<form method=\"post\" action=\"${appURL}/add" + name + "\" id = \"add" + name + "\" >\"\n";
+            //gen a button for each line item
+            foreach (Column r in columns)
+            {
+                int i = 0;
+                if (r.increment == 0)
+                {
+                    if (r.foreign_key == "")
+                    {
+                        string inputType = "text";
+                        if (r.data_type == "datetime") { inputType = "date"; }
+                        string fieldname = "input" + name.ToLower() + r.column_name;
+                        string errorname = name.ToLower() + r.column_name + "error";
+                        result = result + "<!-- " + r.column_name + " -->\n";
+                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                        result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                        result = result + "<div class=\"input-group input-group-lg\">\n";
+                        result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${results." + r.column_name + "}\">\n";
+                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                        result = result + "</c:if>\n";
+                        result = result + "</div>\n";
+                        result = result + "</div>\n";
+                        rowcount++;
+                    }
+
+                    else
+                    {
+                        string[] parts = r.foreign_keys[i].Split('.');
+                        string fieldname = "input" + name.ToLower() + r.column_name;
+                        string errorname = name.ToLower() + r.column_name + "error";
+                        result = result + "<!-- " + r.column_name + " -->\n";
+                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                        result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                        result = result + "<div class=\"input-group input-group-lg\">\n";
+                        result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${results." + r.column_name + "}\">\n";
+                        result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
+                        result = result + "<option value=\"${" + r.foreign_keys[i] + "}\">${" + parts[0] + ".name}   </option>\n";
+                        result = result + "</c:forEach>\n";
+                        result = result + "";
+
+                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                        result = result + "</c:if>\n";
+                        result = result + "</div>\n";
+                        result = result + "</div>\n";
+                        rowcount++;
+                        i++;
+
+
+                    }
+                }
+            }
+            //get_buttons
+            result = result + "<div class=\"align-items-center mt-0\">\n";
+            result = result + "<div class=\"d-grid\">";
+            result = result + "<button class=\"btn btn-orange mb-0\" type=\"submit\">Sign Up</button></div>\n";
+            result = result + "<c:if test=\"${not empty results.dbStatus}\"\n>";
+            result = result + "<p>${results.dbStatus}</p>\n";
+            result = result + "</c:if>\n";
+            result = result + "</div>\n";
+            result = result + "</form>\n";
+            result = result + "</div>\n";
+            result = result + "</div>\n";
+            //get_footer
+            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+
+
+
+
+            return result;
+
+        }
+
+        public string genviewAllServlet()
+        {
+            //this only creates the doGet method
+            string result = comment_box_gen.comment_box(name, 22);
+            //gen header
+            result = result + "@WebServlet(\"/all-" + name + "s\")";
+            result = result + "public class All" + name + "sServlet extends HttpServlet {";
+            result = result + "@Override\n";
+            result = result + "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
+            result = result + "try {\n";
+            result = result + name.ToLower() + "s =" + name + "DAO.getAll" + name + "();\n";
+            result = result + "} catch (SQLException e) {\n";
+            result = result + "throw new RuntimeException(e);\n";
+            result = result + "}\n";
+            result = result + "req.setAttribute(\"" + name + "s\", " + name + "s);\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/all-" + name + "s.jsp\").forward(req,resp);\n";
+
+            //header comment
+            //gen_header
+            //gen_fileds
+            //get_buttons
+            //get_footer
+
+
+
+
             return result;
 
         }
@@ -1473,7 +1313,7 @@ namespace Data_Objects
     }
 
 
-    }
+}
 
 
 

@@ -21,11 +21,12 @@ namespace Object_oriented_sql_tables
             tbx_databasename.Text = "WFTDA_debug";
             settings.database_name = tbx_databasename.Text;
             initialize_settings();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 9; i++)
             {
+                if (i == 3) { continue; }
                 clb_options.SetItemChecked(i, true);
             }
-            for (int i = 3; i < 12; i++)
+            for (int i = 9; i < 12; i++)
             {
                 clb_options.SetItemChecked(i, false);
             }
@@ -34,13 +35,24 @@ namespace Object_oriented_sql_tables
             cbx_table_names.Enabled = false;
             btn_generateTable.Enabled = false;
             clb_options.Enabled = false;
-            }
+        }
 
         //open file dialog
         private void button1_Click(object sender, System.EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.InitialDirectory = "C:\\Users\\jjbec\\Desktop\\classes\\structured_systems\\";
+            try
+            {
+                System.IO.File.Delete(file_write.SettingsPath);
+                System.IO.File.Copy(file_write.SettingsPath2, file_write.SettingsPath);
+                openFileDialog.InitialDirectory = file_read.readlocaiton();
+            }
+            catch (Exception)
+            {
+
+                openFileDialog.InitialDirectory = "c:\\";
+            }
+
             //openFileDialog.InitialDirectory = settings.app_path;
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
@@ -59,8 +71,9 @@ namespace Object_oriented_sql_tables
             file_write.WriteBuddy.Write(database_head);
             int count = 0;
             List<Boolean> these_settings = new List<Boolean>();
-
-            foreach (table t in data_tables.all_tables)
+            List<foreignKey> foreignKeys = data_tables.all_foreignKey;
+            bool batchcreated = false;
+            foreach (iTable t in data_tables.all_tables)
             {
                 these_settings = settings.all_options[count];
                 string s = "";
@@ -77,18 +90,29 @@ namespace Object_oriented_sql_tables
                     s = t.gen_primary_keys();
                     file_write.WriteBuddy.Write(s);
                 }
+
+                // if selected, create the alternate keys
+                if (true)
+                {
+                    s = t.gen_alternate_keys();
+                    file_write.WriteBuddy.Write(s);
+                }
                 // if selected, add foreign keys to table
                 if (these_settings[2])
                 {
                     s = t.gen_foreign_keys();
                     file_write.WriteBuddy.Write(s);
                 }
+
+
                 // if selected, create a matching audit table
                 if (these_settings[3])
                 {
                     s = t.gen_audit_table();
                     file_write.WriteBuddy.Write(s);
                 }
+
+
                 // if selected, add an SP_update to table
                 if (these_settings[4])
                 {
@@ -101,9 +125,9 @@ namespace Object_oriented_sql_tables
                     s = t.gen_delete();
 
                     file_write.WriteBuddy.Write(s);
-                    s = t.gen_undelete();
+                    //s = t.gen_undelete();
 
-                    file_write.WriteBuddy.Write(s);
+                    //file_write.WriteBuddy.Write(s);
 
 
                 }
@@ -143,19 +167,33 @@ namespace Object_oriented_sql_tables
                     s = t.gen_delete_trigger();
                     file_write.WriteBuddy.Write(s);
                 }
-                if (these_settings[12]) {
-                    s = t.gen_IThingAccessor();
+
+                //if selected, add a space for adding sample data
+                if (true)
+                {
+                    s = t.gen_sample_space();
                     file_write.WriteBuddy.Write(s);
+
+                }
+            }
+            foreach (table t in data_tables.all_tables)
+            {
+                String s = "";
+                if (these_settings[12])
+                {
+                    s = t.gen_IThingAccessor();
+                    file_write.CSharpBuddy.Write(s);
                 }
                 if (these_settings[13])
                 {
                     s = t.gen_ThingAccessor();
-                    file_write.WriteBuddy.Write(s);
+                    file_write.CSharpBuddy.Write(s);
                 }
-                if (these_settings[14])
+                //needs to be these settings[14]
+                if (true)
                 {
                     s = t.gen_IThingManager();
-                    file_write.WriteBuddy.Write(s);
+                    file_write.CSharpBuddy.Write(s);
                 }
                 if (these_settings[15])
                 {
@@ -164,8 +202,8 @@ namespace Object_oriented_sql_tables
                 }
                 if (these_settings[16])
                 {
-                    s=t.gen_DataObject();
-                    file_write.WriteBuddy.Write(s);
+                    s = t.gen_DataObject();
+                    file_write.CSharpBuddy.Write(s);
                 }
                 if (true) //change this to these setings 17
                 {
@@ -177,93 +215,142 @@ namespace Object_oriented_sql_tables
                     s = t.genWindowCSharp();
                     file_write.XAMLBuddy.Write(s);
                 }
+                if (true) //change this to these setings 19
+                {
+                    s = t.genJavaModel();
+                    file_write.JavaBuddy.Write(s);
+                }
 
+                if (true) //change this to these setings 20
+                {
+                    s = t.genJavaDAO();
+                    file_write.JavaBuddy.Write(s);
+                }
+                // if (true) //change this to these setings 21 Creates a sql file iwth the table name
+                // {
+                //   s = t.name.bracketStrip().Replace("?","");
+                //  System.IO.File.Create(file_write.FilesPath + s + ".sql");
+
+                //}
+                //if (true) //change this to these setings 22, creates a bat file to run all of the sql iles you just created
+                // {
+                //   s = t.getBatch();
+                //  file_write.BatchBuddy.Write(s);
+                // batchcreated = true;
+                //}
+                if (true) //change this to these setings 23
+                {
+                    s = t.genCreateJSP();
+                    file_write.JSPBuddy.Write(s);
+                }
+                if (true) //change this to these setings 24
+                {
+                    s = t.genCreateserveket();
+                    file_write.ServletBuddy.Write(s);
+                }
+                if (true) //change this to these setings 25
+                {
+                    s = t.genviewAllJSP();
+                    file_write.JSPBuddy.Write(s);
+                }
+                if (true) //change this to these setings 26
+                {
+                    s = t.genviewAllServlet();
+                    file_write.ServletBuddy.Write(s);
+                }
 
 
 
                 count++;
             }
-            file_write.WriteBuddy.Flush();
+        
+        file_write.WriteBuddy.Flush();
             file_write.CSharpBuddy.Flush();
             file_write.XAMLBuddy.Flush();
+            file_write.BatchBuddy.Flush();
+            file_write.JSPBuddy.Flush();
+            file_write.ServletBuddy.Flush();
             MessageBox.Show("generation complete");
             this.Close();
 
 
-        }
-
-        private void initialize_settings()
-        {
-            for (int i = 0; i < settings.table_count; i++) {
-                for (int j = 0; j < 18; j++) {
-                    settings.all_options[i][j] = true;
-                }
-            
-            }
-
-
-
-        }
-
-        private void tbx_databasename_TextChanged(object sender, EventArgs e)
-        {
-            settings.database_name = tbx_databasename.Text;
-        }
-
-        private void btn_read_table_Click(object sender, EventArgs e)
-        {
-            file_read.readdata();
-            
-            settings.table_count = data_tables.all_tables.Count;
-            for (int i=0; i < settings.table_count; i++) { 
-            
-            }
-            foreach (table t in data_tables.all_tables)
-            {
-                settings.table_names.Add(t.name);
-            }
-            cbx_table_names.DataSource = settings.table_names;
-            cbx_table_names.Enabled = true;
-            btn_selectfile.Enabled = false;
-            btn_read_table.Enabled = false;
-            
-            btn_generateTable.Enabled = true;
-            clb_options.Enabled = true;
-        }
-
-        private void cbx_table_names_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            clb_options.Enabled = true;
-            List<Boolean> these_settings = settings.all_options[cbx_table_names.SelectedIndex];
-            for (int i = 0; i < these_settings.Count; i++)
-            {
-                clb_options.SetItemChecked(i, these_settings[i]);
-            }
-
-        }
-
-        private void clb_options_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            List<Boolean> these_settings = new List<Boolean>();
-            for (int i = 0; i < 18; i++)
-            {
-                these_settings.Add(clb_options.GetItemChecked(i));
-            }
-            settings.all_options[cbx_table_names.SelectedIndex] = these_settings;
-
-        }
-
-        private void cbxTSql_CheckedChanged(object sender, EventArgs e)
-        {
-            settings.TSQLMode= cbxTSql.Checked;
-        }
-
-        private void btn_cSharp_Click(object sender, EventArgs e)
-        {
-           // csharpsettings();
-
-        }
-
-        
     }
+
+    private void initialize_settings()
+    {
+        for (int i = 0; i < settings.table_count; i++)
+        {
+            for (int j = 0; j < 18; j++)
+            {
+                settings.all_options[i][j] = true;
+            }
+
+        }
+
+
+
+    }
+
+    private void tbx_databasename_TextChanged(object sender, EventArgs e)
+    {
+        settings.database_name = tbx_databasename.Text;
+    }
+
+    private void btn_read_table_Click(object sender, EventArgs e)
+    {
+        file_read.readdata();
+
+        settings.table_count = data_tables.all_tables.Count;
+        for (int i = 0; i < settings.table_count; i++)
+        {
+
+        }
+        foreach (table t in data_tables.all_tables)
+        {
+            settings.table_names.Add(t.name);
+        }
+        cbx_table_names.DataSource = settings.table_names;
+        cbx_table_names.Enabled = true;
+        btn_selectfile.Enabled = false;
+        btn_read_table.Enabled = false;
+
+        btn_generateTable.Enabled = true;
+        clb_options.Enabled = true;
+    }
+
+    private void cbx_table_names_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        clb_options.Enabled = true;
+        List<Boolean> these_settings = settings.all_options[cbx_table_names.SelectedIndex];
+        for (int i = 0; i < these_settings.Count; i++)
+        {
+            clb_options.SetItemChecked(i, these_settings[i]);
+        }
+
+    }
+
+    private void clb_options_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        List<Boolean> these_settings = new List<Boolean>();
+        for (int i = 0; i < 18; i++)
+        {
+            these_settings.Add(clb_options.GetItemChecked(i));
+        }
+        settings.all_options[cbx_table_names.SelectedIndex] = these_settings;
+
+    }
+
+    private void cbxTSql_CheckedChanged(object sender, EventArgs e)
+    {
+        settings.TSQLMode = cbxTSql.Checked;
+    }
+
+    private void btn_cSharp_Click(object sender, EventArgs e)
+    {
+        // csharpsettings();
+
+    }
+
+
+}
 }

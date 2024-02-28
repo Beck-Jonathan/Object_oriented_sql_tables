@@ -39,9 +39,10 @@ namespace Data_Objects
                 this.column_name = "[" + column_name + "]";
                 this.data_type = "[" + data_type + "]";
             }
-            else { 
-            this.column_name = column_name;
-            this.data_type = data_type;
+            else
+            {
+                this.column_name = column_name;
+                this.data_type = data_type;
             }
             this.length = length;
             this.default_value = default_value;
@@ -57,12 +58,14 @@ namespace Data_Objects
             this.references = references;
             this.description = description;
             //override user error on data table
-            if (data_type.Equals("nvarchar")&&length==0){ length = 50; }
-            if (data_type.Equals("date")){ length = 0; }
-            if (length == 0) {
+            if (data_type.Equals("nvarchar") && length == 0) { length = 50; }
+            if (data_type.Equals("date")) { length = 0; }
+            if (length == 0)
+            {
                 length_text = "";
             }
-            if (length > 0) {
+            if (length > 0)
+            {
                 length_text = "(" + length + ")";
             };
         }
@@ -74,7 +77,22 @@ namespace Data_Objects
             foreign_keys = new List<String>();
             String Column_text = "";
             Column_text = Column_text + column_name + "\t";
-            Column_text = Column_text + data_type + length_text+"\t";
+            Column_text = Column_text + data_type + length_text + "\t";
+            if (settings.TSQLMode)
+            {
+                if (identity != "")
+                {
+                    Column_text = Column_text + identity + "(" + start + "," + increment + ") " + "\t";
+                }
+            }
+            else
+            {
+                if (start != 0)
+                {
+                    Column_text = Column_text + "AUTO_INCREMENT" + "\t";
+                }
+
+            }
             if (nullable.Equals('Y') || nullable.Equals('y')) { Column_text = Column_text + "null\t"; }
             else { Column_text = Column_text + "not null\t"; }
             //if (auto_increment.Equals('Y') || auto_increment.Equals('y')) { Column_Text = Column_Text + "auto_increment\t"; }
@@ -82,7 +100,8 @@ namespace Data_Objects
             if (primary_key.Equals('Y') || primary_key.Equals('y')) { primary_keys.Add(column_name); }
             if (foreign_key.Length >= 1) { foreign_keys.Add(this.references); }
             if (settings.TSQLMode)
-            {Column_text=Column_text + "\n";
+            {
+                Column_text = Column_text + "\n";
             }
 
             else { Column_text = Column_text + "comment \'" + description + "\'\n"; }
@@ -95,7 +114,7 @@ namespace Data_Objects
             //generate each row as a sql statement
             String Column_Text = "";
             Column_Text = Column_Text + column_name + "\t";
-            Column_Text = Column_Text + data_type + length_text+"\t";
+            Column_Text = Column_Text + data_type + length_text + "\t";
             if (nullable.Equals('Y') || nullable.Equals('y')) { Column_Text = Column_Text + "null\t"; }
             else { Column_Text = Column_Text + "not null\t"; }
             if (unique.Equals('Y') || unique.Equals('y')) { Column_Text = Column_Text + "unique\t"; }

@@ -23,7 +23,7 @@ namespace Data_Objects
             {
                 full_header = comment_box_gen.comment_box(table_name, 1) +
                 "\n\n" +
-                
+
                 "CREATE TABLE " + table_name + "(\n\n"
                 ;
             }
