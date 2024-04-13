@@ -35,18 +35,18 @@ namespace Data_Objects
             if (result.ToLower().Equals("bit")) { result = "boolean"; }
             if (result.ToLower().Equals("bool")) { result = "boolean"; }
             if (result.ToLower().Equals("int") || sqlDataType.ToLower().Equals("Integer")) { result = "Integer"; }
-            if (result.ToLower().Equals("datetime")) { result = "LocalDate"; }
+            if (result.ToLower().Equals("datetime")) { result = "Date"; }
             return result;
 
         }
         public static string toJavaDAODataType(this string sqlDataType)
         {
             string result = sqlDataType.Replace("[", "").Replace("]", "");
-            if (result.ToLower().Equals("nvarchar")) { result = "String"; }
-            if (result.ToLower().Equals("bit")) { result = "boolean"; }
-            if (result.ToLower().Equals("bool")) { result = "boolean"; }
-            if (result.ToLower().Equals("int") || sqlDataType.ToLower().Equals("integer")) { result = "Int"; }
-            if (result.ToLower().Equals("datetime")) { result = "LocalDate"; }
+            if (result.ToLower().Contains("varchar")) { result = "String"; }
+            if (result.ToLower().Equals("bit")) { result = "Boolean"; }
+            if (result.ToLower().Contains("bool")) { result = "Boolean"; }
+            if (result.ToLower().Contains("int") || sqlDataType.ToLower().Equals("integer")) { result = "Int"; }
+            if (result.ToLower().Contains("date")) { result = "LocalDate"; }
             return result;
 
         }
@@ -74,6 +74,10 @@ namespace Data_Objects
 
             return result;
 
+        }
+        public static string firstCharLower(this string value) {
+
+            return Char.ToLower(value[0]) + value.Substring(1);
         }
     }
 }

@@ -100,7 +100,10 @@ namespace Data_Access
                         rows.Clear();
                         tablename = parts[0];
                         description = parts[14];
-                        data_tables.all_tables.Add(t);
+                        if (t.name.ToLower() != "dummy")
+                        {
+                            data_tables.all_tables.Add(t);
+                        }
                         count++;
                     }
                 }
@@ -129,8 +132,8 @@ namespace Data_Access
                     char[] chararray = parts[7].ToCharArray();
                     if (chararray.Length != 0)
                     {
-                        char check = chararray[1];
-                        if (check == 'u' || check == 'U')
+                        char check = chararray[0];
+                        if (check == 'y' || check == 'Y')
                         {
                             nullable = 'y';
                         }

@@ -14,14 +14,43 @@ namespace Data_Access
         public static string FilesPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\sql_files\\";
         static string jspPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputJSP.txt";
         static string servletPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputservlet.txt";
-        public static StreamWriter WriteBuddy = new StreamWriter(newPath);
+         
+        //public static StreamWriter WriteBuddy = new StreamWriter(newPath);
         public static StreamWriter CSharpBuddy = new StreamWriter(codePath);
         public static StreamWriter XAMLBuddy = new StreamWriter(XAMLPath);
         //public static StreamWriter SettingsBuddy = new StreamWriter(SettingsPath);
+        public static StreamWriter sqlBuddy2 = new StreamWriter(newPath);
         public static StreamWriter SettingsBuddy = new StreamWriter(SettingsPath2);
         public static StreamWriter JavaBuddy = new StreamWriter(JavaPath);
         public static StreamWriter BatchBuddy = new StreamWriter(FilesPath + "Create_DB.bat");
         public static StreamWriter JSPBuddy = new StreamWriter(jspPath);
         public static StreamWriter ServletBuddy = new StreamWriter(servletPath);
+        public static string SeparatePath = "C:\\Users\\jjbec\\Desktop\\Spring_2024\\Table_Gen\\";
+        public static void startUp(DirectoryInfo directoryInfo) {
+            
+            
+                foreach (FileInfo file in directoryInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                foreach (DirectoryInfo subfolder in directoryInfo.GetDirectories())
+                {
+                startUp(subfolder);
+                }
+            
+        }
+            
+        public static void fileWrite(string output, string table, string type,string method) {
+            table=table.Replace("?", "");
+            System.IO.Directory.CreateDirectory(SeparatePath + type + "\\");
+            StreamWriter writer = new StreamWriter(SeparatePath + type + "\\" + table+"_"+method+".txt",true);
+            writer.Write(output + "\n");
+            writer.Flush();
+            writer.Close();
+        
+        
+        }
+
     }
 }

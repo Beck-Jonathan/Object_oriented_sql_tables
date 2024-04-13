@@ -146,11 +146,78 @@ namespace Data_Objects
             if (type == 16) { middle = "create the XAML Window for the " + table + " table"; }
             if (type == 17) { middle = "create the c# Window for the " + table + " table"; }
             if (type == 18) { middle = "Insert Sample Data For The  " + table + " table"; }
-            if (type == 19) { middle = "Create the JSP  For adding to The  " + table + " table"; }
-            if (type == 20) { middle = "Create the JSP  For Viewing All of The  " + table + " table"; }
+            if (type == 19) {
+                start_stars = "<%--************\n";
+                middle = "Create the JSP  For adding to The  " + table + " table";
+                end_stars = "\n**********--%>\n";
+            }
+            if (type == 20) {
+                start_stars = "<%--************\n";
+                middle = "Create the JSP  For Viewing All of The  " + table + " table";
+                end_stars = "\n**********--%>\n";
+            }
             if (type == 21) { middle = "Create the Servlet  For adding to The  " + table + " table"; }
             if (type == 22) { middle = "Create the Servlet  For Viewing all of the  " + table + " table"; }
+            if (type == 23)
+            {
+                middle = "Create the undelete script for the " + table + " table";
+            }
+            if (type == 24) {
+                middle = "Create The Retreive_By_Active script for the " + table + " table";
+            }
+            if (type == 25)
+            {
+                middle = "Create the Servlet For Deleteing from the " + table + " table";
+            }
+            if (type == 26)
+            {
+                
+                start_stars = "<%--************\n";
+                middle = "Create the JSP For Viuw/Edit from the " + table + " table";
+                end_stars = "\n**********--%>\n";
+            }
+            if (type == 27)
+            {
+                middle = "Create the Servlet Viuw/Edit from the " + table + " table";
+            }
+            if (type == 28)
+            {
+                middle = "Create the Select Disctint for Drop downs from the " + table + " table";
+            }
+            if (type == 29)
+            {
+                middle = "Create the Logic Layer Manager for the " + table + " table";
+            }
+            if (type == 30)
+            {
+                middle = "Create the Logic Layer Add method for the  " + table + " table";
+            }
+            if (type == 31)
+            {
+                middle = "Create the Logic Layer Delete method for the " + table + " table";
+            }
+            if (type == 32)
+            {
+                middle = "Create the Logic Layer Undelete method for the " + table + " table";
+            }
+            if (type == 33)
+            {
+                middle = "Create the Logic Layer Retreive by Primary Key method for the" + table + " table";
+            }
+            if (type == 34)
+            {
+                middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+            }
+            if (type == 35)
+            {
+                middle = "Create the Logic Layer Update method for the " + table + " table";
+            }
 
+
+
+
+
+            middle += "\n Created By Jonathan Beck " + DateTime.Now.ToShortDateString() ;
             PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
 
 

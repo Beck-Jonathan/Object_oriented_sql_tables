@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Data_Objects
 {
@@ -72,6 +69,10 @@ namespace Data_Objects
             throw new NotImplementedException();
         }
 
+        public String gen_retreive_by_active()
+        {
+            return "";
+        }
         public string gen_retreive_by_fkey(foreignKey key)
         {
             throw new NotImplementedException();
@@ -98,6 +99,16 @@ namespace Data_Objects
         }
 
         public string gen_update_trigger()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string gen_table_footer()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string gen_select_distinct_for_dropdown()
         {
             throw new NotImplementedException();
         }

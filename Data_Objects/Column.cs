@@ -78,6 +78,13 @@ namespace Data_Objects
             String Column_text = "";
             Column_text = Column_text + column_name + "\t";
             Column_text = Column_text + data_type + length_text + "\t";
+            if (default_value != ""&&data_type.toCSharpDataType().ToLower()!="string") {
+                Column_text = Column_text + "DEFAULT " + default_value+"\t";
+            }
+            if (default_value != "" && data_type.toCSharpDataType().ToLower() == "string")
+            {
+                Column_text = Column_text + "DEFAULT \"" + default_value + "\"\t";
+            }
             if (settings.TSQLMode)
             {
                 if (identity != "")
@@ -99,10 +106,7 @@ namespace Data_Objects
             if (unique.Equals('Y') || unique.Equals('y')) { Column_text = Column_text + "unique\t"; }
             if (primary_key.Equals('Y') || primary_key.Equals('y')) { primary_keys.Add(column_name); }
             if (foreign_key.Length >= 1) { foreign_keys.Add(this.references); }
-            if (settings.TSQLMode)
-            {
-                Column_text = Column_text + "\n";
-            }
+            
 
             else { Column_text = Column_text + "comment \'" + description + "\'\n"; }
             return Column_text;

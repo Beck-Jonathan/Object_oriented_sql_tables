@@ -23,7 +23,7 @@ namespace Data_Objects
 
         string gen_alternate_keys();
 
-
+        String gen_table_footer();
         String gen_header();
 
         String audit_gen_header();
@@ -51,6 +51,8 @@ namespace Data_Objects
 
         // to generate the SP_retrive, showing all data in a table
         String gen_retreive_by_all();
+        // to generate the SP_retrive_active, showing all data in a table
+        String gen_retreive_by_active();
 
         // to generate the SP_insert
         string gen_insert();
@@ -65,9 +67,11 @@ namespace Data_Objects
         String gen_delete_trigger();
         String gen_update();
 
-
+        String gen_select_distinct_for_dropdown();
 
         String gen_sample_space();
+
+
 
 
 
