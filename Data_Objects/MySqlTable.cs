@@ -20,9 +20,9 @@ namespace Data_Objects
         public String gen_primary_keys()
         {
             //generate the primary keys based on key_gen that was done in the rwos
-            if (!settings.TSQLMode)
-            {
-                String key_string = ",CONSTRAINT " + name + "_PK PRIMARY KEY (";
+            
+            
+                String key_string = "CONSTRAINT " + name + "_PK PRIMARY KEY (";
                 int count = 0;
                 foreach (Column r in columns)
                 {
@@ -33,48 +33,30 @@ namespace Data_Objects
                         count++;
                     }
                 }
-                key_string = key_string + ")\n";
+                key_string = key_string + "),";
 
                 return key_string;
-            }
-            else
-            {
-                {
-                    name = name.Replace("[dbo].[", "");
-                    name = name.Replace("]", "");
-                    String key_string = ",CONSTRAINT [PK_" + name + "] PRIMARY KEY (";
-                    int count = 0;
-                    foreach (Column r in columns)
-                    {
-                        foreach (string s in r.primary_keys)
-                        {
-                            if (count > 0) { key_string = key_string + " , "; }
-                            key_string = key_string + s;
-                            count++;
-                        }
-                    }
-                    key_string = key_string + ")\n";
-
-                    return key_string;
-                }
-            }
+            
+            
         }
         public String gen_foreign_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
             int count = 0;
             foreign_keys = new List<String>();
             String output_keys = "";
+            
             foreach (Column r in columns)
             {
                 foreach (string s in r.foreign_keys)
                 {
                     if (r.foreign_keys[0].Length > 0)
                     {
-                        
-                        
+
+                        string start = "";
+                            if (count > 0) { start = ",\n"; }
                             String[] chunks = s.Split('.');
                             String second_table = chunks[0];
-                            String formatted_key = ",CONSTRAINT fk_" + name + "_" + second_table + count + " foreign key (" + chunks[1] + ") references " + chunks[0] + " (" + chunks[1] + ")" + "\n";
+                            String formatted_key = start+"CONSTRAINT fk_" + name + "_" + second_table + count + " foreign key (" + chunks[1] + ") references " + chunks[0] + " (" + chunks[1] + ")" + "";
 
                             foreign_keys.Add(formatted_key);
 
@@ -108,10 +90,8 @@ namespace Data_Objects
                 {
                     if (r.unique == 'y' || r.unique == 'Y')
                     {
-                        
-                        
 
-                            String formatted_key = "\n ,UNIQUE (" + r.column_name + ")\n";
+                            String formatted_key = ",\n UNIQUE (" + r.column_name + ")";
 
                             alternate_keys.Add(formatted_key);
 
@@ -155,11 +135,11 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 String rowtext = r.column_and_key_gen();
-                if (count > 0) { x = x + ","; }
+                if (count > 0) { x = x + ",\n"; }
                 x = x + rowtext;
                 count++;
             }
-            ;
+            x = x + ",\n";
 
 
             return x;
@@ -408,10 +388,34 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma +name+"."+ r.column_name + " \n";
+                function_text = function_text + comma + genSelectLine(name, r.column_name);
                 count++;
+                
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey) {
+                if (fk.mainTable.Equals(name))
+                {                   
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+            
             function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey) {
+                if (fk.mainTable.Equals(name)) {
+                    function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName+"\n";
+                }
+            }
             String initial_word = "where ";
             int keys_count = 0;
             foreach (Column r in columns)
@@ -451,11 +455,7 @@ namespace Data_Objects
             String secondLine = "CREATE PROCEDURE sp_retreive_" + key.referenceTable + "by" + key.mainTable + "_ID;\n"
                 + "(\n";
 
-            if (settings.TSQLMode)
-            {
-                firstLine = "";
-                secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_" + key.referenceTable + "by" + key.mainTable + "_ID]\n(";
-            }
+            
             String function_text = firstLine + secondLine;
 
 
@@ -475,10 +475,35 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + name + "." + r.column_name + " \n";
+                function_text = function_text + comma + genSelectLine(name, r.column_name);
                 count++;
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+                             }
+                        }
+                    }
+                }
+            }
             function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName + "\n";
+                }
+            }
             String initial_word = "where ";
             int keys_count = 0;
             foreach (Column r in columns)
@@ -486,29 +511,16 @@ namespace Data_Objects
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     if (keys_count > 0) { initial_word = "AND "; }
-                    add = "";
-                    if (settings.TSQLMode) { add = initial_word + r.column_name + "=" + r.column_name.Replace("]", "").Replace("[", "@") + " \n"; }
-                    else
-                    {
-                        add = initial_word + r.column_name + "=" + r.column_name + "\n";
-                    }
+                    add = "";                  
+                    add = initial_word + r.column_name + "=" + r.column_name + "\n";
+                    
                     function_text = function_text + add;
                     keys_count++;
                 }
             }
-
-            if (settings.TSQLMode)
-            {
-                function_text = function_text + " END \n" +
-                       " GO\n";
-            }
-            if (!settings.TSQLMode)
-            {
-                function_text = function_text + " ; END $$\n" +
+            function_text = function_text + " ; END $$\n" +
                    " DELIMITER ;\n";
-            }
-
-
+            
 
             String full_text = comment_text + function_text;
             return full_text;
@@ -538,11 +550,38 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + "\n" + comma + name + "." + r.column_name;
+                function_text = function_text + "" + comma + genSelectLine(name, r.column_name);
                 count++;
             }
-            
-             function_text = function_text + "\n FROM " + name + "\n ;\n END $$ \n DELIMITER ;\n"; 
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            function_text = function_text + "\n FROM " + name+"\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName + "\n";
+                }
+            }
+            function_text =function_text+"\n ;\n END $$ \n DELIMITER ;\n"; 
 
 
 
@@ -572,12 +611,38 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + "\n" + comma + name + "." + r.column_name;
+                function_text = function_text + "" + comma + genSelectLine(name, r.column_name);
                 count++;
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma +genSelectLine(t.name, r.column_name);
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
 
-            function_text = function_text + "\n FROM " + name + "\n" +
-                "where is_active=1\n" +
+            function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName + "\n";
+                }
+            }
+
+            function_text =function_text + "where is_active=1\n" +
                 " ;\n END $$ \n DELIMITER ;\n";
 
 
@@ -839,7 +904,11 @@ namespace Data_Objects
         }
 
 
+        private string genSelectLine(string tablename, string column_name) {
 
+
+            return "\n"+tablename + "." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
+        }
         public string gen_sample_space()
         {
             string result = "";
@@ -893,5 +962,7 @@ namespace Data_Objects
 
 
         }
+
+        
     }
 }

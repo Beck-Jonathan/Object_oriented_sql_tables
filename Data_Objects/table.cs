@@ -45,7 +45,7 @@ namespace Data_Objects
             string comment = comment_box_gen.comment_box(name, 11);
             string header = "public interface I" + name + "Accessor \n{\n";
 
-            string addThing = "int add " + name + "(" + name + " _" + name + ");\n";
+            string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
 
 
 
@@ -58,7 +58,7 @@ namespace Data_Objects
             count = 0;
             string updateThing = "int update" + name + "(";
 
-            updateThing = updateThing + name + "_old" + name + " , " + name + " _new" + name;
+            updateThing = updateThing + name +  "_old" + name + " , " + name + " _new" + name;
             updateThing = updateThing + ");\n";
 
 
@@ -216,7 +216,7 @@ namespace Data_Objects
             result = result + "_"+name.ToLower()+"Accessor = new "+name+"Accessor();\n";
             result = result + "}\n";
             result = result + "//the optional constuctor can accept any data provider\n";
-            result = result + "public"+name+"Manager(I"+name+"Accessor "+name.ToLower()+"Accessor)\n";
+            result = result + "public "+name+"Manager(I"+name+"Accessor "+name.ToLower()+"Accessor)\n";
             result = result + "{\n";
             result = result + "_"+name.ToLower()+"Accessor = "+name.ToLower()+"Accessor;\n";
             result = result + "}\n";
@@ -246,7 +246,7 @@ namespace Data_Objects
         }
         private String genManagerDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
-            string purgeThing = "int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
+            string purgeThing = "public int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
             purgeThing = purgeThing + "int result = 0;\n";
             purgeThing = purgeThing + "try{\n";
             purgeThing = purgeThing + "result = _" + name.ToLower() + "Accessor.delete" + name + "("+name.ToLower()+"."+name+"Id);\n";
@@ -265,7 +265,7 @@ namespace Data_Objects
         }
         private String genManagerUnDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
-            string purgeThing = "int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
+            string purgeThing = "public int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
             purgeThing = purgeThing + "int result = 0;\n";
             purgeThing = purgeThing + "try{\n";
             purgeThing = purgeThing + "result = _" + name.ToLower() + "Accessor.undelete" + name + "(" + name.ToLower() + "."+name+"Id);\n";
@@ -287,7 +287,7 @@ namespace Data_Objects
         }
         private string genManagerPK() {
             string comment = comment_box_gen.comment_box(name, 33);
-            string retreiveThing = name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
+            string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
             retreiveThing = retreiveThing + name+" result =null ;\n";
             retreiveThing = retreiveThing + "try{\n";
             retreiveThing = retreiveThing + "result = _" + name.ToLower() + "Accessor.select" + name + "ByPrimaryKey(" + name + "ID);\n";
@@ -306,7 +306,7 @@ namespace Data_Objects
         }
         private string genManagerAll() {
             string comment = comment_box_gen.comment_box(name, 34);
-            string retreiveAll ="List<"+ name + "> get" + name + "ByAll(string " + name + "ID){\n";
+            string retreiveAll = "public List<" + name + "> get" + name + "ByAll(){\n";
             retreiveAll = retreiveAll + "List<"+name + "> result =new List<"+name+">();\n";
             retreiveAll = retreiveAll + "try{\n";
             retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "();\n";
@@ -323,7 +323,7 @@ namespace Data_Objects
         }
         private string genManagerUpdate() {
             string comment = comment_box_gen.comment_box(name, 35);
-            string updateThing =  "int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
+            string updateThing = "public int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
             updateThing = updateThing +  "int result =0 ;\n";
             updateThing = updateThing + "try{\n";
             updateThing = updateThing + "result = _" + name.ToLower() + "Accessor.update" + name + "(old" + name+", new" +name+ ");\n";
@@ -370,7 +370,7 @@ namespace Data_Objects
 
             if (foreign_keys.Count > 0)
             {
-                output = output + "public class" + name + "VM: " + name + "\n{\n";
+                output = output + "public class " + name + "VM: " + name + "\n{\n";
                 foreach (Column r in columns)
                 {
 
@@ -586,18 +586,34 @@ namespace Data_Objects
             count = 0;
             foreach (Column r in columns)
             {
-                if (r.nullable.Equals('n') || r.nullable.Equals("N"))
-                {
-                    retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
-                    count++;
-                }
-                else
-                {
-                    retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + count + ") ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
-                    count++;
-                }
+                retreiveThing=getCSharpOrdinal(r);
+                count++;
 
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+
+
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            retreiveThing = retreiveThing + "Output." + t.name + "= new" + t.name + "();\n";
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                retreiveThing = retreiveThing  + getCSharpOrdinal(t, r);
+                                count++;
+
+                            }
+
+                        }
+                    }
+                }
+            }
+
             retreiveThing = retreiveThing + "\n}\n";
             retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" + name + " not found\");\n}\n}";
 
@@ -639,17 +655,32 @@ namespace Data_Objects
             count = 0;
             foreach (Column r in columns)
             {
-                if (r.nullable.Equals('n') || r.nullable.Equals("N"))
-                {
-                    retreiveAllThing = retreiveAllThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
-                    count++;
-                }
-                else
-                {
-                    retreiveAllThing = retreiveAllThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + count + ") ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(" + count + ");\n";
-                    count++;
-                }
+                retreiveAllThing= retreiveAllThing+getCSharpOrdinal(r);
+                count++;
 
+            }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+
+
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            retreiveThing = retreiveThing + "Output." + t.name + "= new" + t.name + "();\n";
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                retreiveAllThing = retreiveAllThing  + getCSharpOrdinal(t, r);
+                                count++;
+
+                            }
+
+                        }
+                    }
+                }
             }
             retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
             retreiveAllThing = retreiveAllThing + "\n}\n}";
@@ -672,7 +703,7 @@ namespace Data_Objects
 
 
             updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
-            updateThing = updateThing + ");\n";
+            updateThing = updateThing + "){\n";
 
             updateThing = updateThing + genSPHeaderA("sp_update_" + name);
             //add parameters
@@ -1133,7 +1164,7 @@ namespace Data_Objects
             for (int i = 0; i < columns.Count; i++)
                 if (columns[i].primary_key == 'y' || columns[i].primary_key == 'Y')
                 {
-                    result = result + "statement.setString(1, _" + name.ToLower() + ".get" + columns[i].column_name + "().toString());\n";
+                    result = result + "statement.setString(1, _" + name.ToLower() + ".get" + columns[i].column_name.bracketStrip() + "().toString());\n";
                 }
             result = result + "\ntry (ResultSet resultSet = statement.executeQuery()){";
             result = result + "\nif(resultSet.next()){";
@@ -1141,17 +1172,41 @@ namespace Data_Objects
             {
 
 
-                result = result + r.data_type.toJavaDataType() + " " + r.column_name + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + r.column_name + "\");\n";
+                result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name+"_"+r.column_name.bracketStrip() + "\");\n";
                 if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
                 {
 
                     result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
                 }
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+
+                                result = result + r.data_type.toJavaDataType() + " " +t.name+"_"+ r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + t.name + "_" + r.column_name.bracketStrip() + "\");\n";
+                                if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
+                                {
+
+                                    result = result + "if(resultSet.wasNull()){\n" + t.name + "_" + r.column_name.bracketStrip() + "=" + nullValue + ";}\n";
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
             result = result + "result = new " + name + "(";
             foreach (Column r in columns)
             {
-                result = result + comma + " " + r.column_name;
+                result = result + comma + " " + r.column_name.bracketStrip();
                 comma = ",";
             }
 
@@ -1189,7 +1244,7 @@ namespace Data_Objects
                     nullValue = "0";
                 }
                 else { nullValue = "\"\""; }
-                result = result + r.data_type.toJavaDataType() + " " + r.column_name + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + r.column_name + "\");\n";
+                result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
                 if (r.nullable == 'y' || r.nullable == 'Y')
                 {
 
@@ -1199,7 +1254,7 @@ namespace Data_Objects
             result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
             foreach (Column r in columns)
             {
-                result = result + comma + " " + r.column_name;
+                result = result + comma + " " + r.column_name.bracketStrip();
                 comma = ",";
             }
             result = result + ");";
@@ -1224,9 +1279,9 @@ namespace Data_Objects
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result = result + "try (Connection connection = getConnection()) { \n";
             result = result + "if (connection != null) {\n";
-            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_active_" + name + "()}\")) {";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_active_" + name + "()}\"))\n {";
             result = result + "try(ResultSet resultSet = statement.executeQuery()) {\n";
-            result = result + "while (resultSet.next()) {";
+            result = result + "while (resultSet.next()) {\n";
             foreach (Column r in columns)
             {
                 if (r.data_type.toJavaDataType().Equals("Integer"))
@@ -1234,7 +1289,7 @@ namespace Data_Objects
                     nullValue = "0";
                 }
                 else { nullValue = "\"\""; }
-                result = result + r.data_type.toJavaDataType() + " " + r.column_name + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + r.column_name + "\");\n";
+                result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
                 if (r.nullable == 'y' || r.nullable == 'Y')
                 {
 
@@ -1244,7 +1299,7 @@ namespace Data_Objects
             result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
             foreach (Column r in columns)
             {
-                result = result + comma + " " + r.column_name;
+                result = result + comma + " " + r.column_name.bracketStrip();
                 comma = ",";
             }
             result = result + ");";
@@ -1282,10 +1337,10 @@ namespace Data_Objects
             result = result + ")}\"))\n {\n";
             int count = 1;
             foreach (Column r in columns) { 
-            result=result+"statement.set"+r.data_type.toJavaDAODataType()+"("+count+",old"+name+".get"+r.column_name + "());\n";
+            result=result+"statement.set"+r.data_type.toJavaDAODataType()+"("+count+",old"+name+".get"+r.column_name.bracketStrip() + "());\n";
                 count++;
                 if (r.primary_key != 'y' && r.primary_key != 'Y') {
-                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "("+count+",new" + name + ".get" + r.column_name + "());\n";
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "("+count+",new" + name + ".get" + r.column_name.bracketStrip() + "());\n";
                     count++;
                 }
             }
@@ -1375,7 +1430,7 @@ namespace Data_Objects
             {
                 if (r.identity == "" && r.default_value == "")
                 {
-                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",_" + name.ToLower() + ".get" + r.column_name.bracketStrip() + "());\n";
                     count++;
                 }
             }
@@ -2129,6 +2184,45 @@ namespace Data_Objects
             return result;
         
         
+        }
+
+        private string getCSharpOrdinal(Column r) {
+            String retreiveThing = "";
+            if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
+            {
+                retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
+                
+            }
+            else
+            {
+                retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
+                
+            }
+
+
+            return retreiveThing;
+        
+        
+        }
+
+        private string getCSharpOrdinal(table t, Column r) {
+            String retreiveThing = "";
+            if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
+            {
+                retreiveThing = retreiveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
+
+            }
+            else
+            {
+                retreiveThing = retreiveThing + "output." +t.name+"."+ r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
+
+            }
+
+
+            return retreiveThing;
+
+
+
         }
 
 

@@ -108,7 +108,7 @@ namespace Data_Objects
             if (foreign_key.Length >= 1) { foreign_keys.Add(this.references); }
             
 
-            else { Column_text = Column_text + "comment \'" + description + "\'\n"; }
+            Column_text = Column_text + "comment \'" + description + "\'"; 
             return Column_text;
 
         }
@@ -122,7 +122,7 @@ namespace Data_Objects
             if (nullable.Equals('Y') || nullable.Equals('y')) { Column_Text = Column_Text + "null\t"; }
             else { Column_Text = Column_Text + "not null\t"; }
             if (unique.Equals('Y') || unique.Equals('y')) { Column_Text = Column_Text + "unique\t"; }
-            Column_Text = Column_Text + "comment \'" + description + "\'\n";
+            Column_Text = Column_Text + "comment \'" + description + "\'";
             return Column_Text;
 
 

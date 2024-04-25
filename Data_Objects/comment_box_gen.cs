@@ -222,7 +222,7 @@ namespace Data_Objects
 
 
             full_comment_box = start_stars + middle + end_stars;
-            if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
+            //if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
             return full_comment_box;
         }
     }

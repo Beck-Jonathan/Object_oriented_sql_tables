@@ -24,7 +24,7 @@ namespace Data_Objects
                 full_header = comment_box_gen.comment_box(table_name, 1) +
                 "\n\n" +
 
-                "CREATE TABLE " + table_name + "(\n\n"
+                "CREATE TABLE " + table_name + "(\n"
                 ;
             }
 
@@ -32,8 +32,8 @@ namespace Data_Objects
             {
                 full_header = comment_box_gen.comment_box(table_name, 1) +
                 "\n\n" +
-                "DROP TABLE IF EXISTS " + table_name + ";\n\n" +
-                "CREATE TABLE " + table_name + "(\n\n"
+                "DROP TABLE IF EXISTS " + table_name + ";\n" +
+                "CREATE TABLE " + table_name + "(\n"
                 ;
             }
 

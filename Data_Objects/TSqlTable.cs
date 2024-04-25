@@ -25,7 +25,7 @@ namespace Data_Objects
                 {
                     name = name.Replace("[dbo].[", "");
                     name = name.Replace("]", "");
-                    String key_string = ",CONSTRAINT [PK_" + name + "] PRIMARY KEY (";
+                    String key_string = "CONSTRAINT [PK_" + name + "] PRIMARY KEY (";
                     int count = 0;
                     foreach (Column r in columns)
                     {
@@ -36,7 +36,7 @@ namespace Data_Objects
                             count++;
                         }
                     }
-                    key_string = key_string + ")\n";
+                    key_string = key_string + "),\n";
 
                     return key_string;
                 }
@@ -45,22 +45,23 @@ namespace Data_Objects
         public String gen_foreign_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
             int count = 0;
+            string and = "";
             foreign_keys = new List<String>();
             String output_keys = "";
             foreach (Column r in columns)
             {
                 foreach (string s in r.foreign_keys)
                 {
+                    if (count > 0) { and = ",\n"; }
                     if (r.foreign_keys[0].Length > 0)
                     {
-                        if (settings.TSQLMode)
-                        {
+                        
                             String[] chunks = s.Split('.');
                             String second_table = chunks[0];
-                            String formatted_key = ",\nCONSTRAINT [fk_" + name + "_" + second_table + count + "] foreign key ([" + chunks[1] + "]) references [" + chunks[0] + "]([" + chunks[1] + "])" + "\n";
+                            String formatted_key = and+"CONSTRAINT [fk_" + name + "_" + second_table + count + "] foreign key ([" + chunks[1] + "]) references [" + chunks[0] + "]([" + chunks[1] + "])" + "";
 
                             foreign_keys.Add(formatted_key);
-                        }
+                        
                         
                     }
                     count++;
@@ -137,7 +138,7 @@ namespace Data_Objects
 
             int count = 0;
             String x = this.gen_header();
-            x = x + "\n";
+            x = x + "";
             foreach (Column r in columns)
             {
                 String rowtext = r.column_and_key_gen();
@@ -145,7 +146,7 @@ namespace Data_Objects
                 x = x + rowtext;
                 count++;
             }
-            ;
+            x = x + ",\n";
 
 
             return x;
@@ -182,7 +183,7 @@ namespace Data_Objects
             if (settings.TSQLMode)
             {
                 string function_text = "";
-                function_text = "CREATE PROCEDURE [DBO].[sp_update_" + name + "]\n(";
+                function_text = "CREATE PROCEDURE [dbo].[sp_update_" + name + "]\n(";
                 count = 0;
                 comma = "";
                 foreach (Column r in columns)
@@ -342,7 +343,7 @@ namespace Data_Objects
             
             
             
-            String function_text = "CREATE PROCEDURE [DBO].[sp_retreive_by_pk_" + name + "]\n(";
+            String function_text = "CREATE PROCEDURE [dbo].[sp_retreive_by_pk_" + name + "]\n(";
             
             
             int count = 0;
@@ -360,7 +361,7 @@ namespace Data_Objects
                     count++;
                 }
             }
-            function_text = function_text + ")";
+            function_text = function_text + "\n)";
 
             count = 0;
             comma = "";
@@ -370,10 +371,39 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma+"\n" + "["+name + "]." + r.column_name + " ";
+                function_text = function_text + comma + "" + genSelectLine(name, r.column_name);
                 count++;
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+
+
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+
+                            }
+
+                        }
+                    }
+                }
+            }
             function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
+                }
+            }
             String initial_word = "where ";
             int keys_count = 0;
             foreach (Column r in columns)
@@ -389,11 +419,10 @@ namespace Data_Objects
                 }
             }
 
-            if (settings.TSQLMode)
-            {
+            
                 function_text = function_text + " END \n" +
                        " GO\n";
-            }
+            
             
 
 
@@ -411,7 +440,7 @@ namespace Data_Objects
             
 
             
-            String    function_text = "CREATE PROCEDURE [DBO].[sp_retreive_" + key.referenceTable + "by" + key.mainTable + "_ID]\n(";
+            String    function_text = "CREATE PROCEDURE [dbo].[sp_retreive_" + key.referenceTable + "by" + key.mainTable + "_ID]\n(";
             
             
 
@@ -432,10 +461,39 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + "\n"+comma + "[" + name + "]." + r.column_name + "";
+                function_text = function_text + "\n"+comma + genSelectLine(name, r.column_name);
                 count++;
             }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+
+
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+
+                            }
+
+                        }
+                    }
+                }
+            }
             function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
+                }
+            }
             String initial_word = "where ";
             int keys_count = 0;
             foreach (Column r in columns)
@@ -472,7 +530,7 @@ namespace Data_Objects
             
             
             String    firstLine = "";
-            String    secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_by_all_" + name + "]\nAS\n";
+            String    secondLine = "CREATE PROCEDURE [dbo].[sp_retreive_by_all_" + name + "]\nAS\n";
             
             String function_text = firstLine + secondLine;
 
@@ -489,10 +547,40 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma+"\n" + "[" + name + "]." + r.column_name;
+                function_text = function_text + comma+ genSelectLine(name, r.column_name);
                 count++;
             }
-            function_text = function_text + "\n FROM " + name + "\n ;\n END  \n GO\n"; 
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+
+
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+
+                            }
+
+                        }
+                    }
+                }
+            }
+            function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
+                }
+            }
+            function_text = function_text + "\n ;\n END  \n GO\n"; 
             
 
 
@@ -508,7 +596,7 @@ namespace Data_Objects
 
 
             String firstLine = "";
-            String secondLine = "CREATE PROCEDURE [DBO].[sp_retreive_by_active_" + name + "]\nAS\n";
+            String secondLine = "CREATE PROCEDURE [dbo].[sp_retreive_by_active_" + name + "]\nAS\n";
 
             String function_text = firstLine + secondLine;
 
@@ -525,12 +613,40 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text  + comma + "\n[" + name + "]." + r.column_name;
+                function_text = function_text  + comma + genSelectLine(name, r.column_name);
                 count++;
             }
-            function_text = function_text + "\n FROM " + name + "\n " +
-                "where is_active=1\n" +
-                ";\n END  \n GO\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+
+
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                if (count > 0) { comma = ","; }
+                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                count++;
+
+                            }
+
+                        }
+                    }
+                }
+            }
+            function_text = function_text + "\n FROM " + name + "\n";
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
+                }
+            }
+            function_text = function_text + "\n " + "where is_active=1\n" + ";\n END  \n GO\n";
 
 
 
@@ -544,7 +660,7 @@ namespace Data_Objects
         {
             String comment_text = comment_box_gen.comment_box(name, 7);
             
-            String function_text = "CREATE PROCEDURE [DBO].[sp_insert" + name + "]\n(";
+            String function_text = "CREATE PROCEDURE [dbo].[sp_insert" + name + "]\n(";
             int count = 0;
             String comma = "";
             foreach (Column r in columns)
@@ -637,7 +753,7 @@ namespace Data_Objects
 
 
             String firstLine = "";
-            String secondLine = "CREATE PROCEDURE [DBO].[sp_select_distinct_and_active_"+name+"for_dropdown]\nAS\n";
+            String secondLine = "CREATE PROCEDURE [dbo].[sp_select_distinct_and_active_" + name+"for_dropdown]\nAS\n";
 
             String function_text = firstLine + secondLine;
 
@@ -671,6 +787,13 @@ namespace Data_Objects
             return full_text;
         }
 
+
+        private string genSelectLine(string tablename, string column_name)
+        {
+
+
+            return "\n["+tablename + "]." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
+        }
 
         public string gen_sample_space()
         {
@@ -718,5 +841,7 @@ namespace Data_Objects
 
 
         }
+
+        
     }
 }

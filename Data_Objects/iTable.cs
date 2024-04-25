@@ -71,14 +71,7 @@ namespace Data_Objects
 
         String gen_sample_space();
 
-
-
-
-
-
-
-
-
+       
 
 
     }

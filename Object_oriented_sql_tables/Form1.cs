@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
@@ -82,6 +83,8 @@ namespace Object_oriented_sql_tables
             file_write.fileWrite(analysis, "analysis", "analysis","analysis");
             foreach (iTable t in data_tables.all_tables)
             {
+                t.name = t.name.Replace("[dbo].[", "");
+                t.name = t.name.Replace("]", "");
                 these_settings = settings.all_options[count];
                 string s = "";
                 List<String> st = new List<String>();
