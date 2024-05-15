@@ -25,13 +25,14 @@ namespace Data_Access
         public static StreamWriter BatchBuddy = new StreamWriter(FilesPath + "Create_DB.bat");
         public static StreamWriter JSPBuddy = new StreamWriter(jspPath);
         public static StreamWriter ServletBuddy = new StreamWriter(servletPath);
-        public static string SeparatePath = "C:\\Users\\jjbec\\Desktop\\Spring_2024\\Table_Gen\\";
+        public static string SeparatePath = "C:\\Table_Gen\\";
         public static void startUp(DirectoryInfo directoryInfo) {
-            
-            
-                foreach (FileInfo file in directoryInfo.GetFiles())
+            System.IO.Directory.CreateDirectory(SeparatePath);
+
+            foreach (FileInfo file in directoryInfo.GetFiles())
                 {
-                    file.Delete();
+                
+                file.Delete();
                 }
 
                 foreach (DirectoryInfo subfolder in directoryInfo.GetDirectories())
