@@ -669,7 +669,7 @@ namespace Data_Objects
                     {
                         if (t.name.Equals(fk.referenceTable))
                         {
-                            retreiveThing = retreiveThing + "Output." + t.name + "= new" + t.name + "();\n";
+                            retreiveAllThing = retreiveAllThing + "Output." + t.name + "= new" + t.name + "();\n";
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }

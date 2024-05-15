@@ -753,7 +753,7 @@ namespace Data_Objects
 
 
             String firstLine = "";
-            String secondLine = "CREATE PROCEDURE [dbo].[sp_select_distinct_and_active_" + name+"for_dropdown]\nAS\n";
+            String secondLine = "CREATE PROCEDURE [dbo].[sp_select_distinct_and_active_" + name+"_for_dropdown]\nAS\n";
 
             String function_text = firstLine + secondLine;
 
