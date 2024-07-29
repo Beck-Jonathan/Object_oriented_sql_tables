@@ -446,10 +446,11 @@ namespace Data_Objects
 
 
             String add = "";
-            add = "@" + key.fieldName.bracketStrip() + " " + key.dataType + key.lengthText + "\n"; 
-            
-            function_text = function_text + add;
+            add = "@" + key.fieldName.bracketStrip() + " " + key.dataType + key.lengthText + "\n";
 
+            function_text = function_text + add +
+                "@limit_param int\n" +
+                "@offset_param int ";
 
 
             function_text = function_text + ")";
@@ -508,9 +509,25 @@ namespace Data_Objects
                     keys_count++;
                 }
             }
+            function_text = function_text + "\nORDER BY ";
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (count > 0) { comma = ","; }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    add = "";
+                    add = comma + "[" + r.column_name + "]\n";
+                    function_text = function_text + add;
+                    count++;
+                }
+            }
+            function_text = function_text + "limit @limit_param\n";
+            function_text = function_text + "offset @offset_param\n";
 
-            
-                function_text = function_text + " END \n" +
+
+
+            function_text = function_text + " END \n" +
                        " GO\n";
             
             
@@ -530,7 +547,10 @@ namespace Data_Objects
             
             
             String    firstLine = "";
-            String    secondLine = "CREATE PROCEDURE [dbo].[sp_retreive_by_all_" + name + "]\nAS\n";
+            String    secondLine = "CREATE PROCEDURE [dbo].[sp_retreive_by_all_" + name + "](\n" +
+                "@limit_param int\n" +
+                "@offset_param int " +
+                ")\nAS\n";
             
             String function_text = firstLine + secondLine;
 
@@ -580,6 +600,21 @@ namespace Data_Objects
                     function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
                 }
             }
+            function_text = function_text + "\nORDER BY ";
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (count > 0) { comma = ","; }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    String add = "";
+                    add = comma +"["+ r.column_name + "]\n";
+                    function_text = function_text + add;
+                    count++;
+                }
+            }
+            function_text = function_text + "limit @limit_param\n";
+            function_text = function_text + "offset @offset_param\n";
             function_text = function_text + "\n ;\n END  \n GO\n"; 
             
 

@@ -13,6 +13,7 @@ namespace appData2
         public static int table_count;
         public static List<List<Boolean>> all_options = new List<List<Boolean>>();
         public static List<String> table_names = new List<String>();
+        public static int page_size;
 
         // to set all tables to have the first 3 options selected by default
         public static void generate_options()

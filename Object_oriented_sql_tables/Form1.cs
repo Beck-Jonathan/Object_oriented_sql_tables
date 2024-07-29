@@ -14,9 +14,11 @@ namespace Object_oriented_sql_tables
 {
     public partial class Form1 : Form
     {
+        public static int page_size;
         public static List<char> these_settings = new List<char>();
         public Form1()
         {
+            page_size = 5;
             settings.app_path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             settings.app_path = settings.app_path.Substring(0, settings.app_path.Length - 30);
             settings.TSQLMode = false;
@@ -70,6 +72,8 @@ namespace Object_oriented_sql_tables
         private void btn_generateTable_Click(object sender, System.EventArgs e)
         {
             int x = 0;
+            page_size = (int)NUD_page_size.Value;
+            appData2.settings.page_size = page_size;
             // to clean the destination foloder
             var folder = file_write.SeparatePath;
             file_write.startUp(new DirectoryInfo(folder));
@@ -425,6 +429,9 @@ namespace Object_oriented_sql_tables
 
         }
 
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
 
+        }
     }
 }

@@ -213,6 +213,11 @@ namespace Data_Objects
                 middle = "Create the Logic Layer Update method for the " + table + " table";
             }
 
+            if (type == 36)
+            {
+                middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+            }
+
 
 
 

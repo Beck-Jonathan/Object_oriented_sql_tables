@@ -1,6 +1,7 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
@@ -137,26 +138,40 @@ namespace Data_Objects
 
 
             string getThingbyPK = name + " get" + name + "ByPrimaryKey(string " + name + "ID);\n";
-            string getallThing = "List<" + name + "> getAll" + name + "();\n";
+            string getallThing = "List<" + name + "> getAll" + name + "();\n" +
+                                   "List<" + name + "> getAll" + name + "(int offset);\n" +
+                                   "List<" + name + "> getAll" + name + "(int limit, int offset);\n";
+            List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
+            string getfkThing = "";
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    getfkThing = getfkThing + "List<" + name + "> get" + name + "by"+fk_table+"("+fk_name+");\n" +
+                                   "List<" + name + "> getAll"  +name + "by" + fk_table + "("+fk_name+",int offset);\n" +
+                                   "List<" + name + "> getAll" + name + "by" + fk_table + "("+fk_name+",int limit, int offset);\n";
+                }
+            }
+           
 
 
-
-            comma = "";
-            count = 0;
             string editThing = "int edit" + name + "(";
             editThing = editThing + name + " _old" + name + " , " + name + " _new" + name;
             editThing = editThing + ");\n";
             string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
             string unPurgeThing = "int unpurge" + name + "(string " + name + "ID);\n";
             string dropdownThing = "";
-            List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
+            
             foreach (foreignKey fk in all_foreignKey) {
                 if (fk.mainTable == name) {
                     dropdownThing = dropdownThing+"List<String> getDistinct" + fk.referenceTable + "ForDropDown();\n";
 
                 }
             }
-            output = comment + header + addThing + getThingbyPK + getallThing + editThing + purgeThing + unPurgeThing +dropdownThing+ "}\n\n";
+            output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing +dropdownThing+ "}\n\n";
             foreach (foreignKey key in data_tables.all_foreignKey)
             {
                 if (key.referenceTable == name)
@@ -179,6 +194,7 @@ namespace Data_Objects
             String Delete = genManagerDelete();
             String unDelete = genManagerUnDelete();
             String RetreiveByPK = genManagerPK();
+            String RetreiveByFK = genManagerFK();
             String RetrieveAll = genManagerAll();
             String Update = genManagerUpdate();
             //String dropdown = genManagerDropDown();
@@ -191,6 +207,7 @@ namespace Data_Objects
                 + Delete
                 + unDelete
                 + RetreiveByPK
+                + RetreiveByFK
                 + RetrieveAll
                 + Update
                // + dropdown
@@ -306,10 +323,17 @@ namespace Data_Objects
         }
         private string genManagerAll() {
             string comment = comment_box_gen.comment_box(name, 34);
-            string retreiveAll = "public List<" + name + "> get" + name + "ByAll(){\n";
+
+            string retreiveAll =  comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
+            retreiveAll = retreiveAll+"return get" + name + "ByAll(0,"+ appData2.settings.page_size + ");\n}\n";
+
+            retreiveAll = retreiveAll+ comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
+            retreiveAll = retreiveAll+"return get" + name + "ByAll(offset, "+ appData2.settings.page_size + ");\n}\n";
+
+            retreiveAll = retreiveAll + comment+ "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
             retreiveAll = retreiveAll + "List<"+name + "> result =new List<"+name+">();\n";
             retreiveAll = retreiveAll + "try{\n";
-            retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "();\n";
+            retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit);\n";
             retreiveAll = retreiveAll + "if (result.Count == 0){\n";
             retreiveAll = retreiveAll + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
             retreiveAll = retreiveAll + "}\n";
@@ -318,8 +342,45 @@ namespace Data_Objects
             retreiveAll = retreiveAll + "throw ex;\n";
             retreiveAll = retreiveAll + "}\n";
             retreiveAll = retreiveAll + "return result;\n}\n";
-            return comment+retreiveAll;
+            return retreiveAll;
 
+        }
+        private string genManagerFK() {
+            string getfkThing = "";
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    getfkThing = getfkThing + comment_box_gen.comment_box(name, 36);
+                    getfkThing = getfkThing + "\npublic List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + "){\n" +
+                        "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",0);" +
+                        "\n}\n";
+                    getfkThing = getfkThing + comment_box_gen.comment_box(name, 36);
+                    getfkThing = getfkThing +
+                    "\npublic List<" + name + "> getAll" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ",int offset){\n" +
+                 "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",offset);" +
+                "\n}\n";
+                getfkThing = getfkThing + comment_box_gen.comment_box(name, 36);
+                    getfkThing = getfkThing +"public List<" + name + "> getAll" + name + "by" + fk_table + "(" +r.data_type.toCSharpDataType() +" "+fk_name + ",int limit, int offset){\n";
+                 
+                 
+                    getfkThing = getfkThing + "List<" + name + "> result =new List<" + name + ">();\n";
+                    getfkThing = getfkThing + "try{\n";
+                    getfkThing = getfkThing + "result = _" + name.ToLower() + "Accessor.select" + name +"by"+fk_table+ "("+fk_name+",offset,limit);\n";
+                    getfkThing = getfkThing + "if (result.Count == 0){\n";
+                    getfkThing = getfkThing + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
+                    getfkThing = getfkThing + "}\n";
+                    getfkThing = getfkThing + "}\n";
+                    getfkThing = getfkThing + "catch (Exception ex){\n";
+                    getfkThing = getfkThing + "throw ex;\n";
+                    getfkThing = getfkThing + "}\n";
+                    getfkThing = getfkThing + "return result;\n}\n";
+                }
+            }
+            return getfkThing;
         }
         private string genManagerUpdate() {
             string comment = comment_box_gen.comment_box(name, 35);
@@ -1114,6 +1175,7 @@ namespace Data_Objects
             result = result + genJavaDAORetreiveByKey(); // works
             result = result + genJavaDAORetreiveAll(); // wokring on it now
             result = result + genJavaDAORetriveActive(); // working on it now
+            result = result + genJavaDAORetriveByFK();
             result = result + genJavaDAOUpdate(); //rturns ""
             result = result + genJavaDelete(); //returns ""
             result = result + genJavaunDelete(); //returns ""
@@ -1313,6 +1375,9 @@ namespace Data_Objects
             return result;
         }
 
+        public String genJavaDAORetriveByFK() {
+            return "";
+        }
 
         private string genJavaDAOUpdate()
         {

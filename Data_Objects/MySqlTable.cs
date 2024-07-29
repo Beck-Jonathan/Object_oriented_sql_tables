@@ -462,8 +462,10 @@ namespace Data_Objects
             String add = "";
             if (settings.TSQLMode) { add = "@" + key.fieldName.bracketStrip() + " " + key.dataType + key.lengthText + "\n"; }
             else { add = key.fieldName + " " + key.dataType + key.lengthText + "\n"; }
-            function_text = function_text + add;
-
+            function_text = function_text + add +
+            "limit_param int ,\n " +
+                "offset_param int \n";
+               
 
 
             function_text = function_text + ")";
@@ -518,6 +520,22 @@ namespace Data_Objects
                     keys_count++;
                 }
             }
+            function_text = function_text + "\nORDER BY ";
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (count > 0) { comma = ","; }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    add = "";
+                    add = comma + r.column_name + "\n";
+                    function_text = function_text + add;
+                    count++;
+                }
+            }
+
+            function_text = function_text + "limit limit_param\n";
+            function_text = function_text + "offset offset_param\n";
             function_text = function_text + " ; END $$\n" +
                    " DELIMITER ;\n";
             
@@ -533,7 +551,11 @@ namespace Data_Objects
             String comment_text = comment_box_gen.comment_box(name, 6);
             string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
                 + "DELIMITER $$\n";
-            string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "()\n";
+            string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "(\n" +
+                "limit_param int ,\n " +
+                "offset_param int \n" +
+                ")" +
+                "\n";
             
             String function_text = firstLine + secondLine;
 
@@ -581,6 +603,22 @@ namespace Data_Objects
                     function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName + "\n";
                 }
             }
+            function_text = function_text + "\nORDER BY ";
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (count > 0) { comma = ","; }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    String add = "";
+                    add = comma + r.column_name + "\n";
+                    function_text = function_text + add;
+                    count++;
+                }
+            }
+
+            function_text = function_text + "limit limit_param\n";
+            function_text = function_text + "offset offset_param\n";
             function_text =function_text+"\n ;\n END $$ \n DELIMITER ;\n"; 
 
 

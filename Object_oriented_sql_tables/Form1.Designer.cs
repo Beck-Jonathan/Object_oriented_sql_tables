@@ -38,6 +38,10 @@ namespace Object_oriented_sql_tables
             this.clb_options = new System.Windows.Forms.CheckedListBox();
             this.cbxTSql = new System.Windows.Forms.CheckBox();
             this.btn_cSharp = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.NUD_page_size = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.NUD_page_size)).BeginInit();
             this.SuspendLayout();
             // 
             // label1
@@ -155,11 +159,51 @@ namespace Object_oriented_sql_tables
             this.btn_cSharp.UseVisualStyleBackColor = true;
             this.btn_cSharp.Click += new System.EventHandler(this.btn_cSharp_Click);
             // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(13, 178);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(55, 13);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Page Size";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(13, 109);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 13);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "DB Name";
+            // 
+            // NUD_page_size
+            // 
+            this.NUD_page_size.AllowDrop = true;
+            this.NUD_page_size.Location = new System.Drawing.Point(37, 206);
+            this.NUD_page_size.Minimum = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.NUD_page_size.Name = "NUD_page_size";
+            this.NUD_page_size.Size = new System.Drawing.Size(120, 20);
+            this.NUD_page_size.TabIndex = 12;
+            this.NUD_page_size.Value = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.NUD_page_size.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 366);
+            this.Controls.Add(this.NUD_page_size);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.btn_cSharp);
             this.Controls.Add(this.cbxTSql);
             this.Controls.Add(this.clb_options);
@@ -172,6 +216,7 @@ namespace Object_oriented_sql_tables
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
+            ((System.ComponentModel.ISupportInitialize)(this.NUD_page_size)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -188,6 +233,9 @@ namespace Object_oriented_sql_tables
         private System.Windows.Forms.CheckedListBox clb_options;
         private System.Windows.Forms.CheckBox cbxTSql;
         private System.Windows.Forms.Button btn_cSharp;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.NumericUpDown NUD_page_size;
     }
 }
 
