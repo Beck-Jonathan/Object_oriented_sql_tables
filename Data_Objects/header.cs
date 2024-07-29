@@ -1,4 +1,5 @@
-﻿using System;
+﻿using appData2;
+using System;
 
 namespace Data_Objects
 {
@@ -18,12 +19,23 @@ namespace Data_Objects
         public String full_header_gen()
         {
             full_header = "";
-            full_header = comment_box_gen.comment_box(table_name, 1) +
+            if (settings.TSQLMode)
+            {
+                full_header = comment_box_gen.comment_box(table_name, 1) +
                 "\n\n" +
-                "DROP TABLE IF EXISTS " + table_name + ";\n\n" +
-                "CREATE TABLE " + table_name + "(\n\n"
-                ;
 
+                "CREATE TABLE " + table_name + "(\n"
+                ;
+            }
+
+            else
+            {
+                full_header = comment_box_gen.comment_box(table_name, 1) +
+                "\n\n" +
+                "DROP TABLE IF EXISTS " + table_name + ";\n" +
+                "CREATE TABLE " + table_name + "(\n"
+                ;
+            }
 
             return full_header;
         }

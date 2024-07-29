@@ -3,25 +3,42 @@ using Data_Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq.Expressions;
+using System.Threading;
 
 namespace Data_Access
 {
     public class file_read
     {
-        String readpath = settings.path;
+        static String readpath = settings.path;
+        static List<foreignKey> keys = new List<foreignKey>();
 
         public static void readdata()
         {
+            saveLocaiton();
             int skip_count = 0;
+            bool working = false;
             // Read the file selected by user and setup various varables
-            StreamReader SqlBuddy = new StreamReader(settings.path);
+            StreamReader SqlBuddy = null;
+            while (!working)
+            {
+                try
+                {
+                    SqlBuddy = new StreamReader(settings.path);
+                }
+                catch (Exception)
+                {
+
+                    working = false;
+                    Thread.Sleep(5000);
+                }
+                working = true;
+            }
             string ln;
             string tablename = " ";
             string description;
             char[] separator = { '\t' };
             char[] audit_seperator = { ' ' };
-            List<Row> rows = new List<Row>();
+            List<Column> rows = new List<Column>();
             int count = 0;
             SqlBuddy.ReadLine();
             //skip first line since it's just heading data
@@ -32,6 +49,7 @@ namespace Data_Access
                 string[] parts;
                 //split each line in the file into it's component parts
                 parts = ln.Split(separator);
+                //if (parts[0].Equals("dummy")) { break; }
                 try
                 {
                     //catch a fully blank line and ignore it
@@ -60,20 +78,32 @@ namespace Data_Access
 
                     else if (parts[1].Length == 0 && count > 0)
                     {
-                        table t = new table(tablename, rows);
+                        table t;
+                        if (settings.TSQLMode)
+                        {
+                            t = new TSqlTable(tablename, rows);
+                        }
+                        else
+                        {
+                            t = new MySqlTable(tablename, rows);
+                        }
+
                         header h = new header(tablename, parts[14]);
                         t.Header = h;
-                        List<Row> rowsfortable = new List<Row>();
-                        foreach (Row _row in t.rows)
+                        List<Column> rowsfortable = new List<Column>();
+                        foreach (Column _row in t.columns)
                         {
                             rowsfortable.Add(_row);
                         }
-                        t.rows = rowsfortable;
+                        t.columns = rowsfortable;
 
                         rows.Clear();
                         tablename = parts[0];
                         description = parts[14];
-                        data_tables.all_tables.Add(t);
+                        if (t.name.ToLower() != "dummy")
+                        {
+                            data_tables.all_tables.Add(t);
+                        }
                         count++;
                     }
                 }
@@ -93,7 +123,7 @@ namespace Data_Access
                     char primary_key = ' ';
 
                     //read each part of the row 
-                    String data_type = parts[1].Replace("\"","");
+                    String data_type = parts[1].Replace("\"", "");
                     Int32.TryParse(parts[2], out length);
                     String default_value = parts[3];
                     String identity = parts[4];
@@ -102,7 +132,16 @@ namespace Data_Access
                     char[] chararray = parts[7].ToCharArray();
                     if (chararray.Length != 0)
                     {
-                        nullable = chararray[0];
+                        char check = chararray[0];
+                        if (check == 'y' || check == 'Y')
+                        {
+                            nullable = 'y';
+                        }
+                        else
+                        {
+                            nullable = 'n';
+                        }
+
                     }
 
 
@@ -124,10 +163,34 @@ namespace Data_Access
 
                     description = parts[14];
                     //create the row
-                    Row _row = new Row(row_name, data_type, length, default_value, identity, start, increment,
+                    Column _row = new Column(row_name, data_type, length, default_value, identity, start, increment,
                          nullable, index, unique, primary_key, foreign_key, integrity, references, description);
                     //add row to row array
                     rows.Add(_row);
+                    //add any key
+                    if (_row.foreign_key != "")
+                    {
+                        foreignKey _key = new foreignKey();
+                        _key.mainTable = tablename;
+                        String[] chunks = _row.references.Split('.');
+                        _key.referenceTable = chunks[0];
+                        _key.dataType = data_type;
+                        _key.fieldName = row_name;
+                        string length_text = "";
+                        if (data_type.Equals("nvarchar") && length == 0) { length = 50; }
+                        if (data_type.Equals("date")) { length = 0; }
+                        if (length == 0)
+                        {
+                            length_text = "";
+                        }
+                        if (length > 0)
+                        {
+                            length_text = "(" + length + ")";
+                        };
+                        _key.lengthText = length_text;
+                        data_tables.all_foreignKey.Add(_key);
+
+                    }
                 }
 
             }
@@ -135,6 +198,19 @@ namespace Data_Access
             settings.table_count = data_tables.all_tables.Count;
             //generate default options for all tables
             settings.generate_options();
+        }
+        public static void saveLocaiton()
+        {
+            file_write.SettingsBuddy.Write(settings.path);
+            file_write.SettingsBuddy.Flush();
+
+
+        }
+        public static string readlocaiton()
+        {
+            StreamReader streamReader = new StreamReader(file_write.SettingsPath);
+            return streamReader.ReadLine();
+
         }
     }
 }
