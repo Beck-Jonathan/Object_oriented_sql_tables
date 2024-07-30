@@ -46,7 +46,7 @@ namespace Data_Objects
 
 
         //to generate retreive by fk, not implmented well yet
-        String gen_retreive_by_fkey(foreignKey key);
+        String gen_retreive_by_fkey();
 
 
         // to generate the SP_retrive, showing all data in a table

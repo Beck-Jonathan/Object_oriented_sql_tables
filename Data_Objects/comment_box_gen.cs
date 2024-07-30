@@ -207,6 +207,17 @@ namespace Data_Objects
             if (type == 34)
             {
                 middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+                middle += "\n with no paramater supplied.";
+            }
+            if (type == 39)
+            {
+                middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+                middle += "\n with one paramater supplied.";
+            }
+            if (type == 40)
+            {
+                middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+                middle += "\n with two paramater supplied.";
             }
             if (type == 35)
             {
@@ -216,6 +227,17 @@ namespace Data_Objects
             if (type == 36)
             {
                 middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+                middle += "\n with no paramater supplied.";
+            }
+            if (type == 37)
+            {
+                middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+                middle += "\n with one paramater supplied.";
+            }
+            if (type == 38)
+            {
+                middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+                middle += "\n with two paramater supplied.";
             }
 
 

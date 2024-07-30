@@ -100,10 +100,10 @@ namespace Data_Objects
                 }
 
             }
-            if (nullable.Equals('Y') || nullable.Equals('y')) { Column_text = Column_text + "null\t"; }
-            else { Column_text = Column_text + "not null\t"; }
+            if (nullable.Equals('Y') || nullable.Equals('y')) { Column_text += "null\t"; }
+            else { Column_text += "not null\t"; }
             //if (auto_increment.Equals('Y') || auto_increment.Equals('y')) { Column_Text = Column_Text + "auto_increment\t"; }
-            if (unique.Equals('Y') || unique.Equals('y')) { Column_text = Column_text + "unique\t"; }
+            if (unique.Equals('Y') || unique.Equals('y')) { Column_text += "unique\t"; }
             if (primary_key.Equals('Y') || primary_key.Equals('y')) { primary_keys.Add(column_name); }
             if (foreign_key.Length >= 1) { foreign_keys.Add(this.references); }
             
@@ -119,9 +119,9 @@ namespace Data_Objects
             String Column_Text = "";
             Column_Text = Column_Text + column_name + "\t";
             Column_Text = Column_Text + data_type + length_text + "\t";
-            if (nullable.Equals('Y') || nullable.Equals('y')) { Column_Text = Column_Text + "null\t"; }
-            else { Column_Text = Column_Text + "not null\t"; }
-            if (unique.Equals('Y') || unique.Equals('y')) { Column_Text = Column_Text + "unique\t"; }
+            if (nullable.Equals('Y') || nullable.Equals('y')) { Column_Text += "null\t"; }
+            else { Column_Text += "not null\t"; }
+            if (unique.Equals('Y') || unique.Equals('y')) { Column_Text += "unique\t"; }
             Column_Text = Column_Text + "comment \'" + description + "\'";
             return Column_Text;
 

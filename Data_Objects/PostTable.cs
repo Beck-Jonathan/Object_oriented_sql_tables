@@ -73,7 +73,7 @@ namespace Data_Objects
         {
             return "";
         }
-        public string gen_retreive_by_fkey(foreignKey key)
+        public string gen_retreive_by_fkey()
         {
             throw new NotImplementedException();
         }

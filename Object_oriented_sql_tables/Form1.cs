@@ -183,6 +183,16 @@ namespace Object_oriented_sql_tables
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     file_write.sqlBuddy2.Write(s);
                 }
+
+                //if selected create an sp_select that gets all data by a foreign key
+                if (true)
+                {
+
+                    s = t.gen_retreive_by_fkey();
+                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    file_write.sqlBuddy2.Write(s);
+                }
+
                 //select distinct for drop downs
                 if (true) {
                     

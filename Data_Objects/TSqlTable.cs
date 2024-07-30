@@ -31,12 +31,12 @@ namespace Data_Objects
                     {
                         foreach (string s in r.primary_keys)
                         {
-                            if (count > 0) { key_string = key_string + " , "; }
-                            key_string = key_string + s;
+                            if (count > 0) { key_string += " , "; }
+                            key_string += s;
                             count++;
                         }
                     }
-                    key_string = key_string + "),\n";
+                    key_string += "),\n";
 
                     return key_string;
                 }
@@ -73,7 +73,7 @@ namespace Data_Objects
             foreach (string tuv in foreign_keys)
             {
                 String s = tuv;
-                output_keys = output_keys + s;
+                output_keys += s;
             }
             
             return output_keys;
@@ -113,7 +113,7 @@ namespace Data_Objects
             foreach (string tuv in alternate_keys)
             {
                 String s = tuv;
-                output_keys = output_keys + s;
+                output_keys += s;
             }
 
             return output_keys;
@@ -138,15 +138,15 @@ namespace Data_Objects
 
             int count = 0;
             String x = this.gen_header();
-            x = x + "";
+            x += "";
             foreach (Column r in columns)
             {
                 String rowtext = r.column_and_key_gen();
-                if (count > 0) { x = x + ",\n"; }
-                x = x + rowtext;
+                if (count > 0) { x += ",\n"; }
+                x += rowtext;
                 count++;
             }
-            x = x + ",\n";
+            x += ",\n";
 
 
             return x;
@@ -156,18 +156,18 @@ namespace Data_Objects
         { // to generate the audit table
             int count = 0;
             String x = this.audit_gen_header();
-            x = x + "\n";
+            x += "\n";
             foreach (Column r in columns)
             {
                 String rowtext = r.Column_row_gen();
-                if (count > 0) { x = x + ","; }
-                x = x + rowtext;
+                if (count > 0) { x += ","; }
+                x += rowtext;
                 count++;
             }
             x = x + ",action_type VARCHAR(50) NOT NULL COMMENT 'insert update or delete'\n" +
                 ", action_date DATETIME NOT NULL COMMENT 'when it happened'\n" +
                 ", action_user VARCHAR(255) NOT NULL COMMENT 'Who did it'\n";
-            x = x + ");\n";
+            x += ");\n";
 
 
             return x;
@@ -195,7 +195,7 @@ namespace Data_Objects
                     {
                         add = add + ",\n@new" + r.column_name.bracketStrip() + r.data_type + r.length_text + "";
                     }
-                    function_text = function_text + add;
+                    function_text += add;
                     count++;
                 }
                 comma = "";
@@ -212,7 +212,7 @@ namespace Data_Objects
 
 
                 }
-                function_text = function_text + "\nWHERE\n";
+                function_text += "\nWHERE\n";
                 comma = "";
                 foreach (Column r in columns)
                 {
@@ -224,7 +224,7 @@ namespace Data_Objects
 
 
 
-                function_text = function_text + "\nreturn @@rowcount\nend\ngo\n";
+                function_text += "\nreturn @@rowcount\nend\ngo\n";
                 full_text = comment_text + function_text;
 
             }
@@ -249,13 +249,13 @@ namespace Data_Objects
                     if (true)
                     {
                         String add = comma + "\n@" + r.column_name.bracketStrip() + " " + r.data_type + " " + r.length_text + "";
-                        function_text = function_text + add;
+                        function_text += add;
                         count++;
                     }
                 }
-                function_text = function_text + "\n)\nas\nbegin\n";
+                function_text += "\n)\nas\nbegin\n";
                 function_text = function_text + "update [" + name + "]\n";
-                function_text = function_text + "set active = 0\n";
+                function_text += "set active = 0\n";
                 count = 0;
                 comma = "where ";
                 foreach (Column r in columns)
@@ -264,12 +264,12 @@ namespace Data_Objects
                     if (true)
                     {
                         String add = "\n"+comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip() + "";
-                        function_text = function_text + add;
+                        function_text += add;
                         count++;
                     }
                 }
 
-                function_text = function_text + "\nreturn @@rowcount \nend \ngo\n";
+                function_text += "\nreturn @@rowcount \nend \ngo\n";
 
 
             }           
@@ -298,13 +298,13 @@ namespace Data_Objects
                     if (true)
                     {
                         String add = comma + "\n@" + r.column_name.bracketStrip() + " " + r.data_type + " " + r.length_text + "";
-                        function_text = function_text + add;
+                        function_text += add;
                         count++;
                     }
                 }
-                function_text = function_text + "\n)\nas\nbegin\n";
+                function_text += "\n)\nas\nbegin\n";
                 function_text = function_text + "update [" + name + "]\n";
-                function_text = function_text + "set active = 1\n";
+                function_text += "set active = 1\n";
                 count = 0;
                 comma = "where ";
                 foreach (Column r in columns)
@@ -313,12 +313,12 @@ namespace Data_Objects
                     if (true)
                     {
                         String add = "\n"+comma + "@" + r.column_name.bracketStrip() + " =" + r.column_name.bracketStrip() + "";
-                        function_text = function_text + add;
+                        function_text += add;
                         count++;
                     }
                 }
 
-                function_text = function_text + "\nreturn @@rowcount \n end \n go\n";
+                function_text += "\nreturn @@rowcount \n end \n go\n";
 
 
             }
@@ -357,11 +357,11 @@ namespace Data_Objects
                     String add = "";
                      add = comma +"\n"+ r.column_name.Replace("]", "").Replace("[", "@") + " " + r.data_type + r.length_text + ""; 
                     
-                    function_text = function_text + add;
+                    function_text += add;
                     count++;
                 }
             }
-            function_text = function_text + "\n)";
+            function_text += "\n)";
 
             count = 0;
             comma = "";
@@ -414,7 +414,7 @@ namespace Data_Objects
                     string add = "";
                      add = initial_word + r.column_name + "=" + r.column_name.Replace("]", "").Replace("[", "@") + " \n"; 
                     
-                    function_text = function_text + add;
+                    function_text += add;
                     keys_count++;
                 }
             }
@@ -432,109 +432,121 @@ namespace Data_Objects
         }
 
         //to generate retreive by fk, not implmented well yet
-        public String gen_retreive_by_fkey(foreignKey key)
+        public String gen_retreive_by_fkey()
         {
-            String comma = "";
-            int count = 0;
-            String comment_text = comment_box_gen.comment_box(name, 200);
-            
-
-            
-            String    function_text = "CREATE PROCEDURE [dbo].[sp_retreive_" + key.referenceTable + "by" + key.mainTable + "_ID]\n(";
-            
-            
-
-
-            String add = "";
-            add = "@" + key.fieldName.bracketStrip() + " " + key.dataType + key.lengthText + "\n";
-
-            function_text = function_text + add +
-                "@limit_param int\n" +
-                "@offset_param int ";
-
-
-            function_text = function_text + ")";
-
-
-            String asString = "\nas";
-            
-            function_text = function_text + asString + "\n Begin \n select \n";
+            String full_text = "";
             foreach (Column r in columns)
             {
-                if (count > 0) { comma = ","; }
-                function_text = function_text + "\n"+comma + genSelectLine(name, r.column_name);
-                count++;
-            }
-            foreach (foreignKey fk in data_tables.all_foreignKey)
-            {
-                if (fk.mainTable.Equals(name))
+                if (r.references != "")
                 {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    String comma = "";
+                    int count = 0;
+                    String comment_text = comment_box_gen.comment_box(name, 200);
 
 
-                    foreach (table t in data_tables.all_tables)
+
+                    String function_text = "CREATE PROCEDURE [dbo].[sp_retreive_" + name + "_by_" + fk_table+"]\n(";
+
+
+
+
+                    String add = "";
+                    add = "@" + fk_name.bracketStrip() + "_param " + r.data_type + r.length_text + "\n";
+
+                    function_text = function_text + add +
+                        "@limit_param int\n" +
+                        "@offset_param int\n ";
+
+
+                    function_text += ")";
+
+
+                    String asString = "\nas";
+
+                    function_text = function_text + asString + "\n Begin \n select \n";
+                    foreach (Column s in columns)
                     {
-                        if (t.name.Equals(fk.referenceTable))
+                        if (count > 0) { comma = ","; }
+                        function_text = function_text  + comma + genSelectLine(name, s.column_name);
+                        count++;
+                    }
+                    foreach (foreignKey fk in data_tables.all_foreignKey)
+                    {
+                        if (fk.mainTable.Equals(name))
                         {
-                            foreach (Column r in t.columns)
+
+
+                            foreach (table t in data_tables.all_tables)
                             {
-                                if (count > 0) { comma = ","; }
-                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
-                                count++;
+                                if (t.name.Equals(fk.referenceTable))
+                                {
+                                    foreach (Column u in t.columns)
+                                    {
+                                        if (count > 0) { comma = ","; }
+                                        function_text = function_text + comma + genSelectLine(t.name, u.column_name);
+                                        count++;
 
+                                    }
+
+                                }
                             }
+                        }
 
+
+                    }
+                    function_text = function_text + "\n FROM " + name + "\n";
+                    foreach (foreignKey fk in data_tables.all_foreignKey)
+                    {
+                        if (fk.mainTable.Equals(name))
+                        {
+                            function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
                         }
                     }
+                    String initial_word = "where ";
+                    int keys_count = 0;
+                    foreach (Column s in columns)
+                    {
+                        if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                        {
+                            if (keys_count > 0) { initial_word = "AND "; }
+                            add = "";
+                            add = initial_word + name+"."+fk_name + "=" + s.column_name.Replace("]", "").Replace("[", "@") + "_param\n";
+
+                            function_text += add;
+                            keys_count++;
+                        }
+                    }
+                    function_text += "\nORDER BY ";
+                    count = 0;
+                    foreach (Column s in columns)
+                    {
+                        if (count > 0) { comma = ","; }
+                        if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                        {
+                            add = "";
+                            add = comma + "[" + s.column_name + "]\n";
+                            function_text += add;
+                            count++;
+                        }
+                    }
+                    function_text += "limit @limit_param\n";
+                    function_text += "offset @offset_param\n";
+
+
+
+                    function_text = function_text + " END \n" +
+                               " GO\n";
+
+
+
+
+
+                    full_text += comment_text + function_text;
                 }
             }
-            function_text = function_text + "\n FROM " + name + "\n";
-            foreach (foreignKey fk in data_tables.all_foreignKey)
-            {
-                if (fk.mainTable.Equals(name))
-                {
-                    function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
-                }
-            }
-            String initial_word = "where ";
-            int keys_count = 0;
-            foreach (Column r in columns)
-            {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                {
-                    if (keys_count > 0) { initial_word = "AND "; }
-                    add = "";
-                     add = initial_word + r.column_name + "=" + r.column_name.Replace("]", "").Replace("[", "@") + " \n"; 
-                    
-                    function_text = function_text + add;
-                    keys_count++;
-                }
-            }
-            function_text = function_text + "\nORDER BY ";
-            count = 0;
-            foreach (Column r in columns)
-            {
-                if (count > 0) { comma = ","; }
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                {
-                    add = "";
-                    add = comma + "[" + r.column_name + "]\n";
-                    function_text = function_text + add;
-                    count++;
-                }
-            }
-            function_text = function_text + "limit @limit_param\n";
-            function_text = function_text + "offset @offset_param\n";
-
-
-
-            function_text = function_text + " END \n" +
-                       " GO\n";
-            
-            
-
-
-
-            String full_text = comment_text + function_text;
             return full_text;
         }
 
@@ -560,7 +572,7 @@ namespace Data_Objects
             String comma = "";
             comma = "";
             count = 0;
-            function_text = function_text + "begin \n SELECT ";
+            function_text += "begin \n SELECT ";
             count = 0;
             comma = "";
 
@@ -600,7 +612,7 @@ namespace Data_Objects
                     function_text = function_text + "join [" + fk.referenceTable + "] on [" + fk.mainTable + "].[" + fk.fieldName + "] = [" + fk.referenceTable + "].[" + fk.fieldName + "]\n";
                 }
             }
-            function_text = function_text + "\nORDER BY ";
+            function_text += "\nORDER BY ";
             count = 0;
             foreach (Column r in columns)
             {
@@ -609,13 +621,13 @@ namespace Data_Objects
                 {
                     String add = "";
                     add = comma +"["+ r.column_name + "]\n";
-                    function_text = function_text + add;
+                    function_text += add;
                     count++;
                 }
             }
-            function_text = function_text + "limit @limit_param\n";
-            function_text = function_text + "offset @offset_param\n";
-            function_text = function_text + "\n ;\n END  \n GO\n"; 
+            function_text += "limit @limit_param\n";
+            function_text += "offset @offset_param\n";
+            function_text += "\n ;\n END  \n GO\n"; 
             
 
 
@@ -641,7 +653,7 @@ namespace Data_Objects
             String comma = "";
             comma = "";
             count = 0;
-            function_text = function_text + "begin \n SELECT ";
+            function_text += "begin \n SELECT ";
             count = 0;
             comma = "";
 
@@ -706,7 +718,7 @@ namespace Data_Objects
                     string add = "";
                     add = ""+comma + "\n@" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + ""; 
                     
-                    function_text = function_text + add;
+                    function_text += add;
                     count++;
                 }
             }
@@ -729,7 +741,7 @@ namespace Data_Objects
 
 
             
-                function_text = function_text + "\n)\n VALUES \n(";
+                function_text += "\n)\n VALUES \n(";
                 comma = "";
                 count = 0;
                 foreach (Column r in columns)
@@ -742,11 +754,11 @@ namespace Data_Objects
                     }
 
                 }
-                function_text = function_text + "\n)\n";
+                function_text += "\n)\n";
             
             
             
-             function_text = function_text + "return @@rowcount\nend\nGo\n"; 
+             function_text += "return @@rowcount\nend\nGo\n"; 
 
 
 
@@ -798,7 +810,7 @@ namespace Data_Objects
             String comma = "";
             comma = "";
             count = 0;
-            function_text = function_text + "begin \n SELECT DISTINCT \n";
+            function_text += "begin \n SELECT DISTINCT \n";
             count = 0;
             comma = "";
 
@@ -833,13 +845,13 @@ namespace Data_Objects
         public string gen_sample_space()
         {
             string result = "";
-            result = result + "\n";
+            result += "\n";
 
             //comment box
-            result = result + comment_box_gen.comment_box(name, 18);
+            result += comment_box_gen.comment_box(name, 18);
 
-            result = result + "\n";
-            result = result + "/***************************************\n";
+            result += "\n";
+            result += "/***************************************\n";
             result = result + "INSERT INTO " + name + " (";
             string comma = "";
             foreach (Column r in columns)
@@ -851,7 +863,7 @@ namespace Data_Objects
                 }
             }
             comma = "";
-            result = result + "\n)\nVALUES";
+            result += "\n)\nVALUES";
             for (int i = 0; i < 5; i++)
             {
                 result = result + "\n" + comma + "(";
@@ -864,11 +876,11 @@ namespace Data_Objects
                         comma = ",";
                     }
                 }
-                result = result + ")";
+                result += ")";
             }
 
-            result = result + "\n;\n";
-            result = result + "*******************************/\n";
+            result += "\n;\n";
+            result += "*******************************/\n";
 
 
             return result;

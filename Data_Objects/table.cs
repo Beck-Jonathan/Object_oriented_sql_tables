@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Data.Common;
 using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
@@ -60,7 +61,7 @@ namespace Data_Objects
             string updateThing = "int update" + name + "(";
 
             updateThing = updateThing + name +  "_old" + name + " , " + name + " _new" + name;
-            updateThing = updateThing + ");\n";
+            updateThing += ");\n";
 
 
             string deleteThing = "int delete" + name + "(" + name + " _" + name + ");\n";
@@ -75,19 +76,19 @@ namespace Data_Objects
 
                 }
             }
-
-            
-            output = comment + header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + undeleteThing + dropdownThing+ "}\n\n";
-            foreach (foreignKey key in data_tables.all_foreignKey)
-            {
-                if (key.referenceTable == name)
-                {
-                    output = output + "List<" + key.mainTable + "> selectAll" + key.mainTable + "by" + name + "();\n";
+            string selectfkThing = "";
+            foreach (Column r in columns) {
+                if (r.references != "") {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    selectfkThing = selectfkThing + "select" + name + "by" + fk_table + "("+r.data_type.toCSharpDataType()+" "+fk_name+", int limit, int offset);";
 
                 }
             }
 
-
+            
+            output = comment + header + addThing + selectThingbyPK + selectallThing +selectfkThing+ updateThing + deleteThing + undeleteThing + dropdownThing+ "}\n\n";
             return output;
         }
 
@@ -107,6 +108,8 @@ namespace Data_Objects
             //needs implemented
             string selectallThing = genAccessorRetreiveAll();
             //good
+            string selectbyFK = genAccessorRetreivefk();
+            //good
             string updateThing = genAccessorUpdate();
             //good
             string deleteThing = genAccessorDelete();
@@ -116,7 +119,7 @@ namespace Data_Objects
             string distinctThing = genAccessorDistinct();
 
 
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + updateThing + deleteThing + undeleteThing + distinctThing+"}\n\n";
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing+"}\n\n";
             //good
 
 
@@ -160,7 +163,7 @@ namespace Data_Objects
 
             string editThing = "int edit" + name + "(";
             editThing = editThing + name + " _old" + name + " , " + name + " _new" + name;
-            editThing = editThing + ");\n";
+            editThing += ");\n";
             string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
             string unPurgeThing = "int unpurge" + name + "(string " + name + "ID);\n";
             string dropdownThing = "";
@@ -225,18 +228,18 @@ namespace Data_Objects
 
             String result = "";
             result = result + "public class "+name+"Manager : I"+name+"Manager\n";
-            result = result + "{\n";
+            result += "{\n";
             result = result + "private I"+name+"Accessor _"+name.ToLower()+"Accessor=null;\n";
-            result = result + "//default constuctor uses the database\n";
+            result += "//default constuctor uses the database\n";
             result = result + "public " + name + "Manager()\n";
-            result = result + "{\n";
+            result += "{\n";
             result = result + "_"+name.ToLower()+"Accessor = new "+name+"Accessor();\n";
-            result = result + "}\n";
-            result = result + "//the optional constuctor can accept any data provider\n";
+            result += "}\n";
+            result += "//the optional constuctor can accept any data provider\n";
             result = result + "public "+name+"Manager(I"+name+"Accessor "+name.ToLower()+"Accessor)\n";
-            result = result + "{\n";
+            result += "{\n";
             result = result + "_"+name.ToLower()+"Accessor = "+name.ToLower()+"Accessor;\n";
-            result = result + "}\n";
+            result += "}\n";
 
             return comment + result;
 
@@ -245,17 +248,17 @@ namespace Data_Objects
             string comment = comment_box_gen.comment_box(name, 31);
             String result = "\n";
             result = result + "public bool Add"+name+"("+name+" "+"_"+name+"){\n";
-            result = result + "bool result = false;;\n";
-            result = result + "try\n{";
+            result += "bool result = false;;\n";
+            result += "try\n{";
             result = result + "result = (1 == _"+name.firstCharLower()+"Accessor.insert"+name+"(_"+name+"));\n";
-            result = result + "}\n";
-            result = result + "catch (Exception ex)\n";
-            result = result + "{\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
             result = result + "throw new ApplicationException(\""+name+" not added\" + ex.InnerException.Message, ex);;\n";
-            result = result + "}\n";
-            result = result + "return result;\n";
-            result = result + "}\n";
-            result = result + "\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            result += "\n";
 
             return comment + result;
 
@@ -264,17 +267,17 @@ namespace Data_Objects
         private String genManagerDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
             string purgeThing = "public int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
-            purgeThing = purgeThing + "int result = 0;\n";
-            purgeThing = purgeThing + "try{\n";
-            purgeThing = purgeThing + "result = _" + name.ToLower() + "Accessor.delete" + name + "("+name.ToLower()+"."+name+"Id);\n";
-            purgeThing = purgeThing + "if (result == 0){\n";
-            purgeThing = purgeThing + "throw new ApplicationException(\"Unable to Delete " + name+"\" );\n";
-            purgeThing = purgeThing + "}\n";
-            purgeThing = purgeThing + "}\n";
-            purgeThing = purgeThing + "catch (Exception ex){\n";
-            purgeThing = purgeThing + "throw ex;\n";
-            purgeThing = purgeThing + "}\n";
-            purgeThing = purgeThing + "return result;\n}\n";
+            purgeThing += "int result = 0;\n";
+            purgeThing += "try{\n";
+            purgeThing +=  "result = _" + name.ToLower() + "Accessor.delete" + name + "("+name.ToLower()+"."+name+"Id);\n";
+            purgeThing += "if (result == 0){\n";
+            purgeThing +=  "throw new ApplicationException(\"Unable to Delete " + name+"\" );\n";
+            purgeThing += "}\n";
+            purgeThing += "}\n";
+            purgeThing += "catch (Exception ex){\n";
+            purgeThing += "throw ex;\n";
+            purgeThing += "}\n";
+            purgeThing += "return result;\n}\n";
 
 
             return comment + purgeThing;
@@ -283,17 +286,17 @@ namespace Data_Objects
         private String genManagerUnDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
             string purgeThing = "public int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
-            purgeThing = purgeThing + "int result = 0;\n";
-            purgeThing = purgeThing + "try{\n";
+            purgeThing += "int result = 0;\n";
+            purgeThing += "try{\n";
             purgeThing = purgeThing + "result = _" + name.ToLower() + "Accessor.undelete" + name + "(" + name.ToLower() + "."+name+"Id);\n";
-            purgeThing = purgeThing + "if (result == 0){\n";
+            purgeThing += "if (result == 0){\n";
             purgeThing = purgeThing + "throw new ApplicationException(\"Unable to restore " + name + "\" );\n";
-            purgeThing = purgeThing + "}\n";
-            purgeThing = purgeThing + "}\n";
-            purgeThing = purgeThing + "catch (Exception ex){\n";
-            purgeThing = purgeThing + "throw ex;\n";
-            purgeThing = purgeThing + "}\n";
-            purgeThing = purgeThing + "return result;\n}\n";
+            purgeThing += "}\n";
+            purgeThing += "}\n";
+            purgeThing += "catch (Exception ex){\n";
+            purgeThing += "throw ex;\n";
+            purgeThing += "}\n";
+            purgeThing += "return result;\n}\n";
 
 
             return comment + purgeThing;
@@ -306,16 +309,16 @@ namespace Data_Objects
             string comment = comment_box_gen.comment_box(name, 33);
             string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
             retreiveThing = retreiveThing + name+" result =null ;\n";
-            retreiveThing = retreiveThing + "try{\n";
+            retreiveThing += "try{\n";
             retreiveThing = retreiveThing + "result = _" + name.ToLower() + "Accessor.select" + name + "ByPrimaryKey(" + name + "ID);\n";
-            retreiveThing = retreiveThing + "if (result == null){\n";
+            retreiveThing += "if (result == null){\n";
             retreiveThing = retreiveThing + "throw new ApplicationException(\"Unable to retreive " + name + "\" );\n";
-            retreiveThing = retreiveThing + "}\n";
-            retreiveThing = retreiveThing + "}\n";
-            retreiveThing = retreiveThing + "catch (Exception ex){\n";
-            retreiveThing = retreiveThing + "throw ex;\n";
-            retreiveThing = retreiveThing + "}\n";
-            retreiveThing = retreiveThing + "return result;\n}\n";
+            retreiveThing += "}\n";
+            retreiveThing += "}\n";
+            retreiveThing += "catch (Exception ex){\n";
+            retreiveThing += "throw ex;\n";
+            retreiveThing += "}\n";
+            retreiveThing += "return result;\n}\n";
             return comment + retreiveThing;
 
 
@@ -327,21 +330,23 @@ namespace Data_Objects
             string retreiveAll =  comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(0,"+ appData2.settings.page_size + ");\n}\n";
 
+            comment = comment_box_gen.comment_box(name, 39);
             retreiveAll = retreiveAll+ comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(offset, "+ appData2.settings.page_size + ");\n}\n";
 
+            comment = comment_box_gen.comment_box(name, 40);
             retreiveAll = retreiveAll + comment+ "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
             retreiveAll = retreiveAll + "List<"+name + "> result =new List<"+name+">();\n";
-            retreiveAll = retreiveAll + "try{\n";
+            retreiveAll += "try{\n";
             retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit);\n";
-            retreiveAll = retreiveAll + "if (result.Count == 0){\n";
+            retreiveAll += "if (result.Count == 0){\n";
             retreiveAll = retreiveAll + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
-            retreiveAll = retreiveAll + "}\n";
-            retreiveAll = retreiveAll + "}\n";
-            retreiveAll = retreiveAll + "catch (Exception ex){\n";
-            retreiveAll = retreiveAll + "throw ex;\n";
-            retreiveAll = retreiveAll + "}\n";
-            retreiveAll = retreiveAll + "return result;\n}\n";
+            retreiveAll += "}\n";
+            retreiveAll += "}\n";
+            retreiveAll += "catch (Exception ex){\n";
+            retreiveAll += "throw ex;\n";
+            retreiveAll += "}\n";
+            retreiveAll += "return result;\n}\n";
             return retreiveAll;
 
         }
@@ -354,30 +359,30 @@ namespace Data_Objects
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    getfkThing = getfkThing + comment_box_gen.comment_box(name, 36);
+                    getfkThing += comment_box_gen.comment_box(name, 36);
                     getfkThing = getfkThing + "\npublic List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + "){\n" +
                         "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",0);" +
                         "\n}\n";
-                    getfkThing = getfkThing + comment_box_gen.comment_box(name, 36);
+                    getfkThing += comment_box_gen.comment_box(name, 37);
                     getfkThing = getfkThing +
                     "\npublic List<" + name + "> getAll" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ",int offset){\n" +
                  "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",offset);" +
                 "\n}\n";
-                getfkThing = getfkThing + comment_box_gen.comment_box(name, 36);
+                getfkThing += comment_box_gen.comment_box(name, 38);
                     getfkThing = getfkThing +"public List<" + name + "> getAll" + name + "by" + fk_table + "(" +r.data_type.toCSharpDataType() +" "+fk_name + ",int limit, int offset){\n";
                  
                  
                     getfkThing = getfkThing + "List<" + name + "> result =new List<" + name + ">();\n";
-                    getfkThing = getfkThing + "try{\n";
+                    getfkThing += "try{\n";
                     getfkThing = getfkThing + "result = _" + name.ToLower() + "Accessor.select" + name +"by"+fk_table+ "("+fk_name+",offset,limit);\n";
-                    getfkThing = getfkThing + "if (result.Count == 0){\n";
+                    getfkThing += "if (result.Count == 0){\n";
                     getfkThing = getfkThing + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
-                    getfkThing = getfkThing + "}\n";
-                    getfkThing = getfkThing + "}\n";
-                    getfkThing = getfkThing + "catch (Exception ex){\n";
-                    getfkThing = getfkThing + "throw ex;\n";
-                    getfkThing = getfkThing + "}\n";
-                    getfkThing = getfkThing + "return result;\n}\n";
+                    getfkThing += "}\n";
+                    getfkThing += "}\n";
+                    getfkThing += "catch (Exception ex){\n";
+                    getfkThing += "throw ex;\n";
+                    getfkThing += "}\n";
+                    getfkThing += "return result;\n}\n";
                 }
             }
             return getfkThing;
@@ -385,17 +390,17 @@ namespace Data_Objects
         private string genManagerUpdate() {
             string comment = comment_box_gen.comment_box(name, 35);
             string updateThing = "public int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
-            updateThing = updateThing +  "int result =0 ;\n";
-            updateThing = updateThing + "try{\n";
+            updateThing += "int result =0 ;\n";
+            updateThing += "try{\n";
             updateThing = updateThing + "result = _" + name.ToLower() + "Accessor.update" + name + "(old" + name+", new" +name+ ");\n";
-            updateThing = updateThing + "if (result == 0){\n";
+            updateThing += "if (result == 0){\n";
             updateThing = updateThing + "throw new ApplicationException(\"Unable to update " + name + "\" );\n";
-            updateThing = updateThing + "}\n";
-            updateThing = updateThing + "}\n";
-            updateThing = updateThing + "catch (Exception ex){\n";
-            updateThing = updateThing + "throw ex;\n";
-            updateThing = updateThing + "}\n";
-            updateThing = updateThing + "return result;\n}\n";
+            updateThing += "}\n";
+            updateThing += "}\n";
+            updateThing += "catch (Exception ex){\n";
+            updateThing += "throw ex;\n";
+            updateThing += "}\n";
+            updateThing += "return result;\n}\n";
             return comment + updateThing;
 
 
@@ -427,7 +432,7 @@ namespace Data_Objects
                 output = output + DataAnnotationDisplayName + DataAnnotationRequired +DataAnnotationLength+ add;
                 count++;
             }
-            output = output + "\n}\n";
+            output += "\n}\n";
 
             if (foreign_keys.Count > 0)
             {
@@ -456,7 +461,7 @@ namespace Data_Objects
                     }
 
                 }
-                output = output + "}\n";
+                output += "}\n";
             }
 
 
@@ -565,8 +570,8 @@ namespace Data_Objects
             string comma = "";
             createThing = "\npublic int add" + name + "(" + name + " _" + name.ToLower();
 
-            createThing = createThing + "){\n";
-            createThing = createThing + genSPHeaderA("sp_insert_" + name);
+            createThing += "){\n";
+            createThing += genSPHeaderA("sp_insert_" + name);
             //add parameters
             foreach (Column r in columns)
             {
@@ -576,7 +581,7 @@ namespace Data_Objects
                 }
                 }
             //setting parameters
-            createThing = createThing + "\n //We need to set the parameter values\n";
+            createThing += "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -585,14 +590,14 @@ namespace Data_Objects
                 }
             }
             //excute the quuery
-            createThing = createThing + "try \n { \n //open the connection \n conn.Open();  ";
-            createThing = createThing + "//execute the command and capture result\n";
-            createThing = createThing + "rows = cmd.ExecuteNonQuery();\n}\n";
+            createThing += "try \n { \n //open the connection \n conn.Open();  ";
+            createThing += "//execute the command and capture result\n";
+            createThing += "rows = cmd.ExecuteNonQuery();\n}\n";
             //capture reuslts
-            createThing = createThing + "";
+            createThing += "";
 
             //cath block and onwards
-            createThing = createThing + genSPfooter(2);
+            createThing += genSPfooter(2);
 
 
 
@@ -612,12 +617,12 @@ namespace Data_Objects
                 {
                     if (count > 0) { comma = "  "; }
                     String add = comma + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip();
-                    retreiveThing = retreiveThing + add;
+                    retreiveThing += add;
                     count++;
                 }
             }
-            retreiveThing = retreiveThing + "){\n";
-            retreiveThing = retreiveThing + genSPHeaderB(name, "sp_retreive_by_pk_" + name);
+            retreiveThing += "){\n";
+            retreiveThing += genSPHeaderB(name, "sp_retreive_by_pk_" + name);
             //add parameters
             foreach (Column r in columns)
             {
@@ -627,7 +632,7 @@ namespace Data_Objects
                 }
             }
             //setting parameters
-            retreiveThing = retreiveThing + "\n //We need to set the parameter values\n";
+            retreiveThing += "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
@@ -636,14 +641,14 @@ namespace Data_Objects
                 }
             }
             //excute the quuery
-            retreiveThing = retreiveThing + "try \n { \n //open the connection \n conn.Open();  ";
-            retreiveThing = retreiveThing + "//execute the command and capture result\n";
+            retreiveThing += "try \n { \n //open the connection \n conn.Open();  ";
+            retreiveThing += "//execute the command and capture result\n";
 
-            retreiveThing = retreiveThing + "var reader = cmd.ExecuteReader();\n";
+            retreiveThing += "var reader = cmd.ExecuteReader();\n";
 
             //capture reuslts
-            retreiveThing = retreiveThing + "//process the results\n";
-            retreiveThing = retreiveThing + "if (reader.HasRows)\n if (reader.Read())\n{";
+            retreiveThing += "//process the results\n";
+            retreiveThing += "if (reader.HasRows)\n if (reader.Read())\n{";
             count = 0;
             foreach (Column r in columns)
             {
@@ -665,7 +670,7 @@ namespace Data_Objects
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }
-                                retreiveThing = retreiveThing  + getCSharpOrdinal(t, r);
+                                retreiveThing += getCSharpOrdinal(t, r);
                                 count++;
 
                             }
@@ -675,11 +680,11 @@ namespace Data_Objects
                 }
             }
 
-            retreiveThing = retreiveThing + "\n}\n";
+            retreiveThing += "\n}\n";
             retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" + name + " not found\");\n}\n}";
 
             //cath block and onwards
-            retreiveThing = retreiveThing + genSPfooter(0);
+            retreiveThing += genSPfooter(0);
 
 
 
@@ -695,28 +700,32 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             string retreiveAllThing = comment_box_gen.JavaDocComment(0, name);
-            retreiveAllThing = "\npublic List<" + name + "> selectAll" + name + "(){\n";
+            retreiveAllThing = "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
 
 
-            retreiveAllThing = retreiveAllThing + genSPHeaderC(name, "sp_retreive_by_all_" + name);
+            retreiveAllThing += genSPHeaderC(name, "sp_retreive_by_all_" + name);
             //no paramaters to set or add
+            retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
+            retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
+            retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
+            retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
 
 
 
             //excute the quuery
-            retreiveAllThing = retreiveAllThing + "try \n { \n //open the connection \n conn.Open();  ";
-            retreiveAllThing = retreiveAllThing + "//execute the command and capture result\n";
+            retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
+            retreiveAllThing += "//execute the command and capture result\n";
 
-            retreiveAllThing = retreiveAllThing + "var reader = cmd.ExecuteReader();\n";
+            retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
 
             //capture reuslts
-            retreiveAllThing = retreiveAllThing + "//process the results\n";
-            retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n while (reader.Read())\n{";
+            retreiveAllThing += "//process the results\n";
+            retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
             retreiveAllThing = retreiveAllThing + "var _" + name + "= new " + name + "();\n";
             count = 0;
             foreach (Column r in columns)
             {
-                retreiveAllThing= retreiveAllThing+getCSharpOrdinal(r);
+                retreiveAllThing+= getCSharpOrdinal(r);
                 count++;
 
             }
@@ -734,7 +743,7 @@ namespace Data_Objects
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }
-                                retreiveAllThing = retreiveAllThing  + getCSharpOrdinal(t, r);
+                                retreiveAllThing += getCSharpOrdinal(t, r);
                                 count++;
 
                             }
@@ -744,11 +753,92 @@ namespace Data_Objects
                 }
             }
             retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
-            retreiveAllThing = retreiveAllThing + "\n}\n}";
+            retreiveAllThing += "\n}\n}";
 
             //cath block and onwards
-            retreiveAllThing = retreiveAllThing + genSPfooter(0);
+            retreiveAllThing += genSPfooter(0);
 
+
+            return retreiveAllThing;
+
+
+        }
+        private string genAccessorRetreivefk()
+        {
+            string retreiveAllThing = "";
+            foreach (Column q in columns)
+            {
+                if (q.references != "")
+                {
+                    string[] parts = q.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+
+                    int count = 0;
+                    string comma = "";
+                    retreiveAllThing += comment_box_gen.JavaDocComment(0, name);
+                    retreiveAllThing += "\npublic List<" + name + "> select" + name +"by"+fk_table+ "("+q.data_type.toCSharpDataType()+" "+fk_name+",int limit, int offset){\n";
+
+
+                    retreiveAllThing += genSPHeaderC(name, "sp_retreive_"+name+"_by_" + q.column_name.bracketStrip());
+                    //no paramaters to set or add
+
+                    retreiveAllThing += "cmd.Parameters.Add(\"@" + q.column_name.bracketStrip() + "\", SqlDbType." + q.data_type.bracketStrip().toSQLDBType(q.length) + ");\n";
+                    retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
+                    retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
+                    retreiveAllThing += "cmd.Parameters[\"@"+q.column_name.bracketStrip()+"\"].Value = "+fk_name+" ;\n";
+                    retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
+                    retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
+
+
+
+                    //excute the quuery
+                    retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
+                    retreiveAllThing += "//execute the command and capture result\n";
+
+                    retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
+
+                    //capture reuslts
+                    retreiveAllThing += "//process the results\n";
+                    retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
+                    retreiveAllThing = retreiveAllThing + "var _" + name + "= new " + name + "();\n";
+                    count = 0;
+                    foreach (Column r in columns)
+                    {
+                        retreiveAllThing += getCSharpOrdinal(r);
+                        count++;
+
+                    }
+                    foreach (foreignKey fk in data_tables.all_foreignKey)
+                    {
+                        if (fk.mainTable.Equals(name))
+                        {
+
+
+                            foreach (table t in data_tables.all_tables)
+                            {
+                                if (t.name.Equals(fk.referenceTable))
+                                {
+                                    retreiveAllThing = retreiveAllThing + "Output." + t.name + "= new" + t.name + "();\n";
+                                    foreach (Column r in t.columns)
+                                    {
+                                        if (count > 0) { comma = ","; }
+                                        retreiveAllThing += getCSharpOrdinal(t, r);
+                                        count++;
+
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
+                    retreiveAllThing += "\n}\n}";
+
+                    //cath block and onwards
+                    retreiveAllThing += genSPfooter(0);
+                }
+            }
 
             return retreiveAllThing;
 
@@ -764,9 +854,9 @@ namespace Data_Objects
 
 
             updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
-            updateThing = updateThing + "){\n";
+            updateThing += "){\n";
 
-            updateThing = updateThing + genSPHeaderA("sp_update_" + name);
+            updateThing += genSPHeaderA("sp_update_" + name);
             //add parameters
             foreach (Column r in columns)
             {
@@ -778,7 +868,7 @@ namespace Data_Objects
                 }
             }
             //setting parameters
-            updateThing = updateThing + "\n //We need to set the parameter values\n";
+            updateThing += "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
                 updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = _old" + name + "." + r.column_name.bracketStrip() + ";\n";
@@ -788,16 +878,16 @@ namespace Data_Objects
                 }
             }
             //excute the quuery
-            updateThing = updateThing + "try \n { \n //open the connection \n conn.Open();  ";
-            updateThing = updateThing + "//execute the command and capture result\n";
-            updateThing = updateThing + "rows = cmd.ExecuteNonQuery();\n";
-            updateThing = updateThing + "if (rows == 0) {\n //treat failed update as exception \n ";
-            updateThing = updateThing + "throw new ArgumentException(\"invalid values, update failed\");\n}\n}";
+            updateThing += "try \n { \n //open the connection \n conn.Open();  ";
+            updateThing += "//execute the command and capture result\n";
+            updateThing += "rows = cmd.ExecuteNonQuery();\n";
+            updateThing += "if (rows == 0) {\n //treat failed update as exception \n ";
+            updateThing += "throw new ArgumentException(\"invalid values, update failed\");\n}\n}";
             //capture reuslts
-            updateThing = updateThing + "";
+            updateThing += "";
 
             //cath block and onwards
-            updateThing = updateThing + genSPfooter(2);
+            updateThing += genSPfooter(2);
 
 
 
@@ -810,22 +900,22 @@ namespace Data_Objects
         {
             string deleteThing = comment_box_gen.JavaDocComment(0, name);
             deleteThing += "\npublic int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
-            deleteThing = deleteThing + genSPHeaderA("sp_delete_" + name);
+            deleteThing += genSPHeaderA("sp_delete_" + name);
             //add parameters bit
             foreach (Column r in columns)
             {
                 deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
             }
             //setting parameters
-            deleteThing = deleteThing + "\n //We need to set the parameter values\n";
+            deleteThing += "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
                 deleteThing = deleteThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
             }
-            deleteThing = deleteThing + "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
-            deleteThing = deleteThing + "if (rows == 0){\n";
-            deleteThing = deleteThing + "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
-            deleteThing = deleteThing + genSPfooter(2);
+            deleteThing += "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
+            deleteThing += "if (rows == 0){\n";
+            deleteThing += "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
+            deleteThing += genSPfooter(2);
             return deleteThing;
         }
 
@@ -833,7 +923,7 @@ namespace Data_Objects
         {
             string deleteThing = comment_box_gen.JavaDocComment(0, name);
             deleteThing = deleteThing + "\n public int undelete" + name + "(" + name + " _" + name.ToLower() + "){\n";
-            deleteThing = deleteThing + genSPHeaderA("sp_undelete_" + name);
+            deleteThing += genSPHeaderA("sp_undelete_" + name);
             //add parameters bit
             //add parameters
             foreach (Column r in columns)
@@ -841,15 +931,15 @@ namespace Data_Objects
                 deleteThing = deleteThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
             }
             //setting parameters
-            deleteThing = deleteThing + "\n //We need to set the parameter values\n";
+            deleteThing += "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
                 deleteThing = deleteThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
             }
-            deleteThing = deleteThing + "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
-            deleteThing = deleteThing + "if (rows == 0){\n";
-            deleteThing = deleteThing + "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
-            deleteThing = deleteThing + genSPfooter(2);
+            deleteThing += "try\n { \n conn.Open();\n rows = cmd.ExecuteNonQuery();";
+            deleteThing += "if (rows == 0){\n";
+            deleteThing += "//treat failed delete as exepction\n throw new ArgumentException(\"Invalid Primary Key\");\n}\n}";
+            deleteThing += genSPfooter(2);
             return deleteThing;
         }
 
@@ -864,33 +954,33 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing = retreiveAllThing+ comment_box_gen.JavaDocComment(0, name);
+                    retreiveAllThing += comment_box_gen.JavaDocComment(0, name);
                     retreiveAllThing = retreiveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
 
 
 
-                    retreiveAllThing = retreiveAllThing + genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
+                    retreiveAllThing += genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
                     //no paramaters to set or add
 
 
 
                     //excute the quuery
-                    retreiveAllThing = retreiveAllThing + "try \n { \n //open the connection \n conn.Open();  ";
-                    retreiveAllThing = retreiveAllThing + "//execute the command and capture result\n";
+                    retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
+                    retreiveAllThing += "//execute the command and capture result\n";
 
-                    retreiveAllThing = retreiveAllThing + "var reader = cmd.ExecuteReader();\n";
+                    retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
 
                     //capture reuslts
-                    retreiveAllThing = retreiveAllThing + "//process the results\n";
-                    retreiveAllThing = retreiveAllThing + "if (reader.HasRows)\n while (reader.Read())\n{";
+                    retreiveAllThing += "//process the results\n";
+                    retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
                     retreiveAllThing = retreiveAllThing + "String _" + fk.referenceTable + "= reader.Get" + columns[0].data_type.toSqlReaderDataType() + "(0);\n";
                     count = 0;
 
                     retreiveAllThing = retreiveAllThing + "output.Add(_" + fk.referenceTable + ");";
-                    retreiveAllThing = retreiveAllThing + "\n}\n}";
+                    retreiveAllThing += "\n}\n}";
 
                     //cath block and onwards
-                    retreiveAllThing = retreiveAllThing + genSPfooter(0);
+                    retreiveAllThing += genSPfooter(0);
                 }
             }
 
@@ -959,12 +1049,12 @@ namespace Data_Objects
         {
 
             string result = "";
-            result = result + comment_box_gen.comment_box(name, 17);
-            result = result + genStaticVariables();
-            result = result + genConstructor();
-            result = result + genWinLoad();
-            result = result + genAddButton();
-            result = result + genEditButton();
+            result += comment_box_gen.comment_box(name, 17);
+            result += genStaticVariables();
+            result += genConstructor();
+            result += genWinLoad();
+            result += genAddButton();
+            result += genEditButton();
             return result;
 
 
@@ -1003,7 +1093,7 @@ namespace Data_Objects
                     result = result + "tbx" + name + c.column_name.bracketStrip() + ".Text=\"\";\n";
                 }
             }
-            result = result + "else\n{\nif (validInputs())\n{\n";
+            result += "else\n{\nif (validInputs())\n{\n";
 
             result = result + name + " new" + name + " = new " + name + "();\n";
             foreach (Column c in columns)
@@ -1023,14 +1113,14 @@ namespace Data_Objects
                 }
 
             }
-            result = result + "try\n{\n";
+            result += "try\n{\n";
             result = result + "bool result = _" + name.Substring(0, 1).ToLower() + "m.add" + name + "(new" + name + ");\n";
-            result = result + "if (result)\n{\n MessageBox.Show(\"added!\");\n";
-            result = result + "this.DialogResult=true;\n}\n";
-            result = result + "else \n { throw new ApplicationException();\n}\n}\n";
-            result = result + "catch (Exception ex)\n{\n MessageBox.Show(\"add failed\");";
-            result = result + "this.DialogResult=false\n}\n}";
-            result = result + "\nelse{\nMessageBox.Show(\"invalid inputs\");\n}\n}\n}";
+            result += "if (result)\n{\n MessageBox.Show(\"added!\");\n";
+            result += "this.DialogResult=true;\n}\n";
+            result += "else \n { throw new ApplicationException();\n}\n}\n";
+            result += "catch (Exception ex)\n{\n MessageBox.Show(\"add failed\");";
+            result += "this.DialogResult=false\n}\n}";
+            result += "\nelse{\nMessageBox.Show(\"invalid inputs\");\n}\n}\n}";
             return result;
 
         }
@@ -1054,8 +1144,8 @@ namespace Data_Objects
         {
             string result = "";
             result = "public " + name + "AddEditDelete(" + name + " " + name.Substring(0, 1).ToLower();
-            result = result + ")\n{\n";
-            result = result + " InitializeComponent();\n";
+            result += ")\n{\n";
+            result += " InitializeComponent();\n";
             result = result + "_" + name.ToLower() + "=" + name.Substring(0, 1).ToLower() + ";\n";
             result = result + "_" + name.Substring(0, 1).ToLower() + "m = new" + name + "Manager();\n}\n";
 
@@ -1084,11 +1174,11 @@ namespace Data_Objects
         public string genJavaModel()
         {
             string result = "";
-            result = result + genJavaHeader();
-            result = result + genJavaInstanceVariables();
-            result = result + genJavaContructor();
-            result = result + genJavaSetterAndGetter();
-            result = result + genJavaFooter();
+            result += genJavaHeader();
+            result += genJavaInstanceVariables();
+            result += genJavaContructor();
+            result += genJavaSetterAndGetter();
+            result += genJavaFooter();
 
             return result;
         }
@@ -1122,13 +1212,13 @@ namespace Data_Objects
                 ParamConsctructor = ParamConsctructor + comma + r.data_type.toJavaDataType() + " " + r.column_name;
                 comma = ", ";
             }
-            ParamConsctructor = ParamConsctructor + ") {\n";
+            ParamConsctructor += ") {\n";
             foreach (Column r in columns)
             {
 
                 ParamConsctructor = ParamConsctructor + "\nthis." + r.column_name + " = " + r.column_name + ";";
             }
-            ParamConsctructor = ParamConsctructor + "\n}\n";
+            ParamConsctructor += "\n}\n";
             result = defaultConstructor + ParamConsctructor;
             return result;
 
@@ -1170,16 +1260,16 @@ namespace Data_Objects
         public string genJavaDAO()
         {
             string result = "";
-            result = result + genJavaDAOHeader();        //works
-            result = result + genJavaDAOCreate();       //returns ""
-            result = result + genJavaDAORetreiveByKey(); // works
-            result = result + genJavaDAORetreiveAll(); // wokring on it now
-            result = result + genJavaDAORetriveActive(); // working on it now
-            result = result + genJavaDAORetriveByFK();
-            result = result + genJavaDAOUpdate(); //rturns ""
-            result = result + genJavaDelete(); //returns ""
-            result = result + genJavaunDelete(); //returns ""
-            result = result + genJavaDAOFooter(); //work
+            result += genJavaDAOHeader();        //works
+            result += genJavaDAOCreate();       //returns ""
+            result += genJavaDAORetreiveByKey(); // works
+            result += genJavaDAORetreiveAll(); // wokring on it now
+            result += genJavaDAORetriveActive(); // working on it now
+            result += genJavaDAORetriveByFK();
+            result += genJavaDAOUpdate(); //rturns ""
+            result += genJavaDelete(); //returns ""
+            result += genJavaunDelete(); //returns ""
+            result += genJavaDAOFooter(); //work
 
             return result;
 
@@ -1221,15 +1311,15 @@ namespace Data_Objects
             string comma = "";
             result = result + "public static " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
             result = result + name + " result = null;\n";
-            result = result + "try(Connection connection = getConnection()) {\n";
+            result += "try(Connection connection = getConnection()) {\n";
             result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_pk_" + name + "(?)}\")) {\n";
             for (int i = 0; i < columns.Count; i++)
                 if (columns[i].primary_key == 'y' || columns[i].primary_key == 'Y')
                 {
                     result = result + "statement.setString(1, _" + name.ToLower() + ".get" + columns[i].column_name.bracketStrip() + "().toString());\n";
                 }
-            result = result + "\ntry (ResultSet resultSet = statement.executeQuery()){";
-            result = result + "\nif(resultSet.next()){";
+            result += "\ntry (ResultSet resultSet = statement.executeQuery()){";
+            result += "\nif(resultSet.next()){";
             foreach (Column r in columns)
             {
 
@@ -1272,11 +1362,11 @@ namespace Data_Objects
                 comma = ",";
             }
 
-            result = result + ");";
-            result = result + "}\n}\n}\n";
-            result = result + "} catch (SQLException e) {\n";
-            result = result + " throw new RuntimeException(e);\n}\n";
-            result = result + "return result;\n}\n";
+            result += ");";
+            result += "}\n}\n}\n";
+            result += "} catch (SQLException e) {\n";
+            result += " throw new RuntimeException(e);\n}\n";
+            result += "return result;\n}\n";
 
 
 
@@ -1293,12 +1383,20 @@ namespace Data_Objects
             //result = comment_box_gen.JavaDocComment(0, name);
             string comma = "";
             result = result + "public static List<" + name + "> getAll" + name + "() {\n";
+            result = result + "return getAll" + name + "("+appData2.settings.page_size+",0);";
+            result += "}\n";
+            result = result + "public static List<" + name + "> getAll" + name + "(int pagesize) {\n";
+            result = result + "return getAll" + name + "(pagesize" + ",0);";
+            result += "}\n";
+            result = result + "public static List<" + name + "> getAll" + name + "(int limit, int offset) {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
-            result = result + "try (Connection connection = getConnection()) { \n";
-            result = result + "if (connection != null) {\n";
-            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "()}\")) {";
-            result = result + "try(ResultSet resultSet = statement.executeQuery()) {\n";
-            result = result + "while (resultSet.next()) {";
+            result += "try (Connection connection = getConnection()) { \n";
+            result += "if (connection != null) {\n";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "(?,?)}\")) {\n" +
+                "statement.setInt(1,limit)\n;"+
+                "statement.setInt(2,offset);\n";
+            result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
+            result += "while (resultSet.next()) {";
             foreach (Column r in columns)
             {
                 if (r.data_type.toJavaDataType().Equals("Integer"))
@@ -1319,13 +1417,13 @@ namespace Data_Objects
                 result = result + comma + " " + r.column_name.bracketStrip();
                 comma = ",";
             }
-            result = result + ");";
+            result += ");";
             result = result + "\n result.add(_" + name.ToLower() + ");\n}\n}\n}\n}\n";
-            result = result + "} catch (SQLException e) {\n";
+            result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
-            result = result + "}\n";
+            result += "}\n";
 
-            result = result + "return result;}\n";
+            result += "return result;}\n";
 
             return result;
 
@@ -1339,11 +1437,11 @@ namespace Data_Objects
             string comma = "";
             result = result + "public static List<" + name + "> getActive" + name + "() {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
-            result = result + "try (Connection connection = getConnection()) { \n";
-            result = result + "if (connection != null) {\n";
+            result += "try (Connection connection = getConnection()) { \n";
+            result += "if (connection != null) {\n";
             result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_active_" + name + "()}\"))\n {";
-            result = result + "try(ResultSet resultSet = statement.executeQuery()) {\n";
-            result = result + "while (resultSet.next()) {\n";
+            result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
+            result += "while (resultSet.next()) {\n";
             foreach (Column r in columns)
             {
                 if (r.data_type.toJavaDataType().Equals("Integer"))
@@ -1364,19 +1462,77 @@ namespace Data_Objects
                 result = result + comma + " " + r.column_name.bracketStrip();
                 comma = ",";
             }
-            result = result + ");";
+            result += ");";
             result = result + "\n result.add(_" + name.ToLower() + ");\n}\n}\n}\n}\n";
-            result = result + "} catch (SQLException e) {\n";
+            result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
-            result = result + "}\n";
+            result += "}\n";
 
-            result = result + "return result;}\n";
+            result += "return result;}\n";
 
             return result;
         }
 
         public String genJavaDAORetriveByFK() {
-            return "";
+            string nullValue = "\"\"";
+            string result = "";
+            //result = comment_box_gen.JavaDocComment(0, name);
+            string comma = "";
+            foreach (Column s in columns)
+            {
+                if (s.references != "")
+                {
+                    string[] parts = s.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+
+                    result = result + "public static List<" + name + "> get" + name + "by"+fk_table+"("+s.data_type.toJavaDataType()+" "+fk_name+") {\n";
+                    result = result + "return get" + name +"by"+fk_table+ "("+s.data_type.toJavaDataType()+" "+fk_name + ","+appData2.settings.page_size+  ",0);";
+                    result += "}\n";
+                    result = result + "public static List<" + name + "> get" + name +"by"+fk_table +"("+s.data_type.toJavaDataType()+" "+fk_name+"int pagesize) {\n";
+                    result = result + "return get" + name +"by"+fk_table+ "("+s.data_type.toJavaDataType()+" "+fk_name+",pagesize" + ",0);";
+                    result += "}\n";
+                    result = result + "public static List<" + name + "> get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + "int pagesize,int offset) {\n";
+                    result = result + "List<" + name + "> result = new ArrayList<>();\n";
+                    result += "try (Connection connection = getConnection()) { \n";
+                    result += "if (connection != null) {\n";
+                    result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_" + name+"_by"+fk_table + "(?,?,?)}\")) {\n" +
+                        "statement.set"+s.data_type.toJavaDAODataType()+"(1,"+fk_name+")\n;" +
+                        "statement.setInt(2,limit)\n;" +
+                        "statement.setInt(3,offset);\n";
+                    result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
+                    result += "while (resultSet.next()) {";
+                    foreach (Column r in columns)
+                    {
+                        if (r.data_type.toJavaDataType().Equals("Integer"))
+                        {
+                            nullValue = "0";
+                        }
+                        else { nullValue = "\"\""; }
+                        result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
+                        if (r.nullable == 'y' || r.nullable == 'Y')
+                        {
+
+                            result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
+                        }
+                    }
+                    result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
+                    foreach (Column r in columns)
+                    {
+                        result = result + comma + " " + r.column_name.bracketStrip();
+                        comma = ",";
+                    }
+                    result += ");";
+                    result = result + "\n result.add(_" + name.ToLower() + ");\n}\n}\n}\n}\n";
+                    result += "} catch (SQLException e) {\n";
+                    result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
+                    result += "}\n";
+
+                    result += "return result;\n}\n";
+                }
+            }
+
+            return result;
         }
 
         private string genJavaDAOUpdate()
@@ -1384,9 +1540,9 @@ namespace Data_Objects
             string result = "";
             //result = comment_box_gen.JavaDocComment(0, name);
             result = result + "\n public static int update("+name+" old"+name+", "+name+" new"+name+") throws SQLException{\n";
-            result = result + "int result = 0;\n";
-            result = result + "try (Connection connection = getConnection()) {\n";
-            result = result + "if (connection !=null){\n";
+            result += "int result = 0;\n";
+            result += "try (Connection connection = getConnection()) {\n";
+            result += "if (connection !=null){\n";
             result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_update_" + name+"(";
             string comma = "";
             foreach (Column r in columns) {
@@ -1399,7 +1555,7 @@ namespace Data_Objects
                     result = result + comma + "?,?";
                 }
             }
-            result = result + ")}\"))\n {\n";
+            result += ")}\"))\n {\n";
             int count = 1;
             foreach (Column r in columns) { 
             result=result+"statement.set"+r.data_type.toJavaDAODataType()+"("+count+",old"+name+".get"+r.column_name.bracketStrip() + "());\n";
@@ -1409,10 +1565,10 @@ namespace Data_Objects
                     count++;
                 }
             }
-            result = result + "result=statement.executeUpdate();\n";
-            result = result + "} catch (SQLException e) {\n";
+            result += "result=statement.executeUpdate();\n";
+            result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not update " + name + " . Try again later\");\n";
-            result = result + "}\n}\n}\n return result;\n}\n";
+            result += "}\n}\n}\n return result;\n}\n";
             return result;
 
 
@@ -1423,23 +1579,23 @@ namespace Data_Objects
             string result = "";
             //result = comment_box_gen.JavaDocComment(0, name);
             result = result + "public static int delete"+name+"(int "+name.ToLower()+"ID) {\n";
-            result = result + "int rowsAffected=0;\n";
-            result = result + "try (Connection connection = getConnection()) {\n";
-            result = result + "if (connection != null) {\n";
+            result += "int rowsAffected=0;\n";
+            result += "try (Connection connection = getConnection()) {\n";
+            result += "if (connection != null) {\n";
             result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_Delete_"+name+ "( ?)}\")){\n";
             result = result + "statement.setInt(1,"+name.ToLower()+"ID);\n";
-            result = result + "rowsAffected = statement.executeUpdate();\n";
-            result = result + "if (rowsAffected == 0) {\n";
+            result += "rowsAffected = statement.executeUpdate();\n";
+            result += "if (rowsAffected == 0) {\n";
             result = result + "throw new RuntimeException(\"Could not Delete "+name+". Try again later\");\n";
-            result = result + "}\n";
-            result = result + "}\n";
-            result = result + "}\n";
-            result = result + "} catch (SQLException e) {\n";
+            result += "}\n";
+            result += "}\n";
+            result += "}\n";
+            result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not Delete "+name+". Try again later\");\n";
-            result = result + "}\n";
-            result = result + "return rowsAffected;\n";
-            result = result + "}\n";
-            result = result + "";
+            result += "}\n";
+            result += "return rowsAffected;\n";
+            result += "}\n";
+            result += "";
             return result;
 
 
@@ -1449,23 +1605,23 @@ namespace Data_Objects
             string result = "";
             //result = comment_box_gen.JavaDocComment(0, name);
             result = result + "public static int undelete" + name + "(int " + name.ToLower() + "ID) {\n";
-            result = result + "int rowsAffected=0;\n";
-            result = result + "try (Connection connection = getConnection()) {\n";
-            result = result + "if (connection != null) {\n";
+            result += "int rowsAffected=0;\n";
+            result += "try (Connection connection = getConnection()) {\n";
+            result += "if (connection != null) {\n";
             result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_unDelete_" + name + "( ?)}\")){\n";
             result = result + "statement.setInt(1," + name.ToLower() + "ID);\n";
-            result = result + "rowsAffected = statement.executeUpdate();\n";
-            result = result + "if (rowsAffected == 0) {\n";
+            result += "rowsAffected = statement.executeUpdate();\n";
+            result += "if (rowsAffected == 0) {\n";
             result = result + "throw new RuntimeException(\"Could not Restore " + name + ". Try again later\");\n";
-            result = result + "}\n";
-            result = result + "}\n";
-            result = result + "}\n";
-            result = result + "} catch (SQLException e) {\n";
+            result += "}\n";
+            result += "}\n";
+            result += "}\n";
+            result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not Restore " + name + ". Try again later\");\n";
-            result = result + "}\n";
-            result = result + "return rowsAffected;\n";
-            result = result + "}\n";
-            result = result + "";
+            result += "}\n";
+            result += "return rowsAffected;\n";
+            result += "}\n";
+            result += "";
             return result;
 
 
@@ -1477,9 +1633,9 @@ namespace Data_Objects
             // result = comment_box_gen.JavaDocComment(0, name);
             string comma = "";
             result = result + "public static int add(" + name + " _" + name.ToLower() + ") {\n";
-            result = result + "int numRowsAffected=0;";
-            result = result + "try (Connection connection = getConnection()) {\n";
-            result = result + "if (connection != null) {\n";
+            result += "int numRowsAffected=0;";
+            result += "try (Connection connection = getConnection()) {\n";
+            result += "if (connection != null) {\n";
             result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_insert_" + name + "(";
             foreach (Column r in columns)
             {
@@ -1489,7 +1645,7 @@ namespace Data_Objects
                     comma = ",";
                 }
             }
-            result = result + ")}\")){\n";
+            result += ")}\")){\n";
             int count = 1;
             foreach (Column r in columns)
             {
@@ -1499,14 +1655,14 @@ namespace Data_Objects
                     count++;
                 }
             }
-            result = result + "numRowsAffected = statement.executeUpdate();\n";
-            result = result + "if (numRowsAffected == 0) {\n";
+            result += "numRowsAffected = statement.executeUpdate();\n";
+            result += "if (numRowsAffected == 0) {\n";
             result = result + "throw new RuntimeException(\"Could not add " + name + ". Try again later\");\n}\n";
-            result = result + "} \n}\n";
-            result = result + "} catch (SQLException e) {\n";
+            result += "} \n}\n";
+            result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not add " + name + ". Try again later\");\n}\n";
-            result = result + "return numRowsAffected;\n}";
-            result = result + "\n";
+            result += "return numRowsAffected;\n}";
+            result += "\n";
             return result;
 
 
@@ -1516,7 +1672,7 @@ namespace Data_Objects
         {
             string result = "";
             result = result + "sqlcmd -S localhost -E -i " + name + ".sql\n";
-            result = result + "ECHO .\n";
+            result += "ECHO .\n";
             return result;
 
 
@@ -1526,9 +1682,9 @@ namespace Data_Objects
         public string genCreateServelet()
         {
             string result = "";
-            result = result + importStatements();
+            result += importStatements();
             //do get
-            result = result+ comment_box_gen.comment_box(name, 21);
+            result += comment_box_gen.comment_box(name, 21);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
             result = result + "public class Add" + name + "Servlet extends HttpServlet{\n";
 
@@ -1542,11 +1698,11 @@ namespace Data_Objects
                     //grab a list of the parents, assign and create a static variable
                 }
             }
-            result = result + "\n @Override\n";
-            result = result + "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += "\n @Override\n";
+            result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             
-            result = result + privLevelStatement();
-            result = result + "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result += privLevelStatement();
+            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
             foreach (Column r in columns)
             {
@@ -1564,7 +1720,7 @@ namespace Data_Objects
 
 
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
-            result = result + "}\n";
+            result += "}\n";
 
 
 
@@ -1573,9 +1729,9 @@ namespace Data_Objects
             //this only creates the doPost method
             result += "\n";
             //gen header
-            result = result + "@Override\n";
-            result = result + "  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
-            result = result + privLevelStatement();
+            result += "@Override\n";
+            result += "  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += privLevelStatement();
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -1600,7 +1756,7 @@ namespace Data_Objects
                 }
             }
             //toss it in a hashmap
-            result = result + "Map<String, String> results = new HashMap<>();\n";
+            result += "Map<String, String> results = new HashMap<>();\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -1610,14 +1766,14 @@ namespace Data_Objects
             }
             //generate an object, and set errors
             result = result + name + " " + name.ToLower() + " = new " + name + "();\n";
-            result = result + "int errors =0;\n";
+            result += "int errors =0;\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0 &&r.default_value=="")
                 {
 
                     string errorname = name.ToLower() + r.column_name + "error";
-                    result = result + "try {\n";
+                    result += "try {\n";
                     if (r.data_type.ToLower().Equals("int"))
                     {
                         result = result + name.ToLower() + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
@@ -1630,10 +1786,10 @@ namespace Data_Objects
                     {
                         result = result + name.ToLower() + ".set" + r.column_name + "(_" + r.column_name + ");\n";
                     }
-                    result = result + "} catch(IllegalArgumentException e) {";
+                    result += "} catch(IllegalArgumentException e) {";
                     result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
-                    result = result + "errors++;\n";
-                    result = result + "}\n";
+                    result += "errors++;\n";
+                    result += "}\n";
 
                 }
 
@@ -1642,27 +1798,27 @@ namespace Data_Objects
             }
             //add it to the databsae, maybe?
 
-            result = result + "int result=0;\n";
-            result = result + "if (errors==0){\n";
+            result += "int result=0;\n";
+            result += "if (errors==0){\n";
             result = result + "try{\nresult=" + name + "DAO.add(" + name.ToLower() + ");\n}";
-            result = result + "catch(Exception ex){\n";
-            result = result + "results.put(\"dbStatus\",\"Database Error\");\n";
-            result = result + "}\n";
-            result = result + "if (result>0){\n";
+            result += "catch(Exception ex){\n";
+            result += "results.put(\"dbStatus\",\"Database Error\");\n";
+            result += "}\n";
+            result += "if (result>0){\n";
             result = result + "results.put(\"dbStatus\",\"" + name + " Added\");\n";
             result = result + "resp.sendRedirect(\"all-"+name+"s\");\n";
-            result = result + "return;\n";
-            result = result + "} else {\n";
+            result += "return;\n";
+            result += "} else {\n";
             result = result + "results.put(\"dbStatus\",\"" + name + " Not Added\");\n";
-            result = result + "\n}\n";
+            result += "\n}\n";
             //set db message
-            result = result + "}\n";
+            result += "}\n";
 
             //send it back
-            result = result + "req.setAttribute(\"results\", results);\n";
+            result += "req.setAttribute(\"results\", results);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Create a " + name + " \");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
-            result = result + "\n}\n}\n";
+            result += "\n}\n}\n";
 
 
             //get_buttons
@@ -1681,30 +1837,30 @@ namespace Data_Objects
             string result = comment_box_gen.comment_box(name, 20);
             //header comment
             //gen header
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
             //gen form
-            result = result + "<div class = \"container\">\n";
-            result = result + "<div class=\"row\">\n";
-            result = result + "<div class=\"col-12\">\n";
+            result += "<div class = \"container\">\n";
+            result += "<div class=\"row\">\n";
+            result += "<div class=\"col-12\">\n";
             result = result + "<h1>All Roller " + name + "s</h1>\n";
             result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
             result = result + "Add "+name+"   <a href=\"add"+name+"\">Add</a>\n";
             result = result + "<c:if test=\"${" + name + "s.size() > 0}\">\n";
-            result = result + "<div class=\"table-responsive\">";
-            result = result + "<table class=\"table table-bordered\">\n";
-            result = result + "<thead>\n";
-            result = result + "<tr>\n";
+            result += "<div class=\"table-responsive\">";
+            result += "<table class=\"table table-bordered\">\n";
+            result += "<thead>\n";
+            result += "<tr>\n";
             foreach (Column r in columns)
             {
                 result = result + "<th scope=\"col\">" + r.column_name + "</th>\n";
             }
-            result = result + "<th scope=\"col\">Edit</th>\n";
-            result = result + "<th scope=\"col\">Delete</th>\n";
-            result = result + "</tr>\n";
-            result = result + "</thead>\n";
-            result = result + "<tbody>\n";
+            result += "<th scope=\"col\">Edit</th>\n";
+            result += "<th scope=\"col\">Delete</th>\n";
+            result += "</tr>\n";
+            result += "</thead>\n";
+            result += "<tbody>\n";
             result = result + "<c:forEach items=\"${" + name + "s}\" var=\"" + name.ToLower() + "\">\n";
-            result = result + "<tr>\n";
+            result += "<tr>\n";
             foreach (Column r in columns)
             {
                 //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
@@ -1734,17 +1890,17 @@ namespace Data_Objects
                 "\t\t\t\t\t\t<c:otherwise>1</c:otherwise>\n" +
                 "\t\t\t\t\t\t</c:choose>\">\n" +              
                 "<c:if test=\"${!"+name.ToLower()+".is_active}\">un</c:if>Delete </a></td> \n";
-            result = result + "</tr>\n";
-            result = result + "</c:forEach>\n";
-            result = result + "</tbody>\n";
-            result = result + "</table>\n";
-            result = result + "</div>\n";
-            result = result + "</c:if>\n";
-            result = result + "</div>\n";
-            result = result + "</div>\n";
-            result = result + "</div>\n";
-            result = result + "</main>\n";
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+            result += "</tr>\n";
+            result += "</c:forEach>\n";
+            result += "</tbody>\n";
+            result += "</table>\n";
+            result += "</div>\n";
+            result += "</c:if>\n";
+            result += "</div>\n";
+            result += "</div>\n";
+            result += "</div>\n";
+            result += "</main>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
 
 
             //gen_header
@@ -1766,9 +1922,9 @@ namespace Data_Objects
             string result = comment_box_gen.comment_box(name, 19);
             //header comment
             //gen header
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
             //gen form
-            result = result + "<div class = \"container\">\n";
+            result += "<div class = \"container\">\n";
             result = result + "<form method=\"post\" action=\"${appURL}/add" + name + "\" id = \"add" + name + "\" >\n";
             //gen a button for each line item
             foreach (Column r in columns)
@@ -1787,13 +1943,13 @@ namespace Data_Objects
                             result = result + "<!-- " + r.column_name + " -->\n";
                             result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
                             result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
-                            result = result + "<div class=\"input-group input-group-lg\">\n";
+                            result += "<div class=\"input-group input-group-lg\">\n";
                             result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
                             result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                             result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                            result = result + "</c:if>\n";
-                            result = result + "</div>\n";
-                            result = result + "</div>\n";
+                            result += "</c:if>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
                             rowcount++;
                         }
 
@@ -1805,19 +1961,19 @@ namespace Data_Objects
                             result = result + "<!-- " + r.column_name + " -->\n";
                             result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
                             result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
-                            result = result + "<div class=\"input-group input-group-lg\">\n";
+                            result += "<div class=\"input-group input-group-lg\">\n";
                             result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
                             result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
                             result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\">${" + parts[0] + ".name}   </option>\n";
-                            result = result + "</c:forEach>\n";
-                            result = result + "</select>\n";
-                            result = result + "";
+                            result += "</c:forEach>\n";
+                            result += "</select>\n";
+                            result += "";
 
                             result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                             result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                            result = result + "</c:if>\n";
-                            result = result + "</div>\n";
-                            result = result + "</div>\n";
+                            result += "</c:if>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
                             rowcount++;
                             i++;
 
@@ -1827,18 +1983,18 @@ namespace Data_Objects
                 }
             }
             //get_buttons
-            result = result + "<div class=\"align-items-center mt-0\">\n";
-            result = result + "<div class=\"d-grid\">";
+            result += "<div class=\"align-items-center mt-0\">\n";
+            result += "<div class=\"d-grid\">";
             result = result + "<button class=\"btn btn-orange mb-0\" type=\"submit\">Create "+name+"  </button></div>\n";
-            result = result + "<c:if test=\"${not empty results.dbStatus}\"\n>";
-            result = result + "<p>${results.dbStatus}</p>\n";
-            result = result + "</c:if>\n";
-            result = result + "</div>\n";
-            result = result + "</form>\n";
-            result = result + "</div>\n";
+            result += "<c:if test=\"${not empty results.dbStatus}\"\n>";
+            result += "<p>${results.dbStatus}</p>\n";
+            result += "</c:if>\n";
+            result += "</div>\n";
+            result += "</form>\n";
+            result += "</div>\n";
             
             //get_footer
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
 
 
 
@@ -1852,25 +2008,25 @@ namespace Data_Objects
             //this only creates the doGet method
             string result = comment_box_gen.comment_box(name, 22);
             //gen header
-            result = result + importStatements(); 
+            result += importStatements(); 
             
 
             result = result + "@WebServlet(\"/all-" + name + "s\")\n";
             result = result + "public class All" + name + "sServlet extends HttpServlet {";
-            result = result + "@Override\n";
-            result = result + "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += "@Override\n";
+            result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             
-            result = result + privLevelStatement();
-            result =result+"session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result += privLevelStatement();
+            result +="session.setAttribute(\"currentPage\",req.getRequestURL());\n";
 
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
-            result = result + "\n";
+            result += "\n";
             result = result + name.ToLower() + "s =" + name + "DAO.getAll" + name + "();\n";
-            result = result +  "\n";
+            result += "\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/all-" + name + "s.jsp\").forward(req,resp);\n";
-            result = result + "\n}\n}";
+            result += "\n}\n}";
             //header comment
             //gen_header
             //gen_fileds
@@ -1886,43 +2042,43 @@ namespace Data_Objects
 
         public string genDeleteServlet() {
             string result = comment_box_gen.comment_box(name, 25);
-            result=result+importStatements();
+            result+=importStatements();
             result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")";
             result = result + "public class Delete"+name+"Servlet extends HttpServlet {\n";
-            result = result + "@Override\n";
-            result = result + "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
-            result = result + "Map<String, String> results = new HashMap<>();\n";
-            result = result + privLevelStatement();
+            result += "@Override\n";
+            result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += "Map<String, String> results = new HashMap<>();\n";
+            result += privLevelStatement();
             
-            result = result + "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Delete "+name+"\");\n";
             result = result + "int "+name+"ID = Integer.valueOf(req.getParameter(\""+name.ToLower()+"id\"));\n";
-            result = result + "int mode = Integer.valueOf(req.getParameter(\"mode\"));\n";
-            result = result + "int result = 0;\n";
-            result = result + "if (mode==0){\n";
-            result = result + "try{\n";
+            result += "int mode = Integer.valueOf(req.getParameter(\"mode\"));\n";
+            result += "int result = 0;\n";
+            result += "if (mode==0){\n";
+            result += "try{\n";
             result = result + "result = "+name+"DAO.delete"+name+"("+name+"ID);\n";
-            result = result + "}\n";
-            result = result + "catch(Exception ex){\n";
-            result = result + "results.put(\"dbStatus\",ex.getMessage());\n";
-            result = result + "}\n";
-            result = result + "}\n";
-            result = result + "else {\n";
-            result = result + "try{\n";
+            result += "}\n";
+            result += "catch(Exception ex){\n";
+            result += "results.put(\"dbStatus\",ex.getMessage());\n";
+            result += "}\n";
+            result += "}\n";
+            result += "else {\n";
+            result += "try{\n";
             result = result + "result = "+name+"DAO.undelete"+name+"("+name+"ID);\n";
-            result = result + "}\n";
-            result = result + "catch(Exception ex){\n";
-            result = result + "results.put(\"dbStatus\",ex.getMessage());\n";
-            result = result + "}\n";
-            result = result + "}\n";
+            result += "}\n";
+            result += "catch(Exception ex){\n";
+            result += "results.put(\"dbStatus\",ex.getMessage());\n";
+            result += "}\n";
+            result += "}\n";
             result = result + "List<"+name+"> "+name.ToLower()+"s = null;\n";
             result = result + name.ToLower()+"s = "+name+"DAO.getAll"+name+"();\n";
-            result = result + "req.setAttribute(\"results\",results);\n";
+            result += "req.setAttribute(\"results\",results);\n";
             result = result + "req.setAttribute(\""+name+"s\", "+name.ToLower()+"s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All "+name+"\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/all-"+name+"s.jsp\").forward(req, resp);\n";
-            result = result + "}\n";
-            result = result + "}\n";
+            result += "}\n";
+            result += "}\n";
 
             return result;
         }
@@ -1930,9 +2086,9 @@ namespace Data_Objects
         public string genViewEditServlet() {
             //do get
             string result = "";
-            result = result + importStatements();
+            result += importStatements();
             //do get
-            result = result + comment_box_gen.comment_box(name, 21);
+            result += comment_box_gen.comment_box(name, 21);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
             result = result + "public class Edit" + name + "Servlet extends HttpServlet{\n";
 
@@ -1946,22 +2102,22 @@ namespace Data_Objects
                     //grab a list of the parents, assign and create a static variable
                 }
             }
-            result = result + "\n @Override\n";
-            result = result + "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
-            result = result + privLevelStatement();
-            result = result + "String mode = req.getParameter(\"mode\");\n";
+            result += "\n @Override\n";
+            result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += privLevelStatement();
+            result += "String mode = req.getParameter(\"mode\");\n";
             result = result + "int primaryKey = Integer.parseInt(req.getParameter(\""+name.ToLower()+"id\"))\n";
             result = result + name+" "+name.ToLower()+"= new "+name+ "();\n";
             result = result + name.ToLower() + ".set" + name + "_ID(primaryKey);\n";
-            result = result + "try{\n";
+            result += "try{\n";
             result = result + name.ToLower()+"="+name+"DAO.get"+name+"ByPrimaryKey("+name.ToLower()+");\n";
-            result = result + "} catch (SQLException e) {\n";
-            result = result + "req.setAttribute(\"dbStatus\",e.getMessage());\n";
-            result = result + "}\n";
-            result = result + "HttpSession session = req.getSession();\r\n";
+            result += "} catch (SQLException e) {\n";
+            result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
+            result += "}\n";
+            result += "HttpSession session = req.getSession();\r\n";
             result = result + "session.setAttribute(\""+name.ToLower()+"\","+name.ToLower()+");\n";
-            result = result + "req.setAttribute(\"mode\",mode);\n";
-            result = result + "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result += "req.setAttribute(\"mode\",mode);\n";
+            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
             foreach (Column r in columns)
             {
@@ -1979,14 +2135,14 @@ namespace Data_Objects
 
 
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Edit" + name + ".jsp\").forward(req, resp);\n";
-            result = result + "}\n";
-            result = result + " @Override\n";
-            result = result + "protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
-            result = result + privLevelStatement();
-            result = result + "Map<String, String> results = new HashMap<>();\n";
-            result = result + "String mode = req.getParameter(\"mode\");\n";
-            result = result + "req.setAttribute(\"mode\",mode);\n";
-            result = result + "//to set the drop downs\n";
+            result += "}\n";
+            result += " @Override\n";
+            result += "protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += privLevelStatement();
+            result += "Map<String, String> results = new HashMap<>();\n";
+            result += "String mode = req.getParameter(\"mode\");\n";
+            result += "req.setAttribute(\"mode\",mode);\n";
+            result += "//to set the drop downs\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -2001,9 +2157,9 @@ namespace Data_Objects
                 }
             }
             result = result + "//to get the old "+name+"\n";
-            result = result + "HttpSession session = req.getSession();\n";
+            result += "HttpSession session = req.getSession();\n";
             result = result + name+" _old"+name+"= ("+name+")session.getAttribute(\""+name.ToLower()+"\");\n";
-            result = result + "//to get the new event's info\n";
+            result += "//to get the new event's info\n";
 
             foreach (Column r in columns)
             {
@@ -2026,14 +2182,14 @@ namespace Data_Objects
 
             //generate the object
             result = result + name + " _new" + name + " = new " + name + "();\n";
-            result = result + "int errors =0;\n";
+            result += "int errors =0;\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0 )
                 {
 
                     string errorname = name.ToLower() + r.column_name + "error";
-                    result = result + "try {\n";
+                    result += "try {\n";
                     if (r.data_type.ToLower().Equals("int"))
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
@@ -2046,34 +2202,34 @@ namespace Data_Objects
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(_" + r.column_name + ");\n";
                     }
-                    result = result + "} catch(IllegalArgumentException e) {";
+                    result += "} catch(IllegalArgumentException e) {";
                     result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
-                    result = result + "errors++;\n";
-                    result = result + "}\n";
+                    result += "errors++;\n";
+                    result += "}\n";
 
                 }
             }
             result = result + "_new"+name+".setis_active(true);\n";
-            result = result + "//to update the database\n";
-            result = result + "int result=0;\n";
-            result = result + "if (errors==0){\n";
-            result = result + "try{\n";
+            result += "//to update the database\n";
+            result += "int result=0;\n";
+            result += "if (errors==0){\n";
+            result += "try{\n";
             result = result + "result="+name+"DAO.update(_old"+name+",_new"+name+");\n";
-            result = result + "}catch(Exception ex){\n";
-            result = result + "results.put(\"dbStatus\",\"Database Error\");\n";
-            result = result + "}\n";
-            result = result + "if (result>0){\n";
+            result += "}catch(Exception ex){\n";
+            result += "results.put(\"dbStatus\",\"Database Error\");\n";
+            result += "}\n";
+            result += "if (result>0){\n";
             result = result + "results.put(\"dbStatus\",\""+name+" updated\");\n";
             result = result + "resp.sendRedirect(\"all-"+name+"s\");\n";
-            result = result + "return;\n";
-            result = result + "} else {\n";
+            result += "return;\n";
+            result += "} else {\n";
             result = result + "results.put(\"dbStatus\",\""+name+" Not Updated\");\n";
-            result = result + "}\n}\n";
-            result = result + "//standard\n";
-            result = result + "req.setAttribute(\"results\", results);\n";
+            result += "}\n}\n";
+            result += "//standard\n";
+            result += "req.setAttribute(\"results\", results);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Edit a "+name+" \");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Edit"+name+".jsp\").forward(req, resp);\n";
-            result = result + "}\n}\n";
+            result += "}\n}\n";
 
 
 
@@ -2088,9 +2244,9 @@ namespace Data_Objects
             string result = comment_box_gen.comment_box(name, 26);
             //header comment
             //gen header
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
             //gen form
-            result = result + "<div class = \"container\">\n";
+            result += "<div class = \"container\">\n";
             result = result + "<form method=\"post\" action=\"${appURL}/edit" + name + "\" id = \"edit" + name + "\" >\n";
             //gen a button for each line item
             foreach (Column r in columns)
@@ -2107,7 +2263,7 @@ namespace Data_Objects
                         
                         result = result + " ${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}</h2>\n";
                         
-                        result = result + "</div>\n";
+                        result += "</div>\n";
                         
                         rowcount++;
                         continue;
@@ -2122,13 +2278,13 @@ namespace Data_Objects
                         result = result + "<!-- " + r.column_name + " -->\n";
                         result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
                         result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
-                        result = result + "<div class=\"input-group input-group-lg\">\n";
+                        result += "<div class=\"input-group input-group-lg\">\n";
                         result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" <c:if test=\"${mode eq 'view'}\"> disabled </c:if>  id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}\">\n";
                         result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                         result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                        result = result + "</c:if>\n";
-                        result = result + "</div>\n";
-                        result = result + "</div>\n";
+                        result += "</c:if>\n";
+                        result += "</div>\n";
+                        result += "</div>\n";
                         rowcount++;
                     }
 
@@ -2140,20 +2296,20 @@ namespace Data_Objects
                         result = result + "<!-- " + r.column_name + " -->\n";
                         result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
                         result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
-                        result = result + "<div class=\"input-group input-group-lg\">\n";
+                        result += "<div class=\"input-group input-group-lg\">\n";
                         result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\"  <c:if test=\"${mode eq 'view'}\"> disabled </c:if>  id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}\">\n";
                         result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
                         result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\"" +
                         "<c:if test=\"${" + name.ToLower() + "." + parts[1].firstCharLower() + " eq " + parts[0] + "." + parts[1].firstCharLower() +"}\"> selected </c:if>>${" + parts[0] + ".name}   </option>\n";
-                            result = result + "</c:forEach>\n";
-                            result = result + "</select>\n";
-                            result = result + "";
+                            result += "</c:forEach>\n";
+                            result += "</select>\n";
+                            result += "";
 
                             result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                             result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                            result = result + "</c:if>\n";
-                            result = result + "</div>\n";
-                            result = result + "</div>\n";
+                            result += "</c:if>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
                             rowcount++;
                             i++;
 
@@ -2163,18 +2319,18 @@ namespace Data_Objects
                 }
             }
             //get_buttons
-            result = result + "<div class=\"align-items-center mt-0\">\n";
-            result = result + "<div class=\"d-grid\">";
+            result += "<div class=\"align-items-center mt-0\">\n";
+            result += "<div class=\"d-grid\">";
             result = result + "<button class=\"btn btn-orange mb-0\" type=\"submit\">Edit "+name+" </button></div>\n";
-            result = result + "<c:if test=\"${not empty results.dbStatus}\"\n>";
-            result = result + "<p>${results.dbStatus}</p>\n";
-            result = result + "</c:if>\n";
-            result = result + "</div>\n";
-            result = result + "</form>\n";
-            result = result + "</div>\n";
+            result += "<c:if test=\"${not empty results.dbStatus}\"\n>";
+            result += "<p>${results.dbStatus}</p>\n";
+            result += "</c:if>\n";
+            result += "</div>\n";
+            result += "</form>\n";
+            result += "</div>\n";
 
             //get_footer
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
 
 
 
@@ -2185,25 +2341,25 @@ namespace Data_Objects
         public string genIndexJSP()
         {
             string result = "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
-            result = result + "<div class=\"table-responsive\"><table class=\"table table-bordered\">\n";
-            result = result + "<thead>\n";
-            result = result + "<tr>\n";
-            result = result + "<th scope=\"col\">Table</th>\n";
+            result += "<div class=\"table-responsive\"><table class=\"table table-bordered\">\n";
+            result += "<thead>\n";
+            result += "<tr>\n";
+            result += "<th scope=\"col\">Table</th>\n";
 
-            result = result + " <th scope=\"col\">Action</th>\n";
-            result = result + "</tr>\n";
-            result = result + "</thead>\n";
-            result = result + "<tbody>\n";
+            result += " <th scope=\"col\">Action</th>\n";
+            result += "</tr>\n";
+            result += "</thead>\n";
+            result += "<tbody>\n";
             foreach (table t in data_tables.all_tables)
             {
                 result = result + "<tr><td>View all " + t.name + "</td><td><a href=\"all-" + t.name + "s\"> View </a> </td></tr>\n";
 
 
             }
-            result = result + "</tbody>\n";
-            result = result + "</table>\n";
-            result = result + "</div>\n";
-            result = result + "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+            result += "</tbody>\n";
+            result += "</table>\n";
+            result += "</div>\n";
+            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
 
 
 
@@ -2219,32 +2375,32 @@ namespace Data_Objects
             string result = "\n";
             result = result + "import com.beck.javaiii_kirkwood.personal_project.data." + name + "DAO;\n";
             result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n";
-            result = result + "import com.beck.javaiii_kirkwood.personal_project.models.User;\n";
-            result = result + "import jakarta.servlet.ServletException;\n";
-            result = result + "import jakarta.servlet.annotation.WebServlet;\n";
-            result = result + "import jakarta.servlet.http.HttpServlet;\n";
-            result = result + "import jakarta.servlet.http.HttpServletRequest;\n";
-            result = result + "import jakarta.servlet.http.HttpServletResponse;\n";
-            result = result + "import jakarta.servlet.http.HttpSession;\n";
+            result += "import com.beck.javaiii_kirkwood.personal_project.models.User;\n";
+            result += "import jakarta.servlet.ServletException;\n";
+            result += "import jakarta.servlet.annotation.WebServlet;\n";
+            result += "import jakarta.servlet.http.HttpServlet;\n";
+            result += "import jakarta.servlet.http.HttpServletRequest;\n";
+            result += "import jakarta.servlet.http.HttpServletResponse;\n";
+            result += "import jakarta.servlet.http.HttpSession;\n";
 
-            result = result + "import java.io.IOException;\n";
-            result = result + "import java.util.HashMap;\n";
-            result = result + "import java.util.List;\n";
-            result = result + "import java.util.Map;\n";
+            result += "import java.io.IOException;\n";
+            result += "import java.util.HashMap;\n";
+            result += "import java.util.List;\n";
+            result += "import java.util.Map;\n";
             return result;
         
         }
 
         private string privLevelStatement() {
             string result = "\n//To restrict this page based on privilege level\n";
-            result = result + "int PRIVILEGE_NEEDED = 0;\n";
-            result = result + "HttpSession session = req.getSession();\n";
-            result = result + "User user = (User)session.getAttribute(\"User\");\n";
-            result = result + "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED){\n";
-            result = result + "resp.sendError(HttpServletResponse.SC_FORBIDDEN);\n";
-            result = result + "return;\n";
-            result = result + "}\n";
-            result = result + "\n";
+            result += "int PRIVILEGE_NEEDED = 0;\n";
+            result += "HttpSession session = req.getSession();\n";
+            result += "User user = (User)session.getAttribute(\"User\");\n";
+            result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED){\n";
+            result += "resp.sendError(HttpServletResponse.SC_FORBIDDEN);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "\n";
 
             return result;
         

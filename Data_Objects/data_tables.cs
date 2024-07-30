@@ -79,7 +79,7 @@ namespace Data_Objects
 
             }
 
-            result = result + "The following tables are not keyed either way\n";
+            result += "The following tables are not keyed either way\n";
             {
                 foreach (string key in KeyedToCount.Keys) { 
                  if (KeyedToCount[key]==0 && ForeignKeyCount[key] == 0) {
@@ -89,7 +89,7 @@ namespace Data_Objects
                 }
             
             }
-            result = result + "Possible typos in the following keys: \n";
+            result += "Possible typos in the following keys: \n";
             foreach (string key in TypoKeys.Keys) {
                 result = result + "The key of " + key + " is a possible typo";
 
