@@ -39,6 +39,7 @@ namespace Data_Objects
 
 
 
+        //Generates the Interface for the accessor for CRUD Functions
         public String gen_IThingAccessor()
         {
             int count = 0;
@@ -93,7 +94,7 @@ namespace Data_Objects
         }
 
 
-
+        //Generates the  the accessor for CRUD Functions
         public String gen_ThingAccessor()
         {
 
@@ -128,6 +129,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the Interface for the Manager for CRUD Functions
         public String gen_IThingManager()
         {
             int count = 0;
@@ -189,7 +191,7 @@ namespace Data_Objects
 
         }
 
-
+        //Generates the Manager for CRUD Functions, with Dependcy inversion with respect to the accessor
         public String gen_ThingMananger() {
             String result = "";
             String header = genManagerHeader();
@@ -223,6 +225,7 @@ namespace Data_Objects
         
         }
 
+        //Generates the header componoent of the manager
         private string genManagerHeader() {
             string comment = comment_box_gen.comment_box(name, 29);
 
@@ -244,6 +247,7 @@ namespace Data_Objects
             return comment + result;
 
         }
+        //Generates the add componoent of the manager
         private String genManagerAdd() {
             string comment = comment_box_gen.comment_box(name, 31);
             String result = "\n";
@@ -264,6 +268,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the delete componoent of the manager
         private String genManagerDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
             string purgeThing = "public int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
@@ -283,6 +288,7 @@ namespace Data_Objects
             return comment + purgeThing;
 
         }
+        //Generates the undelete componoent of the manager
         private String genManagerUnDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
             string purgeThing = "public int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
@@ -305,6 +311,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the get by ID componoent of the manager
         private string genManagerPK() {
             string comment = comment_box_gen.comment_box(name, 33);
             string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
@@ -324,6 +331,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the get All componoent of the manager
         private string genManagerAll() {
             string comment = comment_box_gen.comment_box(name, 34);
 
@@ -350,6 +358,7 @@ namespace Data_Objects
             return retreiveAll;
 
         }
+        //Generates the get by FK componoent of the manager
         private string genManagerFK() {
             string getfkThing = "";
             foreach (Column r in columns)
@@ -387,6 +396,7 @@ namespace Data_Objects
             }
             return getfkThing;
         }
+        //Generates the update componoent of the manager
         private string genManagerUpdate() {
             string comment = comment_box_gen.comment_box(name, 35);
             string updateThing = "public int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
@@ -406,6 +416,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the C# data object
         public String gen_DataObject()
         {
 
@@ -471,6 +482,7 @@ namespace Data_Objects
 
 
         }
+        //Not implemented
         public String gen_functions()
         {
             string x = " ";
@@ -479,6 +491,7 @@ namespace Data_Objects
 
 
         }
+        ////Generates the header componoent of the accessor
         private string genAccessorClassHeader()
         {
             string header = "";
@@ -493,6 +506,7 @@ namespace Data_Objects
 
 
         }
+        ////Generates the header componoent of the accessor
         private String genSPHeaderA(string commandText)
         {
             //for update, insert, delete
@@ -512,6 +526,7 @@ namespace Data_Objects
             return output;
 
         }
+        ////Generates the header componoent of the accessor
         private String genSPHeaderB(string DataObject, string commandText)
         {
             //for single data object
@@ -530,6 +545,7 @@ namespace Data_Objects
 
             return output;
         }
+        ////Generates the header componoent of the accessor
         private String genSPHeaderC(string DataObject, string commandText)
         {
             //for list of data object
@@ -546,6 +562,7 @@ namespace Data_Objects
             + "// There are no parameters to set or add\n";
             return output;
         }
+        //Generates the footer componoent of the accessor
         private string genSPfooter(int mode)
         {
 
@@ -563,6 +580,7 @@ namespace Data_Objects
             + "return " + returntype + ";\n}\n";
             return output;
         }
+        //Generates the add componoent of the accessor
         private string genAccessorAdd()
         {
             string createThing = comment_box_gen.JavaDocComment(0, name);
@@ -604,7 +622,7 @@ namespace Data_Objects
 
             return createThing;
         }
-
+        //Generates the retreive by id componoent of the accessor
         private string genAccessorRetreiveByKey()
         {
             string retreiveThing = comment_box_gen.JavaDocComment(0, name);
@@ -693,7 +711,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the retreive all componoent of the accessor
         private string genAccessorRetreiveAll()
         {
 
@@ -763,6 +781,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the retreive by fk componoent of the accessor
         private string genAccessorRetreivefk()
         {
             string retreiveAllThing = "";
@@ -844,7 +863,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the update componoent of the accessor
         private string genAccessorUpdate()
         {
             string updateThing = comment_box_gen.JavaDocComment(0, name);
@@ -895,7 +914,7 @@ namespace Data_Objects
             return updateThing;
 
         }
-
+        //Generates the delete componoent of the accessor
         private string genAccessorDelete()
         {
             string deleteThing = comment_box_gen.JavaDocComment(0, name);
@@ -918,7 +937,7 @@ namespace Data_Objects
             deleteThing += genSPfooter(2);
             return deleteThing;
         }
-
+        //Generates the undelete componoent of the accessor
         private string genAccessorUndelete()
         {
             string deleteThing = comment_box_gen.JavaDocComment(0, name);
@@ -942,7 +961,7 @@ namespace Data_Objects
             deleteThing += genSPfooter(2);
             return deleteThing;
         }
-
+        //Generates the get distinct for drop downs componoent of the accessor
         public string genAccessorDistinct() {
             string retreiveAllThing = "";
             List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
@@ -988,6 +1007,7 @@ namespace Data_Objects
             return retreiveAllThing;
 
         }
+        //Generates the rundmentary XAML window
         public string genXAMLWindow()
         {
             string comment = comment_box_gen.comment_box(name, 16);
@@ -1044,7 +1064,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the rudamentary window code
         public string genWindowCSharp()
         {
 
@@ -1063,7 +1083,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the add button for the XAML window
         private string genAddButton()
         {
             string result = "";
@@ -1124,7 +1144,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the edit button of the window
         private string genEditButton()
         {
             string result = "";
@@ -1132,6 +1152,7 @@ namespace Data_Objects
             return result;
 
         }
+        //Generates the input validator for the window
         private string genValidInputs()
         {
             string result = "";
@@ -1139,7 +1160,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the input constructor for the window
         private string genConstructor()
         {
             string result = "";
@@ -1153,7 +1174,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the input winload events for the window
         private string genWinLoad()
         {
             string result = "";
@@ -1161,7 +1182,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the get static variables method for the window
         private string genStaticVariables()
         {
             string result = "";
@@ -1170,7 +1191,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java Model
         public string genJavaModel()
         {
             string result = "";
@@ -1182,7 +1203,7 @@ namespace Data_Objects
 
             return result;
         }
-
+        //Generates the Java Model Headers
         private string genJavaHeader()
         {
             string result = comment_box_gen.JavaDocComment(1, name);
@@ -1190,6 +1211,7 @@ namespace Data_Objects
             return result;
 
         }
+        //Generates the Java Model instance variables
         private string genJavaInstanceVariables()
         {
             string result = "";
@@ -1201,6 +1223,7 @@ namespace Data_Objects
             return result;
 
         }
+        //Generates the Java Model Constructor
         private string genJavaContructor()
         {
             string result = "";
@@ -1223,7 +1246,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java Model Setters and getters
         private string genJavaSetterAndGetter()
         {
             string result = "";
@@ -1249,6 +1272,7 @@ namespace Data_Objects
             return result;
 
         }
+        //Generates the Java Model footer
         private string genJavaFooter()
         {
             string result = "\n}\n";
@@ -1256,7 +1280,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java Model DAO
         public string genJavaDAO()
         {
             string result = "";
@@ -1275,6 +1299,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the Java ModelDAO header
         private string genJavaDAOHeader()
         {
             string result = comment_box_gen.JavaDocComment(1, name + "DAO");
@@ -1296,6 +1321,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the Java ModelDAO Footer
         private string genJavaDAOFooter()
         {
             string result = "\n}\n";
@@ -1303,6 +1329,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the Java ModelDAO retreive by PK
         private string genJavaDAORetreiveByKey()
         {
             string result = "";
@@ -1375,7 +1402,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the Java ModelDAO retreive all
         private string genJavaDAORetreiveAll()
         {
             string nullValue = "\"\"";
@@ -1429,7 +1456,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the Java ModelDAO retreive active
         public String genJavaDAORetriveActive() {
             string nullValue = "\"\"";
             string result = "";
@@ -1472,7 +1499,7 @@ namespace Data_Objects
 
             return result;
         }
-
+        //Generates the Java ModelDAO retreive by FK
         public String genJavaDAORetriveByFK() {
             string nullValue = "\"\"";
             string result = "";
@@ -1534,7 +1561,7 @@ namespace Data_Objects
 
             return result;
         }
-
+        //Generates the Java ModelDAO Update
         private string genJavaDAOUpdate()
         {
             string result = "";
@@ -1573,7 +1600,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the Java ModelDAO Delete
         private string genJavaDelete()
         {
             string result = "";
@@ -1600,6 +1627,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the Java ModelDAO unDelete
         private string genJavaunDelete()
         {
             string result = "";
@@ -1626,7 +1654,7 @@ namespace Data_Objects
 
 
         }
-
+        //Generates the Java ModelDAO Create
         private string genJavaDAOCreate()
         {
             string result = "";
@@ -1667,6 +1695,7 @@ namespace Data_Objects
 
 
         }
+        //Generates the batch file to load this database
 
         public string getBatch()
         {
@@ -1679,6 +1708,7 @@ namespace Data_Objects
 
         }
 
+        //Generates the Java Create servlet
         public string genCreateServelet()
         {
             string result = "";
@@ -1830,7 +1860,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java View all JSP
         public string genviewAllJSP()
         {
             //comment box
@@ -1914,7 +1944,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java Create JSP
         public string genCreateJSP()
         {
             int rowcount = 0;
@@ -2002,7 +2032,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java View All Servlet
         public string genviewAllServlet()
         {
             //this only creates the doGet method
@@ -2039,7 +2069,7 @@ namespace Data_Objects
             return result;
 
         }
-
+        //Generates the Java Delete Servlet
         public string genDeleteServlet() {
             string result = comment_box_gen.comment_box(name, 25);
             result+=importStatements();
@@ -2082,7 +2112,7 @@ namespace Data_Objects
 
             return result;
         }
-
+        //Generates the Java Edit Servlet
         public string genViewEditServlet() {
             //do get
             string result = "";
@@ -2237,7 +2267,7 @@ namespace Data_Objects
 
            
         }
-
+        //Generates the Java View/Edit JSP
         public string genViewEditJSP() {
             int rowcount = 0;
             //comment box
@@ -2337,7 +2367,7 @@ namespace Data_Objects
 
             return result;
         }
-
+        //Generates the homepage for my pseronal project
         public string genIndexJSP()
         {
             string result = "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
@@ -2369,8 +2399,8 @@ namespace Data_Objects
             return result;
 
         }
-        
-        
+
+        //Generates the Java standard import statements
         private string importStatements() {
             string result = "\n";
             result = result + "import com.beck.javaiii_kirkwood.personal_project.data." + name + "DAO;\n";
@@ -2390,7 +2420,7 @@ namespace Data_Objects
             return result;
         
         }
-
+        //Generates the Java method that allows access control
         private string privLevelStatement() {
             string result = "\n//To restrict this page based on privilege level\n";
             result += "int PRIVILEGE_NEEDED = 0;\n";
@@ -2407,6 +2437,7 @@ namespace Data_Objects
         
         }
 
+        ////Generates the C# ordinal for the data access object
         private string getCSharpOrdinal(Column r) {
             String retreiveThing = "";
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
@@ -2425,7 +2456,7 @@ namespace Data_Objects
         
         
         }
-
+        ////Generates the C# ordinal for the data access object
         private string getCSharpOrdinal(table t, Column r) {
             String retreiveThing = "";
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
@@ -2446,6 +2477,7 @@ namespace Data_Objects
 
         }
 
+        //Generates the jQuery Validation for the Model
         public string jQueryValidation() {
             //to start the js file
             string result = "$(document).ready(function() {\n";

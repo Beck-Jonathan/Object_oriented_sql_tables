@@ -4,8 +4,10 @@ using System.Collections.Generic;
 
 namespace Data_Objects
 {
+    
     public class TSqlTable : table, iTable
     {
+        ///<inheritdoc>
         public TSqlTable(string name, List<Column> columns) : base(name, columns)
         {
             this.name = "[dbo].[" + name + "]";
