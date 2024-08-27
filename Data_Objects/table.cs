@@ -2446,7 +2446,57 @@ namespace Data_Objects
 
         }
 
+        public string jQueryValidation() {
+            //to start the js file
+            string result = "$(document).ready(function() {\n";
+            result += "";
+            result += "";
+            result += "";
+            //to make the submit button
+            result += "";
+            result += "";
+            //to assign variables
 
+
+            //to loop through each input field
+            foreach (Column r in columns)
+            {
+                if (!r.identity.Equals("Y") && !r.identity.Equals("y"))
+                {
+                    string fieldname = "input" + name.ToLower() + r.column_name;
+                    string jsname = r.column_name + "_input";
+                    result += "// to clearn the field, then set event listener for validating the input for " + r.column_name + "\n";
+                    result += "var " + jsname + "= document.getElementById(\"" + fieldname + "\");\n";
+                    result += jsname + ".value=\'\';\n";
+                    result += jsname + ".addEventListener(\'keyup',function(){\n";
+                    //if for numeric check
+                    if (r.length == 0)
+                    {
+                        result += "if (" + jsname + ".value!=\"\"&& $.isNumeric(" + jsname + ".value)){\n";
+                    }
+                    //if for varchar check
+                    else
+                    {
+                        result += "if (" + jsname + ".value!=\"\"&& " + jsname + ".value.length>1 && " + jsname + ".value.length<=" + r.length + ")){\n";
+                    }
+                    //good input
+                    result += "$(" + jsname + ").addClass(\"ui-state-active\");\n";
+                    result += "$(" + jsname + ").removeClass(\"ui-state-error\");\n";
+
+
+                    //bad input
+                    result += "}\n else {\n";
+                    result += "$(" + jsname + ").removeClass(\"ui-state-active\");\n";
+                    result += "$(" + jsname + ").addClass(\"ui-state-error\");\n";
+                    result += "}\n}\n);\n";
+                }
+            }
+
+
+            // to end the js file
+            result += "\n}\n";
+            return result;
+        }
 
 
     }

@@ -4,6 +4,7 @@ using Data_Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -61,6 +62,7 @@ namespace Object_oriented_sql_tables
             //openFileDialog.InitialDirectory = settings.app_path;
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
+            
             settings.path = filepath;
             btn_selectfile.Enabled = false;
             btn_read_table.Enabled = true;
@@ -345,7 +347,14 @@ namespace Object_oriented_sql_tables
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewEditServlet");
 
                 }
-                
+
+                if (true)
+                {    //change to these settings 31
+                    s = t.jQueryValidation();
+                    file_write.fileWrite(s, t.name, "jQuery", "AddEditValidate");
+
+                }
+
 
 
 

@@ -37,7 +37,10 @@ namespace Data_Access
 
                 foreach (DirectoryInfo subfolder in directoryInfo.GetDirectories())
                 {
-                startUp(subfolder);
+                if (!subfolder.Name.Equals("temp"))
+                {
+                    startUp(subfolder);
+                }
                 }
             
         }
