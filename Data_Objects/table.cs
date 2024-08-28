@@ -39,7 +39,12 @@ namespace Data_Objects
 
 
 
-        //Generates the Interface for the accessor for CRUD Functions
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates an data access layer interface for c#
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that represents the data access layer interface in c#
         public String gen_IThingAccessor()
         {
             int count = 0;
@@ -94,7 +99,12 @@ namespace Data_Objects
         }
 
 
-        //Generates the  the accessor for CRUD Functions
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates an data access layer  for c#
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that represents the data access layer  in c#
         public String gen_ThingAccessor()
         {
 
@@ -129,7 +139,12 @@ namespace Data_Objects
 
 
         }
-        //Generates the Interface for the Manager for CRUD Functions
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a logic layer interface for c#
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that represents the data access layer interface ni c#
         public String gen_IThingManager()
         {
             int count = 0;
@@ -191,7 +206,12 @@ namespace Data_Objects
 
         }
 
-        //Generates the Manager for CRUD Functions, with Dependcy inversion with respect to the accessor
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a logic layer  for c#
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that represents the data access layer interface ni c#
         public String gen_ThingMananger() {
             String result = "";
             String header = genManagerHeader();
@@ -225,7 +245,12 @@ namespace Data_Objects
         
         }
 
-        //Generates the header componoent of the manager
+        /// <summary>
+        /// Generates a dependency-inversion based header for the Logic layer manager, which incorportates a constructor
+        /// that takes the data access object.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for the header of the logic layer
         private string genManagerHeader() {
             string comment = comment_box_gen.comment_box(name, 29);
 
@@ -247,7 +272,12 @@ namespace Data_Objects
             return comment + result;
 
         }
-        //Generates the add componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in an object this <see cref="table"/> reprents and passes it to the data
+        /// access layer for adding to the database.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A logic layer add method, in c#.
         private String genManagerAdd() {
             string comment = comment_box_gen.comment_box(name, 31);
             String result = "\n";
@@ -268,7 +298,12 @@ namespace Data_Objects
 
 
         }
-        //Generates the delete componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in an object this <see cref="table"/> reprents and passes it to the data
+        /// access layer for deleting
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A logic layer delete method, in c#.
         private String genManagerDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
             string purgeThing = "public int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
@@ -288,7 +323,12 @@ namespace Data_Objects
             return comment + purgeThing;
 
         }
-        //Generates the undelete componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in an object this <see cref="table"/> reprents and passes it to the data
+        /// access layer for undeleting
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A logic layer undelete method, in c#.
         private String genManagerUnDelete() {
             string comment = comment_box_gen.comment_box(name, 32);
             string purgeThing = "public int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
@@ -311,7 +351,12 @@ namespace Data_Objects
 
 
         }
-        //Generates the get by ID componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in an object ID and passes it to the data
+        /// access layer for accessing a record by primary key
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A logic layer retreive by PK method, in c#.
         private string genManagerPK() {
             string comment = comment_box_gen.comment_box(name, 33);
             string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
@@ -331,7 +376,12 @@ namespace Data_Objects
 
 
         }
-        //Generates the get All componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in no paramaters and passes a request to the data
+        /// access layer for accessing all records for this <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A logic layer retreive by all method, in c#.
         private string genManagerAll() {
             string comment = comment_box_gen.comment_box(name, 34);
 
@@ -358,7 +408,12 @@ namespace Data_Objects
             return retreiveAll;
 
         }
-        //Generates the get by FK componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in an object ID and passes it to the data
+        /// access layer for accessing a record by foreign key
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string representing logic layer retreive by FK method, in c#.
         private string genManagerFK() {
             string getfkThing = "";
             foreach (Column r in columns)
@@ -396,7 +451,12 @@ namespace Data_Objects
             }
             return getfkThing;
         }
-        //Generates the update componoent of the manager
+        /// <summary>
+        /// Generates a logic layer method that takes in two instances of an object (old and new) and passes them to the data
+        /// access layer for updating
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string representing logic layer update, in c#.
         private string genManagerUpdate() {
             string comment = comment_box_gen.comment_box(name, 35);
             string updateThing = "public int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
@@ -416,7 +476,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the C# data object
+        /// <summary>
+        /// Generates a c# data object with markup reflecting min and max length, etc.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string representing c# data object
         public String gen_DataObject()
         {
 
@@ -491,7 +555,11 @@ namespace Data_Objects
 
 
         }
-        ////Generates the header componoent of the accessor
+        /// <summary>
+        /// Generates a header for the data access layer accessor, 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for the header of the data access layer
         private string genAccessorClassHeader()
         {
             string header = "";
@@ -506,7 +574,11 @@ namespace Data_Objects
 
 
         }
-        ////Generates the header componoent of the accessor
+        /// <summary>
+        /// Generates a header for functions of the  accessor, 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for the header of the data access layer methods
         private String genSPHeaderA(string commandText)
         {
             //for update, insert, delete
@@ -526,7 +598,11 @@ namespace Data_Objects
             return output;
 
         }
-        ////Generates the header componoent of the accessor
+        /// <summary>
+        /// Generates a header for functions of the  accessor, 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for the header of the data access layer methods
         private String genSPHeaderB(string DataObject, string commandText)
         {
             //for single data object
@@ -545,7 +621,11 @@ namespace Data_Objects
 
             return output;
         }
-        ////Generates the header componoent of the accessor
+        /// <summary>
+        /// Generates a header for functions of the  accessor, 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for the header of the data access layer methods
         private String genSPHeaderC(string DataObject, string commandText)
         {
             //for list of data object
@@ -562,7 +642,12 @@ namespace Data_Objects
             + "// There are no parameters to set or add\n";
             return output;
         }
-        //Generates the footer componoent of the accessor
+        /// <summary>
+        /// Generates a footer for functions of the  accessor, 
+        /// Jonathan Beck
+        /// </summary>
+        /// <param name="mode"></param>
+        /// <returns>A string that is c# code for the footer of the data access layer methods
         private string genSPfooter(int mode)
         {
 
@@ -580,7 +665,11 @@ namespace Data_Objects
             + "return " + returntype + ";\n}\n";
             return output;
         }
-        //Generates the add componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer add method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for adding to the database
         private string genAccessorAdd()
         {
             string createThing = comment_box_gen.JavaDocComment(0, name);
@@ -622,7 +711,11 @@ namespace Data_Objects
 
             return createThing;
         }
-        //Generates the retreive by id componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer retreive by PK method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for retreiving by PK from the database
         private string genAccessorRetreiveByKey()
         {
             string retreiveThing = comment_box_gen.JavaDocComment(0, name);
@@ -711,7 +804,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the retreive all componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer retreive by all method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for retreving all from the database
         private string genAccessorRetreiveAll()
         {
 
@@ -781,7 +878,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the retreive by fk componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer retreive by FK method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for retereiving by FK from the database
         private string genAccessorRetreivefk()
         {
             string retreiveAllThing = "";
@@ -863,7 +964,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the update componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer update method method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for updating a record on the database
         private string genAccessorUpdate()
         {
             string updateThing = comment_box_gen.JavaDocComment(0, name);
@@ -914,7 +1019,11 @@ namespace Data_Objects
             return updateThing;
 
         }
-        //Generates the delete componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer delete method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for deleting from the database
         private string genAccessorDelete()
         {
             string deleteThing = comment_box_gen.JavaDocComment(0, name);
@@ -937,7 +1046,11 @@ namespace Data_Objects
             deleteThing += genSPfooter(2);
             return deleteThing;
         }
-        //Generates the undelete componoent of the accessor
+        /// <summary>
+        /// Generates an method for the data access layer undelete method for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# code for undeleting from the database
         private string genAccessorUndelete()
         {
             string deleteThing = comment_box_gen.JavaDocComment(0, name);
@@ -1007,7 +1120,11 @@ namespace Data_Objects
             return retreiveAllThing;
 
         }
-        //Generates the rundmentary XAML window
+        /// <summary>
+        /// Generates a rudamentary xaml window for creating records for  this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is xaml window for adding to this table
         public string genXAMLWindow()
         {
             string comment = comment_box_gen.comment_box(name, 16);
@@ -1064,7 +1181,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the rudamentary window code
+        /// <summary>
+        /// Generates a rudamentary c# codebase for controlling the XAML window for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is c# to control the XAML window for this table
         public string genWindowCSharp()
         {
 
@@ -1191,7 +1312,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Model
+        /// <summary>
+        /// Generates a rudamentary Java data object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is Java code for this object.
         public string genJavaModel()
         {
             string result = "";
@@ -1203,7 +1328,11 @@ namespace Data_Objects
 
             return result;
         }
-        //Generates the Java Model Headers
+        /// <summary>
+        /// Generates a the header for a rudamentary Java data object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is the header Java code for this object.
         private string genJavaHeader()
         {
             string result = comment_box_gen.JavaDocComment(1, name);
@@ -1211,7 +1340,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Model instance variables
+        /// <summary>
+        /// Generates the instance variables for Java data object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's instance variables.
         private string genJavaInstanceVariables()
         {
             string result = "";
@@ -1223,7 +1356,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Model Constructor
+        /// <summary>
+        /// Generates the constructor for the Java data object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's constructor.
         private string genJavaContructor()
         {
             string result = "";
@@ -1246,7 +1383,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Model Setters and getters
+        /// <summary>
+        /// Generates the setters and getters for the  instance variables for Java data object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's setters and getters for this object's instance variables.
         private string genJavaSetterAndGetter()
         {
             string result = "";
@@ -1272,7 +1413,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Model footer
+        /// <summary>
+        /// Generates the footer for this Java data object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's footer.
         private string genJavaFooter()
         {
             string result = "\n}\n";
@@ -1280,7 +1425,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Model DAO
+        /// <summary>
+        /// Generates the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object.
         public string genJavaDAO()
         {
             string result = "";
@@ -1299,7 +1448,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO header
+        /// <summary>
+        /// Generates the header for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object header.
         private string genJavaDAOHeader()
         {
             string result = comment_box_gen.JavaDocComment(1, name + "DAO");
@@ -1321,7 +1474,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO Footer
+        /// <summary>
+        /// Generates the footer for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object footer.
         private string genJavaDAOFooter()
         {
             string result = "\n}\n";
@@ -1329,7 +1486,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO retreive by PK
+        /// <summary>
+        /// Generates the retreive by PK for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object retreive by PK function.
         private string genJavaDAORetreiveByKey()
         {
             string result = "";
@@ -1402,7 +1563,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO retreive all
+        /// <summary>
+        /// Generates the retreive by all for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object retreive all.
         private string genJavaDAORetreiveAll()
         {
             string nullValue = "\"\"";
@@ -1456,7 +1621,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO retreive active
+        /// <summary>
+        /// Generates the retreive active for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object retreive active function.
         public String genJavaDAORetriveActive() {
             string nullValue = "\"\"";
             string result = "";
@@ -1499,7 +1668,11 @@ namespace Data_Objects
 
             return result;
         }
-        //Generates the Java ModelDAO retreive by FK
+        /// <summary>
+        /// Generates the retreive by FK for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object retreive by FK.
         public String genJavaDAORetriveByFK() {
             string nullValue = "\"\"";
             string result = "";
@@ -1561,7 +1734,11 @@ namespace Data_Objects
 
             return result;
         }
-        //Generates the Java ModelDAO Update
+        /// <summary>
+        /// Generates the update function for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object update function.
         private string genJavaDAOUpdate()
         {
             string result = "";
@@ -1600,7 +1777,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO Delete
+        /// <summary>
+        /// Generates the delete method for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object delete method.
         private string genJavaDelete()
         {
             string result = "";
@@ -1627,7 +1808,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO unDelete
+        /// <summary>
+        /// Generates the undelete method for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object undelete method.
         private string genJavaunDelete()
         {
             string result = "";
@@ -1654,7 +1839,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the Java ModelDAO Create
+        /// <summary>
+        /// Generates the create method for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object create method.
         private string genJavaDAOCreate()
         {
             string result = "";
@@ -1695,7 +1884,11 @@ namespace Data_Objects
 
 
         }
-        //Generates the batch file to load this database
+        /// <summary>
+        /// Generates the batch command to load the <see cref="database"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  a batch command to load this <see cref="database"/>
 
         public string getBatch()
         {
@@ -1708,7 +1901,11 @@ namespace Data_Objects
 
         }
 
-        //Generates the Java Create servlet
+        /// <summary>
+        /// Generates the create Servlet for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated create servlet.
         public string genCreateServelet()
         {
             string result = "";
@@ -1860,7 +2057,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java View all JSP
+        /// <summary>
+        /// Generates the View All JSP for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated View all JSP.</returns>
         public string genviewAllJSP()
         {
             //comment box
@@ -2032,7 +2233,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java View All Servlet
+        /// <summary>
+        /// Generates the View all Servlet for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated view all servlet.</returns>
         public string genviewAllServlet()
         {
             //this only creates the doGet method
@@ -2069,7 +2274,11 @@ namespace Data_Objects
             return result;
 
         }
-        //Generates the Java Delete Servlet
+        /// <summary>
+        /// Generates the delete Servlet for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated delete servlet.</returns>
         public string genDeleteServlet() {
             string result = comment_box_gen.comment_box(name, 25);
             result+=importStatements();
@@ -2112,7 +2321,11 @@ namespace Data_Objects
 
             return result;
         }
-        //Generates the Java Edit Servlet
+        /// <summary>
+        /// Generates the edit Servlet for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated edit servlet.</returns>
         public string genViewEditServlet() {
             //do get
             string result = "";
@@ -2267,7 +2480,11 @@ namespace Data_Objects
 
            
         }
-        //Generates the Java View/Edit JSP
+        /// <summary>
+        /// Generates the View Single/Edit JSP for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated View Single/Edit JSP.</returns>
         public string genViewEditJSP() {
             int rowcount = 0;
             //comment box
@@ -2367,7 +2584,11 @@ namespace Data_Objects
 
             return result;
         }
-        //Generates the homepage for my pseronal project
+        /// <summary>
+        /// Generates the index JSP with links to each tables view all JSP for this <see cref="database"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  JSP for a project homepage.</returns>
         public string genIndexJSP()
         {
             string result = "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
@@ -2400,7 +2621,11 @@ namespace Data_Objects
 
         }
 
-        //Generates the Java standard import statements
+        /// <summary>
+        /// Generates the standard important statements for the Java Servlet. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for standard import statements.</returns>
         private string importStatements() {
             string result = "\n";
             result = result + "import com.beck.javaiii_kirkwood.personal_project.data." + name + "DAO;\n";
@@ -2420,7 +2645,11 @@ namespace Data_Objects
             return result;
         
         }
-        //Generates the Java method that allows access control
+        /// <summary>
+        /// Generates the standard access level control statements for the Java Servlet. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for standard access level control on the servlet. </returns>
         private string privLevelStatement() {
             string result = "\n//To restrict this page based on privilege level\n";
             result += "int PRIVILEGE_NEEDED = 0;\n";
@@ -2437,7 +2666,12 @@ namespace Data_Objects
         
         }
 
-        ////Generates the C# ordinal for the data access object
+        /// <summary>
+        /// Generates the retreive line for C# data access layers, using only a column name
+        /// Jonathan Beck
+        /// </summary>
+        /// <param name="r"> The column that you are requesting data from </param>
+        /// <returns>A string that is  C# code for retreiveing a particular </returns>
         private string getCSharpOrdinal(Column r) {
             String retreiveThing = "";
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
@@ -2456,7 +2690,13 @@ namespace Data_Objects
         
         
         }
-        ////Generates the C# ordinal for the data access object
+        /// <summary>
+        /// Generates the retreive line for C# data access layers, using  a column name and a table name
+        /// Jonathan Beck
+        /// </summary>
+        /// <param name="r"> The column that you are requesting data from </param>
+        /// /// <param name="t"> The table you are requesting data from </param>
+        /// <returns>A string that is  C# code for retreiveing a particular </returns>
         private string getCSharpOrdinal(table t, Column r) {
             String retreiveThing = "";
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
@@ -2477,7 +2717,13 @@ namespace Data_Objects
 
         }
 
-        //Generates the jQuery Validation for the Model
+        /// <summary>
+        /// Generates the rudamentary jQuery validation for this <see cref="table"/>.
+        /// Jonathan Beck
+        /// </summary>
+        /// <param name="r"> The column that you are requesting data from </param>
+        /// /// <param name="t"> The table you are requesting data from </param>
+        /// <returns>A string that is jQuery code for rudamentary data validation for this table.</returns>
         public string jQueryValidation() {
             //to start the js file
             string result = "$(document).ready(function() {\n";

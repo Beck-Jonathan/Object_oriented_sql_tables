@@ -518,6 +518,7 @@ namespace Data_Objects
         public String gen_retreive_by_fkey()
         {
             string fulltext = "";
+            
             foreach (Column r in columns)
             {
                 if (r.references != "")
