@@ -14,9 +14,12 @@ namespace Data_Objects
 
         //various components of a table
 
-
-
-
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the primary keys of the MySQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the the Pimary Key(s) of the table </returns>
         public String gen_primary_keys()
         {
             //generate the primary keys based on key_gen that was done in the rwos
@@ -39,6 +42,12 @@ namespace Data_Objects
             
             
         }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the foreign keys of the MySQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the the foreign Key(s) of the table </returns>
         public String gen_foreign_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
             int count = 0;
@@ -80,6 +89,12 @@ namespace Data_Objects
 
             return output_keys;
         }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the alternate keys of the MySQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the the alternate Key(s) of the table </returns>
         public string gen_alternate_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
             int count = 0;
@@ -111,21 +126,42 @@ namespace Data_Objects
 
             return output_keys;
         }
-
+        /// <summary>
+        /// 
+        /// generates lines that specify the header of the MySQL  <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the header of the  <see cref="table"/> </returns>
         public String gen_header()
         {
             Header.table_name = name;
             return this.Header.full_header_gen();
         }
+        /// <summary>
+        /// Generates a genertic footer for a MySQL  <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A stringto act as a footer for the MySQL  <see cref="table"/> </returns>
         public String gen_table_footer() {
             return ");\n";
         }
-
+        /// <summary>
+        /// 
+        /// generates lines that specify the header of the MySQL audit <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the header of the audit <see cref="table"/> </returns>
         public String audit_gen_header()
         {
             Header.table_name = this.name;
             return this.Header.audit_header_gen();
         }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the alternate various columns and their attributes of the MySQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the the columns of the table </returns>
         public String gen_columns()
         {
 
@@ -144,7 +180,12 @@ namespace Data_Objects
 
             return x;
         }
-
+        /// <summary>
+        /// 
+        /// generates lines that specify the the MySQL audit <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string MySQL code that creates the audit <see cref="table"/> </returns>
         public String gen_audit_table()
         { // to generate the audit table
             int count = 0;
@@ -165,7 +206,13 @@ namespace Data_Objects
 
             return x;
         }
-        // to generate the SP_update
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by  a MySQL stored procedure that creates a standard update function. This funciton will ask for @old and @new of each field, 
+        /// besides primary key fields, which just ask for @old versions.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> a string comment box followed by a  string MySQL code that creates the the update SP for the table </returns>
         public String gen_update()
         {
             string x = "";
@@ -234,7 +281,12 @@ namespace Data_Objects
             return full_text;
 
         }
-        // to generate the SP_delete
+        /// <summary>
+        /// 
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a standard Delete function. This funciton will ask for the pimary key(s) of the table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string comment box followed by a  string MySQL code that creates the the delete SP for the table </returns>
         public String gen_delete()
         {
             String function_text = "";
@@ -293,7 +345,12 @@ namespace Data_Objects
 
 
         }
-
+        /// <summary>
+        /// 
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a standard unDelete function. This funciton will ask for the pimary key(s) of the table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> a string comment box followed by a  string MySQL code that creates the the undelete SP for the table </returns>
         public String gen_undelete()
         {
             String function_text = "";
@@ -353,7 +410,13 @@ namespace Data_Objects
 
 
         }
-        // to generate the SP_retreive using a primary key
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive by primary key function. This funciton will ask for the pimary key(s) of the table, 
+        /// and return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> a string comment box followed by a  string MySQL code that creates the the retreive by Primary key SP for the table </returns>
         public String gen_retreive_by_key()
         {
 
@@ -444,7 +507,14 @@ namespace Data_Objects
             return full_text;
         }
 
-        //to generate retreive by fk, not implmented well yet
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive by foreign key function. This funciton will ask for a foregn key(s) of the table, 
+        /// and return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Typically this will return a list of objects.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retreive by Foreign-key SP for the table </returns>
         public String gen_retreive_by_fkey()
         {
             string fulltext = "";
@@ -556,7 +626,14 @@ namespace Data_Objects
             return fulltext;
         }
 
-        // to generate the SP_retrive, showing all data in a table
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive  all key function. This funciton  
+        /// return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Typically this will return a list of objects.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retreive by all SP for the table </returns>
         public String gen_retreive_by_all()
         {
             String gx = " ";
@@ -639,7 +716,14 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the SP_retrive_active, showing all data in a table
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates generates a string comment box followed by MySQL stored procedure that creates a retreive active (that is, is_active==1) key function. This funciton  
+        /// return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Typically this will return a list of objects.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by a MySQL code that creates the the retreive by active SP for the table </returns>
         public String gen_retreive_by_active() {
             String gx = " ";
             String comment_text = comment_box_gen.comment_box(name, 24);
@@ -701,7 +785,13 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the SP_insert
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a MySQL stored procedure that creates a standard insert function. This funciton will ask for  each field, 
+        /// besides auto-increment fields.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by MySQL code that creates the the insert SP for the table </returns>
         public string gen_insert()
         {
             String comment_text = comment_box_gen.comment_box(name, 7);
@@ -779,7 +869,11 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the on update trigger
+        /// <summary>       
+        /// generates a string comment box followed by a MySQL stored procedure that creates a standard trigger that fires upon updates to the table. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by MySQL code that creates a trigger that fires on updates to the <see cref="table"/> object </returns>
         public String gen_update_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 8);
@@ -824,7 +918,11 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the on insert trigger
+        /// <summary>       
+        /// generates a string comment box followed by a MySQL stored procedure that creates a standard trigger that fires upon inserts to the table. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by MySQL code that creates a trigger that fires on inserts to the <see cref="table"/> object </returns>
         public String gen_insert_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 9);
@@ -869,7 +967,11 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the on delete trigger
+        /// <summary>       
+        /// generates a string comment box followed by a MySQL stored procedure that creates a standard trigger that fires upon deletes to the table. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by MySQL code that creates a trigger that fires on deletes to the <see cref="table"/> object </returns>
         public String gen_delete_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 10);
@@ -954,12 +1056,24 @@ namespace Data_Objects
 
         }
 
-
+        /// <summary>       
+        /// generates a standard MySQL select line for to be used by the stored procedures, such as select by PK or select by FK.
+        /// Takes a string table name nad string column name as paramaters
+        /// Jonathan Beck       
+        /// </summary>
+        ///<param name = "tablename" >the name of <see cref="table"/> this <see cref="Column"/> belongs to </param>
+        ///<param name="column_name">the name of this <see cref="Column"/></param>
+        /// <returns>  a standard MySQL select line to be used by the stored procedures, </returns>
         private string genSelectLine(string tablename, string column_name) {
 
 
             return "\n"+tablename + "." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
         }
+        /// <summary>       
+        /// generates a string comment box followed by a MySQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields.. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by MySQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields. </returns>
         public string gen_sample_space()
         {
             string result = "";

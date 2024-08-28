@@ -634,7 +634,7 @@ namespace Data_Objects
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a  string Transact-SQL code that creates the the retreive by Foreign-key SP for the table </returns>
+        /// <returns>generates a string comment box followed by a  string Transact-SQL code that creates the the retreive by all SP for the table </returns>
         public String gen_retreive_by_all()
         {
             String gx = " ";
