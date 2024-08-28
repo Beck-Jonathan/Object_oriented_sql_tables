@@ -14,11 +14,12 @@ namespace Data_Objects
             this.columns = columns;
         }
 
-        //various components of a table
-
-
-
-
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the primary keys of the Transact-SQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the the Pimary Key(s) of the table </returns>
         public String gen_primary_keys()
         {
             //generate the primary keys based on key_gen that was done in the rwos
@@ -44,6 +45,12 @@ namespace Data_Objects
                 }
 
                     }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the foreign keys of the Transact-SQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the the foreign Key(s) of the table </returns>
         public String gen_foreign_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
             int count = 0;
@@ -80,6 +87,12 @@ namespace Data_Objects
             
             return output_keys;
         }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the alternate keys of the Transact-SQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the the alternate Key(s) of the table </returns>
         public string gen_alternate_keys()
         {//generate the foreign keys based on key_gen that was done in the rwos
             int count = 0;
@@ -121,20 +134,43 @@ namespace Data_Objects
             return output_keys;
         }
 
+        /// <summary>
+        /// Generates a genertic footer for a Transact-SQL  <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A stringto act as a footer for the Transact-SQL  <see cref="table"/> </returns>
         public String gen_table_footer() {
             return ")\ngo\n";
         }
+        /// <summary>
+        /// 
+        /// generates lines that specify the header of the Transact-SQL  <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the header of the  <see cref="table"/> </returns>
         public String gen_header()
         {
             Header.table_name = this.name;
             return this.Header.full_header_gen();
         }
+        /// <summary>
+        /// 
+        /// generates lines that specify the header of the Transact-SQL audit <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the header of the audit <see cref="table"/> </returns>
 
         public String audit_gen_header()
         {
             Header.table_name = this.name;
             return this.Header.audit_header_gen();
         }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates lines that specify the alternate various columns and their attributes of the Transact-SQL Table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the the columns of the table </returns>
         public String gen_columns()
         {
 
@@ -154,6 +190,12 @@ namespace Data_Objects
             return x;
         }
 
+        /// <summary>
+        /// 
+        /// generates lines that specify the the Transact-SQL audit <see cref="table"/>
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string Transact-SQL code that creates the audit <see cref="table"/> </returns>
         public String gen_audit_table()
         { // to generate the audit table
             int count = 0;
@@ -174,7 +216,13 @@ namespace Data_Objects
 
             return x;
         }
-        // to generate the SP_update
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by  a Transact-SQL stored procedure that creates a standard update function. This funciton will ask for @old and @new of each field, 
+        /// besides primary key fields, which just ask for @old versions.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> a string comment box followed by a  string Transact-SQL code that creates the the update SP for the table </returns>
         public String gen_update()
         {
             string x = "";
@@ -234,7 +282,13 @@ namespace Data_Objects
             return full_text;
 
         }
-        // to generate the SP_delete
+
+        /// <summary>
+        /// 
+        /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a standard Delete function. This funciton will ask for the pimary key(s) of the table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string comment box followed by a  string Transact-SQL code that creates the the delete SP for the table </returns>
         public String gen_delete()
         {
             String function_text = "";
@@ -284,6 +338,12 @@ namespace Data_Objects
 
         }
 
+        /// <summary>
+        /// 
+        /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a standard unDelete function. This funciton will ask for the pimary key(s) of the table
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> a string comment box followed by a  string Transact-SQL code that creates the the undelete SP for the table </returns>
         public String gen_undelete()
         {
             String function_text = "";
@@ -336,7 +396,14 @@ namespace Data_Objects
 
 
         }
-        // to generate the SP_retreive using a primary key
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a retreive by primary key function. This funciton will ask for the pimary key(s) of the table, 
+        /// and return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> a string comment box followed by a  string Transact-SQL code that creates the the retreive by Primary key SP for the table </returns>
+
         public String gen_retreive_by_key()
         {
 
@@ -373,7 +440,7 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma + "" + genSelectLine(name, r.column_name);
+                function_text = function_text + comma + "" + gen_Select_Line(name, r.column_name);
                 count++;
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -389,7 +456,7 @@ namespace Data_Objects
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }
-                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                function_text = function_text + comma + gen_Select_Line(t.name, r.column_name);
                                 count++;
 
                             }
@@ -433,7 +500,15 @@ namespace Data_Objects
             return full_text;
         }
 
-        //to generate retreive by fk, not implmented well yet
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a retreive by foreign key function. This funciton will ask for a foregn key(s) of the table, 
+        /// and return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Typically this will return a list of objects.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by a  string Transact-SQL code that creates the the retreive by Foreign-key SP for the table </returns>
+
         public String gen_retreive_by_fkey()
         {
             String full_text = "";
@@ -472,7 +547,7 @@ namespace Data_Objects
                     foreach (Column s in columns)
                     {
                         if (count > 0) { comma = ","; }
-                        function_text = function_text  + comma + genSelectLine(name, s.column_name);
+                        function_text = function_text  + comma + gen_Select_Line(name, s.column_name);
                         count++;
                     }
                     foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -488,7 +563,7 @@ namespace Data_Objects
                                     foreach (Column u in t.columns)
                                     {
                                         if (count > 0) { comma = ","; }
-                                        function_text = function_text + comma + genSelectLine(t.name, u.column_name);
+                                        function_text = function_text + comma + gen_Select_Line(t.name, u.column_name);
                                         count++;
 
                                     }
@@ -552,7 +627,14 @@ namespace Data_Objects
             return full_text;
         }
 
-        // to generate the SP_retrive, showing all data in a table
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a retreive  all key function. This funciton  
+        /// return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Typically this will return a list of objects.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by a  string Transact-SQL code that creates the the retreive by Foreign-key SP for the table </returns>
         public String gen_retreive_by_all()
         {
             String gx = " ";
@@ -581,7 +663,7 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text + comma+ genSelectLine(name, r.column_name);
+                function_text = function_text + comma+ gen_Select_Line(name, r.column_name);
                 count++;
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -597,7 +679,7 @@ namespace Data_Objects
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }
-                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                function_text = function_text + comma + gen_Select_Line(t.name, r.column_name);
                                 count++;
 
                             }
@@ -637,6 +719,14 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates generates a string comment box followed by Transact-SQL stored procedure that creates a retreive active (that is, is_active==1) key function. This funciton  
+        /// return all fields of the record, joining with keyed fields to return a full "view model".
+        /// Typically this will return a list of objects.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by a Transact-SQL code that creates the the retreive by active SP for the table </returns>
         public String gen_retreive_by_active()
         {
             String gx = " ";
@@ -662,7 +752,7 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-                function_text = function_text  + comma + genSelectLine(name, r.column_name);
+                function_text = function_text  + comma + gen_Select_Line(name, r.column_name);
                 count++;
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -678,7 +768,7 @@ namespace Data_Objects
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }
-                                function_text = function_text + comma + genSelectLine(t.name, r.column_name);
+                                function_text = function_text + comma + gen_Select_Line(t.name, r.column_name);
                                 count++;
 
                             }
@@ -704,7 +794,13 @@ namespace Data_Objects
             return full_text;
         }
 
-        // to generate the SP_insert
+        /// <summary>
+        /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
+        /// generates a string comment box followed by a Transact-SQL stored procedure that creates a standard insert function. This funciton will ask for  each field, 
+        /// besides auto-increment fields.
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>generates a string comment box followed by Transact-SQL code that creates the the insert SP for the table </returns>
         public string gen_insert()
         {
             String comment_text = comment_box_gen.comment_box(name, 7);
@@ -767,7 +863,11 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the on update trigger
+        /// <summary>       
+        /// generates a string comment box followed by a Transact-SQL stored procedure that creates a standard trigger that fires upon updates to the table. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by Transact-SQL code that creates a trigger that fires on updates to the <see cref="table"/> object </returns>
         public String gen_update_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 8);
@@ -776,7 +876,12 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the on insert trigger
+        /// <summary>       
+        /// generates a string comment box followed by a Transact-SQL stored procedure that creates a standard trigger that fires upon inserts to the table. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by Transact-SQL code that creates a trigger that fires on inserts to the <see cref="table"/> object </returns>
+        
         public String gen_insert_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 9);
@@ -785,7 +890,11 @@ namespace Data_Objects
             String full_text = comment_text + function_text;
             return full_text;
         }
-        // to generate the on delete trigger
+        /// <summary>       
+        /// generates a string comment box followed by a Transact-SQL stored procedure that creates a standard trigger that fires upon deletes to the table. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by Transact-SQL code that creates a trigger that fires on deletes to the <see cref="table"/> object </returns>
         public String gen_delete_trigger()
         {
             String comment_text = comment_box_gen.comment_box(name, 10);
@@ -836,13 +945,26 @@ namespace Data_Objects
             return full_text;
         }
 
-
-        private string genSelectLine(string tablename, string column_name)
+        /// <summary>       
+        /// generates a standard Transact-SQL select line for to be used by the stored procedures, such as select by PK or select by FK.
+        /// Takes a string table name nad string column name as paramaters
+        /// Jonathan Beck       
+        /// </summary>
+        ///<param name = "tablename" >the name of <see cref="table"/> this <see cref="Column"/> belongs to </param>
+        ///<param name="column_name">the name of this <see cref="Column"/></param>
+        /// <returns>  a standard Transact-SQL select line to be used by the stored procedures, </returns>
+        private string gen_Select_Line(string tablename, string column_name)
         {
-
-
+            
             return "\n["+tablename + "]." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
+
         }
+
+        /// <summary>       
+        /// generates a string comment box followed by a Transact-SQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields.. 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns> generates a string comment box followed by Transact-SQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields. </returns>
 
         public string gen_sample_space()
         {
