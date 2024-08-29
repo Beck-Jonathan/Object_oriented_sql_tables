@@ -59,10 +59,15 @@ namespace Data_Objects
         CSharp_Accessor_Retreive_By_FK_Two_Param,
 
     }
-    public enum XMLType
+    public enum XMLClassType
     {
-        Method,
-        Class
+        CSharpIAccessor,
+        CSharpIManager,
+        CSharpManager,
+        CSharpAccessor,
+        CSharpDataObject,
+        JavaDAO,
+        JavaDataObject
     }
     public enum XML_Method_Type
     {
@@ -84,6 +89,7 @@ namespace Data_Objects
         CSharp_Accessor_Retreive_All_Two_Param,
         CSharp_Accessor_Update,        
         CSharp_Accessor_Retreive_By_FK_Two_Param,
+        CSharp_Accessor_Select_Distinct_For_Dropdown,
 
     }
 }

@@ -5,122 +5,146 @@ namespace Data_Objects
 {
     public class commentBox
     {
-        public static String GenXMLComment(XMLType type, table table, XML_Method_Type method)
+        public static String GenXMLClassComment(table table, XMLClassType classtype) {
+            return "";
+        }
+        public static String GenXMLMethodComment(table table, XML_Method_Type method)
         {
             string result = "";
-            if (type.Equals(XMLType.Class))
-            {
-
-            }
-            else if (type.Equals(XMLType.Method))
-            {
+            
+            
                 String summary = "";
-                String name = "Created By Jonathan Beck " + DateTime.Now.ToString();
+                String name = "///<para />Created By Jonathan Beck " + DateTime.Now.ToString()+ "<para />";
                 String Params = "";
                 String returns = "";
                     
                 switch (method)
                 {
                     case XML_Method_Type.CSharp_Manager_Add:
-                        summary = "Logic layer add method for" + table.name + " objects";
-                        Params = "";
+                        summary = "Logic layer add method for " + table.name + " objects";
+                        Params = "\n///<param name=\"_"+table.name+"\">the <see cref=\""+table.name+"\"/> to be added</param>";
                         returns = "bool. True if added, False otherwise.";
                         break;
                     case XML_Method_Type.CSharp_Manager_Delete:
-                        summary = "Logic layer delete method for" + table.name + " objects";
-                        Params = "";
-                        returns = "Int, number of records deleted"; 
+                        summary = "Logic layer delete method for " + table.name + " objects";
+                    Params = "\n///<param name=\"_" + table.name + "\">the <see cref=\"" + table.name + "\"/> to be deleted</param>";
+                    returns = "Int, number of records deleted"; 
                         break; 
                     case XML_Method_Type.CSharp_Manager_Undelete:
-                        summary = "Logic layer undelete method for" + table.name + " objects";
-                        Params = "";
-                        returns = "Int, number of records restored";
+                        summary = "Logic layer undelete method for " + table.name + " objects";
+                    Params = "\n///<param name=\"_" + table.name + "\">the <see cref=\"" + table.name + "\"/> to be restored</param>";
+                    returns = "Int, number of records restored";
                         break;
                     case XML_Method_Type.CSharp_Manager_Retreive_By_PK:
-                        summary = "Logic layer retreive by pk method for" + table.name + " objects";
-                        Params = "";
-                        returns = "<see cref=\""+table.name+"\"";
+                        summary = "Logic layer retreive by pk method for " + table.name + " objects";
+                    foreach (Column r in table.columns)
+                    {
+                        if (r.primary_key == 'y' || r.primary_key == 'Y')
+                        {
+                            Params += "\n///<param name=\"" + r.column_name + "\">the <see cref=\"" + r.data_type.toCSharpDataType() + "\"/> that is the primary key of this record</param>";
+                        }
+                    }
+                    returns = "<see cref=\""+table.name+"\">";
                         break;
                     case XML_Method_Type.CSharp_Manager_Retreive_All_No_Param:
-                        summary = "Logic layer retreive all method for" + table.name + " objects";
+                        summary = "Logic layer retreive all method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break;
                     case XML_Method_Type.CSharp_Manager_Retreive_All_One_Param:
-                        summary = "Logic layer retreive all method for" + table.name + " objects";
+                        summary = "Logic layer retreive all method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break;
                     case XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param:
-                        summary = "Logic layer retreive all method for" + table.name + " objects";
+                        summary = "Logic layer retreive all method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break;
                     case XML_Method_Type.CSharp_Manager_Update:
-                        summary = "Logic layer update method for" + table.name + " objects";
-                        Params = "";
-                        returns = "Int, number of records updated";
+                        summary = "Logic layer update method for " + table.name + " objects";
+                    Params = "///<param name=\"old" + table.name.ToLower() + "\">the <see cref=\"" + table.name + "\"/> to be updated</param>";
+                    Params += "\n///<param name=new\"" + table.name.ToLower() + "\">the <see cref=\"" + table.name + "\"/> the updated version</param>";
+
+                    returns = "Int, number of records updated";
                         break;
                     case XML_Method_Type.CSharp_Manager_Retreive_By_FK_No_Param:
-                        summary = "Logic layer retrevei by fk method for" + table.name + " objects";
+                        summary = "Logic layer retrevei by fk method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break;
                     case XML_Method_Type.CSharp_Manager_Retreive_By_FK_One_Param:
-                        summary = "Logic layer retrevei by fk method for" + table.name + " objects";
+                        summary = "Logic layer retrevei by fk method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break; 
                     case XML_Method_Type.CSharp_Manager_Retreive_By_FK_Two_Param:
                         summary = "Logic layer retrevei by fk method for" + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break; 
                     case XML_Method_Type.CSharp_Accessor_Add:
                         summary = "Data Access layer Add method for " + table.name + " objects";
-                        Params = "";
+                    Params += "\n///<param name=\"_" + table.name.ToLower() + "\">the <see cref=\"" + table.name + "\"/> to be added</param>";
                         returns = "Int, number of records added";
                         break; 
                     case XML_Method_Type.CSharp_Accessor_Delete:
                         summary = "Data Access layer Delete method for " + table.name + " objects";
-                        Params = "";
-                        returns = "Int, number of records deleted";
+                    foreach (Column r in table.columns)
+                    {
+                        if (r.primary_key == 'y' || r.primary_key == 'Y')
+                        {
+                            Params += "\n///<param name=\"" + r.column_name + "\">the <see cref=\"" + r.data_type.toCSharpDataType() + "\"/> that is the primary key of this record</param>";
+                        }
+                    }
+                    returns = "Int, number of records deleted";
                         break;
                     case XML_Method_Type.CSharp_Accessor_Undelete:
                         summary = "Data Access layer undelete method for " + table.name + " objects";
-                        Params = "";
-                        returns = "Int, number of records restored";
+                    foreach (Column r in table.columns)
+                    {
+                        if (r.primary_key == 'y' || r.primary_key == 'Y')
+                        {
+                            Params += "\n///<param name=\"" + r.column_name + "\">the <see cref=\"" + r.data_type.toCSharpDataType() + "\"/> that is the primary key of this record</param>";
+                        }
+                    }
+                    returns = "Int, number of records restored";
                         break;
                     case XML_Method_Type.CSharp_Accessor_Retreive_By_PK:
                         summary = "Data Access layer retreive by PK method for " + table.name + " objects";
-                        Params = "";
-                        returns = "<see cref=\"" + table.name + "\"";
+                    foreach (Column r in table.columns)
+                    {
+                        if (r.primary_key == 'y' || r.primary_key == 'Y')
+                        {
+                            Params += "\n///<param name=\"" + r.column_name + "\">the <see cref=\"" + r.data_type.toCSharpDataType() + "\"/> that is the primary key of this record</param>";
+                        }
+                    }
+                    returns = "<see cref=\"" + table.name + "\">";
                         break;
                     case XML_Method_Type.CSharp_Accessor_Retreive_All_Two_Param:
                         summary = "Data Access layer Retreive All method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break;
                         
                     case XML_Method_Type.CSharp_Accessor_Update:
                         summary = "Data Access layer Update method for " + table.name + " objects";
-                        Params = "";
-                        returns = "Int, number of records updated";
+                    Params = "\n///<param name=\"_old" + table.name + "\">the <see cref=\"" + table.name + "\"/> to be updated</param>";
+                    Params += "\n///<param name=\"new" + table.name + "\">the <see cref=\"" + table.name + "\"/> the updated version</param>";
+
+                    returns = "Int, number of records updated";
                         break;
                     case XML_Method_Type.CSharp_Accessor_Retreive_By_FK_Two_Param:
                         summary = "Data Access layer Retreive by FK method for " + table.name + " objects";
                         Params = "";
-                        returns = "List of <see cref=\"" + table.name + "\"";
+                        returns = "List of <see cref=\"" + table.name + "\">";
                         break;
                 }
-                summary = "<summary>\n" + summary +"\n"+name +"\n</summary>";
-                returns = "<returns>" + returns + "</returns";
+                summary = "\n///<summary>\n///" + summary +"\n"+name +"\n///</summary>";
+                returns = "\n///<returns>\n///" + returns + "\n///</returns>\n";
                 result = result + summary + Params + returns;
-            }
-            else
-            {
-                return result;
-            }
+            
+            
             return result;
         }
 

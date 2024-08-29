@@ -44,7 +44,8 @@ namespace Data_Objects
         /// generates an data access layer interface for c#
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that represents the data access layer interface in c#
+        /// <returns>A string that represents the data access layer interface in c#</returns>
+        
         public String gen_IThingAccessor()
         {
             int count = 0;
@@ -104,7 +105,7 @@ namespace Data_Objects
         /// generates an data access layer  for c#
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that represents the data access layer  in c#
+        /// <returns>A string that represents the data access layer  in c# </returns>
         public String gen_ThingAccessor()
         {
 
@@ -144,12 +145,12 @@ namespace Data_Objects
         /// generates a logic layer interface for c#
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that represents the data access layer interface ni c#
+        /// <returns>A string that represents the data access layer interface in c# </returns>
         public String gen_IThingManager()
         {
             int count = 0;
             string comma = "";
-            string output = commentBox.GenXMLComment(1, name);
+            string output = commentBox.GenXMLClassComment(this, XMLClassType.CSharpIManager);
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
             string header = "public interface I" + name + "Manager \n{\n";
 
@@ -211,7 +212,7 @@ namespace Data_Objects
         /// generates a logic layer  for c#
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that represents the data access layer interface ni c#
+        /// <returns>A string that represents the data access layer interface in c# </returns>
         public String gen_ThingMananger() {
             String result = "";
             String header = genManagerHeader();
@@ -250,7 +251,7 @@ namespace Data_Objects
         /// that takes the data access object.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for the header of the logic layer
+        /// <returns>A string that is c# code for the header of the logic layer </returns>
         private string genManagerHeader() {
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
 
@@ -277,9 +278,9 @@ namespace Data_Objects
         /// access layer for adding to the database.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer add method, in c#.
+        /// <returns>A logic layer add method, in c#. </returns>
         private String genManagerAdd() {
-            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Add);
+            string comment = commentBox.GenXMLMethodComment(this,XML_Method_Type.CSharp_Manager_Add);
             String result = "\n";
             result = result + "public bool Add"+name+"("+name+" "+"_"+name+"){\n";
             result += "bool result = false;;\n";
@@ -303,9 +304,9 @@ namespace Data_Objects
         /// access layer for deleting
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer delete method, in c#.
+        /// <returns>A logic layer delete method, in c#. </returns>
         private String genManagerDelete() {
-            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Delete);
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Delete);
             string purgeThing = "public int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
             purgeThing += "int result = 0;\n";
             purgeThing += "try{\n";
@@ -328,9 +329,9 @@ namespace Data_Objects
         /// access layer for undeleting
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer undelete method, in c#.
+        /// <returns>A logic layer undelete method, in c#. </returns>
         private String genManagerUnDelete() {
-            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Undelete);
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Undelete);
             string purgeThing = "public int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
             purgeThing += "int result = 0;\n";
             purgeThing += "try{\n";
@@ -356,10 +357,9 @@ namespace Data_Objects
         /// access layer for accessing a record by primary key
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer retreive by PK method, in c#.
+        /// <returns>A logic layer retreive by PK method, in c#. </returns>
         private string genManagerPK() {
-            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_PK);
-            string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_By_PK); string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
             retreiveThing = retreiveThing + name+" result =null ;\n";
             retreiveThing += "try{\n";
             retreiveThing = retreiveThing + "result = _" + name.ToLower() + "Accessor.select" + name + "ByPrimaryKey(" + name + "ID);\n";
@@ -381,20 +381,20 @@ namespace Data_Objects
         /// access layer for accessing all records for this <see cref="table"/>
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer retreive by all method, in c#.
+        /// <returns>A logic layer retreive by all method, in c#. </returns>
         private string genManagerAll() {
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_No_Param);
-            comment += commentBox.GenXMLComment(XMLType.Class, this, XML_Method_Type.CSharp_Manager_Retreive_All_No_Param);
+            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_No_Param);
             string retreiveAll =  comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(0,"+ appData2.settings.page_size + ");\n}\n";
 
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_One_Param);
-            comment += commentBox.GenXMLComment(XMLType.Class, this, XML_Method_Type.CSharp_Manager_Retreive_All_One_Param);
+            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_One_Param);
             retreiveAll = retreiveAll+ comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(offset, "+ appData2.settings.page_size + ");\n}\n";
 
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_Two_Param);
-            comment += commentBox.GenXMLComment(XMLType.Class, this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
+            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
             retreiveAll = retreiveAll + comment+ "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
             retreiveAll = retreiveAll + "List<"+name + "> result =new List<"+name+">();\n";
             retreiveAll += "try{\n";
@@ -415,7 +415,7 @@ namespace Data_Objects
         /// access layer for accessing a record by foreign key
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string representing logic layer retreive by FK method, in c#.
+        /// <returns>A string representing logic layer retreive by FK method, in c#.</returns>
         private string genManagerFK() {
             string getfkThing = "";
             foreach (Column r in columns)
@@ -458,9 +458,9 @@ namespace Data_Objects
         /// access layer for updating
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string representing logic layer update, in c#.
+        /// <returns>A string representing logic layer update, in c#. </returns>
         private string genManagerUpdate() {
-            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Update);
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Update);
             string updateThing = "public int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
             updateThing += "int result =0 ;\n";
             updateThing += "try{\n";
@@ -478,16 +478,16 @@ namespace Data_Objects
 
 
         }
-        /// <summary>
+
         /// Generates a c# data object with markup reflecting min and max length, etc.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string representing c# data object
+        /// <returns>A string representing c# data object </returns>
         public String gen_DataObject()
         {
 
             string output = "";
-            output = commentBox.GenXMLComment(1, name);
+            output = commentBox.GenXMLClassComment(this, XMLClassType.CSharpDataObject);
             output = "public class " + name + "\n{\n";
             int count = 0;
 
@@ -561,14 +561,14 @@ namespace Data_Objects
         /// Generates a header for the data access layer accessor, 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for the header of the data access layer
+        /// <returns>A string that is c# code for the header of the data access layer </returns>
         private string genAccessorClassHeader()
         {
             string header = "";
             int count = 0;
             string comma = "";
             string output = "";
-            string comment = commentBox.GenXMLComment(1, name);
+            string comment = commentBox.GenXMLClassComment(this, XMLClassType.CSharpAccessor);
             header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
 
 
@@ -580,7 +580,7 @@ namespace Data_Objects
         /// Generates a header for functions of the  accessor, 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for the header of the data access layer methods
+        /// <returns>A string that is c# code for the header of the data access layer methods </returns>
         private String genSPHeaderA(string commandText)
         {
             //for update, insert, delete
@@ -604,7 +604,7 @@ namespace Data_Objects
         /// Generates a header for functions of the  accessor, 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for the header of the data access layer methods
+        /// <returns>A string that is c# code for the header of the data access layer methods </returns>
         private String genSPHeaderB(string DataObject, string commandText)
         {
             //for single data object
@@ -627,7 +627,7 @@ namespace Data_Objects
         /// Generates a header for functions of the  accessor, 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for the header of the data access layer methods
+        /// <returns>A string that is c# code for the header of the data access layer methods </returns>
         private String genSPHeaderC(string DataObject, string commandText)
         {
             //for list of data object
@@ -649,7 +649,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <param name="mode"></param>
-        /// <returns>A string that is c# code for the footer of the data access layer methods
+        /// <returns>A string that is c# code for the footer of the data access layer methods </returns>
         private string genSPfooter(int mode)
         {
 
@@ -671,13 +671,13 @@ namespace Data_Objects
         /// Generates an method for the data access layer add method for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for adding to the database
+        /// <returns>A string that is c# code for adding to the database </returns>
         private string genAccessorAdd()
         {
-            string createThing = commentBox.GenXMLComment(0, name);
+            string createThing = commentBox.GenXMLMethodComment(this,XML_Method_Type.CSharp_Accessor_Add);
             int count = 0;
             string comma = "";
-            createThing = "\npublic int add" + name + "(" + name + " _" + name.ToLower();
+            createThing += "\npublic int add" + name + "(" + name + " _" + name.ToLower();
 
             createThing += "){\n";
             createThing += genSPHeaderA("sp_insert_" + name);
@@ -717,13 +717,13 @@ namespace Data_Objects
         /// Generates an method for the data access layer retreive by PK method for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for retreiving by PK from the database
+        /// <returns>A string that is c# code for retreiving by PK from the database </returns>
         private string genAccessorRetreiveByKey()
         {
-            string retreiveThing = commentBox.GenXMLComment(0, name);
+            string retreiveThing = commentBox.GenXMLMethodComment(this,XML_Method_Type.CSharp_Accessor_Retreive_By_PK);
             int count = 0;
             string comma = "";
-            retreiveThing = "\npublic " + name + " select" + name + "ByPrimaryKey(";
+            retreiveThing += "\npublic " + name + " select" + name + "ByPrimaryKey(";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
@@ -810,14 +810,14 @@ namespace Data_Objects
         /// Generates an method for the data access layer retreive by all method for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is c# code for retreving all from the database
+        /// <returns>A string that is c# code for retreving all from the database 
         private string genAccessorRetreiveAll()
         {
 
             int count = 0;
             string comma = "";
-            string retreiveAllThing = commentBox.GenXMLComment(0, name);
-            retreiveAllThing = "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
+            string retreiveAllThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
+            retreiveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
 
 
             retreiveAllThing += genSPHeaderC(name, "sp_retreive_by_all_" + name);
@@ -898,7 +898,7 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing += commentBox.GenXMLComment(0, name);
+                    retreiveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Retreive_By_FK_Two_Param);
                     retreiveAllThing += "\npublic List<" + name + "> select" + name +"by"+fk_table+ "("+q.data_type.toCSharpDataType()+" "+fk_name+",int limit, int offset){\n";
 
 
@@ -973,10 +973,10 @@ namespace Data_Objects
         /// <returns>A string that is c# code for updating a record on the database
         private string genAccessorUpdate()
         {
-            string updateThing = commentBox.GenXMLComment(0, name);
+            string updateThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Update);
             int count = 0;
             string comma = "";
-            updateThing = "\npublic int update" + name + "(";
+            updateThing += "\npublic int update" + name + "(";
 
 
             updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
@@ -1028,7 +1028,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for deleting from the database
         private string genAccessorDelete()
         {
-            string deleteThing = commentBox.GenXMLComment(0, name);
+            string deleteThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Delete);
             deleteThing += "\npublic int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing += genSPHeaderA("sp_delete_" + name);
             //add parameters bit
@@ -1055,7 +1055,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for undeleting from the database
         private string genAccessorUndelete()
         {
-            string deleteThing = commentBox.GenXMLComment(0, name);
+            string deleteThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Undelete);
             deleteThing = deleteThing + "\n public int undelete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing += genSPHeaderA("sp_undelete_" + name);
             //add parameters bit
@@ -1088,7 +1088,7 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing += commentBox.GenXMLComment(0, name);
+                    retreiveAllThing += commentBox.GenXMLMethodComment(this,XML_Method_Type.CSharp_Accessor_Select_Distinct_For_Dropdown);
                     retreiveAllThing = retreiveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
 
 
@@ -1337,7 +1337,7 @@ namespace Data_Objects
         /// <returns>A string that is the header Java code for this object.
         private string genJavaHeader()
         {
-            string result = commentBox.GenXMLComment(1, name);
+            string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
             result = result + "\n public class " + name + " {\n";
             return result;
 
@@ -1457,7 +1457,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object header.
         private string genJavaDAOHeader()
         {
-            string result = commentBox.GenXMLComment(1, name + "DAO");
+            string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
             result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n" +
 
                 "import java.sql.CallableStatement;\n" +
