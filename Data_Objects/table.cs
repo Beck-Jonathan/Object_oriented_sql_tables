@@ -149,7 +149,7 @@ namespace Data_Objects
         {
             int count = 0;
             string comma = "";
-            string output = commentBox.GenJavaDocComment(1, name);
+            string output = commentBox.GenXMLComment(1, name);
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
             string header = "public interface I" + name + "Manager \n{\n";
 
@@ -384,15 +384,17 @@ namespace Data_Objects
         /// <returns>A logic layer retreive by all method, in c#.
         private string genManagerAll() {
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_No_Param);
-
+            comment += commentBox.GenXMLComment(XMLType.Class, this, XML_Method_Type.CSharp_Manager_Retreive_All_No_Param);
             string retreiveAll =  comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(0,"+ appData2.settings.page_size + ");\n}\n";
 
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_One_Param);
+            comment += commentBox.GenXMLComment(XMLType.Class, this, XML_Method_Type.CSharp_Manager_Retreive_All_One_Param);
             retreiveAll = retreiveAll+ comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(offset, "+ appData2.settings.page_size + ");\n}\n";
 
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_Two_Param);
+            comment += commentBox.GenXMLComment(XMLType.Class, this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
             retreiveAll = retreiveAll + comment+ "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
             retreiveAll = retreiveAll + "List<"+name + "> result =new List<"+name+">();\n";
             retreiveAll += "try{\n";
@@ -485,7 +487,7 @@ namespace Data_Objects
         {
 
             string output = "";
-            output = commentBox.GenJavaDocComment(1, name);
+            output = commentBox.GenXMLComment(1, name);
             output = "public class " + name + "\n{\n";
             int count = 0;
 
@@ -566,7 +568,7 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             string output = "";
-            string comment = commentBox.GenJavaDocComment(1, name);
+            string comment = commentBox.GenXMLComment(1, name);
             header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
 
 
@@ -672,7 +674,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for adding to the database
         private string genAccessorAdd()
         {
-            string createThing = commentBox.GenJavaDocComment(0, name);
+            string createThing = commentBox.GenXMLComment(0, name);
             int count = 0;
             string comma = "";
             createThing = "\npublic int add" + name + "(" + name + " _" + name.ToLower();
@@ -718,7 +720,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for retreiving by PK from the database
         private string genAccessorRetreiveByKey()
         {
-            string retreiveThing = commentBox.GenJavaDocComment(0, name);
+            string retreiveThing = commentBox.GenXMLComment(0, name);
             int count = 0;
             string comma = "";
             retreiveThing = "\npublic " + name + " select" + name + "ByPrimaryKey(";
@@ -814,7 +816,7 @@ namespace Data_Objects
 
             int count = 0;
             string comma = "";
-            string retreiveAllThing = commentBox.GenJavaDocComment(0, name);
+            string retreiveAllThing = commentBox.GenXMLComment(0, name);
             retreiveAllThing = "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
 
 
@@ -896,7 +898,7 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing += commentBox.GenJavaDocComment(0, name);
+                    retreiveAllThing += commentBox.GenXMLComment(0, name);
                     retreiveAllThing += "\npublic List<" + name + "> select" + name +"by"+fk_table+ "("+q.data_type.toCSharpDataType()+" "+fk_name+",int limit, int offset){\n";
 
 
@@ -971,7 +973,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for updating a record on the database
         private string genAccessorUpdate()
         {
-            string updateThing = commentBox.GenJavaDocComment(0, name);
+            string updateThing = commentBox.GenXMLComment(0, name);
             int count = 0;
             string comma = "";
             updateThing = "\npublic int update" + name + "(";
@@ -1026,7 +1028,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for deleting from the database
         private string genAccessorDelete()
         {
-            string deleteThing = commentBox.GenJavaDocComment(0, name);
+            string deleteThing = commentBox.GenXMLComment(0, name);
             deleteThing += "\npublic int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing += genSPHeaderA("sp_delete_" + name);
             //add parameters bit
@@ -1053,7 +1055,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for undeleting from the database
         private string genAccessorUndelete()
         {
-            string deleteThing = commentBox.GenJavaDocComment(0, name);
+            string deleteThing = commentBox.GenXMLComment(0, name);
             deleteThing = deleteThing + "\n public int undelete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing += genSPHeaderA("sp_undelete_" + name);
             //add parameters bit
@@ -1086,7 +1088,7 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing += commentBox.GenJavaDocComment(0, name);
+                    retreiveAllThing += commentBox.GenXMLComment(0, name);
                     retreiveAllThing = retreiveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
 
 
@@ -1335,7 +1337,7 @@ namespace Data_Objects
         /// <returns>A string that is the header Java code for this object.
         private string genJavaHeader()
         {
-            string result = commentBox.GenJavaDocComment(1, name);
+            string result = commentBox.GenXMLComment(1, name);
             result = result + "\n public class " + name + " {\n";
             return result;
 
@@ -1455,7 +1457,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object header.
         private string genJavaDAOHeader()
         {
-            string result = commentBox.GenJavaDocComment(1, name + "DAO");
+            string result = commentBox.GenXMLComment(1, name + "DAO");
             result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n" +
 
                 "import java.sql.CallableStatement;\n" +

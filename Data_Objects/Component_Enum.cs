@@ -50,11 +50,40 @@ namespace Data_Objects
         CSharp_Manager_Retreive_By_FK_No_Param,
         CSharp_Manager_Retreive_By_FK_One_Param,
         CSharp_Manager_Retreive_By_FK_Two_Param,
+        CSharp_Accessor_Add,
+        CSharp_Accessor_Delete,
+        CSharp_Accessor_Undelete,
+        CSharp_Accessor_Retreive_By_PK,
+        CSharp_Accessor_Retreive_All_Two_Param,
+        CSharp_Accessor_Update,
+        CSharp_Accessor_Retreive_By_FK_Two_Param,
 
-
-
-
-
+    }
+    public enum XMLType
+    {
+        Method,
+        Class
+    }
+    public enum XML_Method_Type
+    {
+        CSharp_Manager_Add,
+        CSharp_Manager_Delete,
+        CSharp_Manager_Undelete,
+        CSharp_Manager_Retreive_By_PK,
+        CSharp_Manager_Retreive_All_No_Param,
+        CSharp_Manager_Retreive_All_One_Param,
+        CSharp_Manager_Retreive_All_Two_Param,
+        CSharp_Manager_Update,
+        CSharp_Manager_Retreive_By_FK_No_Param,
+        CSharp_Manager_Retreive_By_FK_One_Param,
+        CSharp_Manager_Retreive_By_FK_Two_Param,
+        CSharp_Accessor_Add,
+        CSharp_Accessor_Delete,
+        CSharp_Accessor_Undelete,
+        CSharp_Accessor_Retreive_By_PK,        
+        CSharp_Accessor_Retreive_All_Two_Param,
+        CSharp_Accessor_Update,        
+        CSharp_Accessor_Retreive_By_FK_Two_Param,
 
     }
 }
