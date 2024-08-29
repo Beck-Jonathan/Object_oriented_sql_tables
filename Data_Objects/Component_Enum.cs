@@ -92,4 +92,14 @@ namespace Data_Objects
         CSharp_Accessor_Select_Distinct_For_Dropdown,
 
     }
+    public enum JavaDoc_Method_Type { 
+        Java_DAO_Add,
+        Java_DAO_Delete,
+        Java_DAO_Undelete,
+        Java_DAO_Retreive_By_FK,
+        Java_DAO_Retreive_All_,
+        Java_DAO_Retreive_By_PK,
+        Java_DAO_Update
+
+    }
 }

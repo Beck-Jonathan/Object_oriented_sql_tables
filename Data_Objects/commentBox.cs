@@ -12,7 +12,7 @@ namespace Data_Objects
         {
             string result = "";
             
-            
+                
                 String summary = "";
                 String name = "///<para />Created By Jonathan Beck " + DateTime.Now.ToString()+ "<para />";
                 String Params = "";
@@ -148,6 +148,66 @@ namespace Data_Objects
             return result;
         }
 
+        public static String GenJavaDocMethodComment(table table, JavaDoc_Method_Type method) {
+            string result = "";
+
+
+            String summary = "";
+            String header = "/**";
+            String name = "\n* @author Jonathan Beck";
+            String Params = "";
+            String returns = "";
+
+            switch (method)
+            {
+                case JavaDoc_Method_Type.Java_DAO_Add:
+                    summary = "\n* DAO Method to add " + table.name + " objects";
+                    Params = "\n* @param " + table.name+" the "+table.name+" to be added";
+                    returns = "\n* @return number of records added";
+                    break;
+                case JavaDoc_Method_Type.Java_DAO_Delete:
+                    summary = "\n* DAO Method to delete " + table.name + " objects";
+                    Params = "\n* @param " + table.name + " the " + table.name + " to be deleted";
+                    returns = "\n* @return number of records deleted";
+                    break;
+                case JavaDoc_Method_Type.Java_DAO_Undelete:
+                    summary = "\n* DAO Method to undelete " + table.name + " objects";
+                    Params = "\n* @param " + table.name + " the " + table.name + " to be undeleted";
+                    returns = "\n* @return number of records undeleted";
+                    break;
+                case JavaDoc_Method_Type.Java_DAO_Retreive_By_FK:
+                    summary = "\n* DAO Method to retreive by Foreign Key " + table.name + " objects";
+                    Params = "";
+                    returns = "\n* @return List of " + table.name; 
+                    break;
+                case JavaDoc_Method_Type.Java_DAO_Retreive_All_:
+                    summary = "\n* DAO Method to retreive all " + table.name + " objects";
+                    Params = "";
+                    returns = "\n* @return List of " + table.name;
+                    break;
+                case JavaDoc_Method_Type.Java_DAO_Retreive_By_PK:
+                    summary = "\n* DAO Method to retreive by ID " + table.name + " objects";
+                    Params = "\n* @param " + table.name + " the " + table.name + " to be retreived";
+                    returns = "\n* @return List of " + table.name;
+                    break;
+                case JavaDoc_Method_Type.Java_DAO_Update:
+                    summary = "\n* DAO Method to update " + table.name + " objects";
+                    Params = "\n* @param old" + table.name + " the " + table.name + " to be updated";
+                    Params += "\n* @param new" + table.name + " the updated version of the " + table.name ;
+                    returns = "\n* @return number of records updated";
+                    break;
+                default:
+                    break;
+            }
+
+
+            
+            
+            result = result +header+summary + Params + returns +name+"\n */\n";
+
+
+            return result;
+        }
 
 
 

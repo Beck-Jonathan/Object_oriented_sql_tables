@@ -1496,7 +1496,7 @@ namespace Data_Objects
         private string genJavaDAORetreiveByKey()
         {
             string result = "";
-            // result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_PK);
             string nullValue = "";
             string comma = "";
             result = result + "public static " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
@@ -1574,7 +1574,7 @@ namespace Data_Objects
         {
             string nullValue = "\"\"";
             string result = "";
-            //result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
             result = result + "public static List<" + name + "> getAll" + name + "() {\n";
             result = result + "return getAll" + name + "("+appData2.settings.page_size+",0);";
@@ -1631,7 +1631,7 @@ namespace Data_Objects
         public String genJavaDAORetriveActive() {
             string nullValue = "\"\"";
             string result = "";
-            //result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
             result = result + "public static List<" + name + "> getActive" + name + "() {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
@@ -1678,7 +1678,7 @@ namespace Data_Objects
         public String genJavaDAORetriveByFK() {
             string nullValue = "\"\"";
             string result = "";
-            //result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
             string comma = "";
             foreach (Column s in columns)
             {
@@ -1744,7 +1744,7 @@ namespace Data_Objects
         private string genJavaDAOUpdate()
         {
             string result = "";
-            //result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
             result = result + "\n public static int update("+name+" old"+name+", "+name+" new"+name+") throws SQLException{\n";
             result += "int result = 0;\n";
             result += "try (Connection connection = getConnection()) {\n";
@@ -1787,7 +1787,7 @@ namespace Data_Objects
         private string genJavaDelete()
         {
             string result = "";
-            //result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
             result = result + "public static int delete"+name+"(int "+name.ToLower()+"ID) {\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
@@ -1818,7 +1818,7 @@ namespace Data_Objects
         private string genJavaunDelete()
         {
             string result = "";
-            //result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
             result = result + "public static int undelete" + name + "(int " + name.ToLower() + "ID) {\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
@@ -1849,7 +1849,7 @@ namespace Data_Objects
         private string genJavaDAOCreate()
         {
             string result = "";
-            // result = comment_box_gen.JavaDocComment(0, name);
+            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
             string comma = "";
             result = result + "public static int add(" + name + " _" + name.ToLower() + ") {\n";
             result += "int numRowsAffected=0;";
