@@ -21,7 +21,7 @@ namespace Data_Objects
             full_header = "";
             if (settings.TSQLMode)
             {
-                full_header = comment_box_gen.comment_box(table_name, 1) +
+                full_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_table) +
                 "\n\n" +
 
                 "CREATE TABLE " + table_name + "(\n"
@@ -30,7 +30,7 @@ namespace Data_Objects
 
             else
             {
-                full_header = comment_box_gen.comment_box(table_name, 1) +
+                full_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_table) +
                 "\n\n" +
                 "DROP TABLE IF EXISTS " + table_name + ";\n" +
                 "CREATE TABLE " + table_name + "(\n"
@@ -43,7 +43,7 @@ namespace Data_Objects
         public string audit_header_gen()
         {
             String audit_header = "";
-            audit_header = comment_box_gen.comment_box(table_name, 2) +
+            audit_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_Audit_Table) +
                 "\n\n" +
                 "DROP TABLE IF EXISTS " + table_name + "_audit;\n\n" +
                 "CREATE TABLE " + table_name + "_audit(\n\n"

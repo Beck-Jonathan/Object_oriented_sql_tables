@@ -50,7 +50,7 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             string output = "";
-            string comment = comment_box_gen.comment_box(name, 11);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IAccessor);
             string header = "public interface I" + name + "Accessor \n{\n";
 
             string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
@@ -109,7 +109,7 @@ namespace Data_Objects
         {
 
             //nneds proper number and code choice
-            string comment = comment_box_gen.comment_box(name, 13);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
             //good
             string header = genAccessorClassHeader();
             //good
@@ -149,8 +149,8 @@ namespace Data_Objects
         {
             int count = 0;
             string comma = "";
-            string output = comment_box_gen.JavaDocComment(1, name);
-            string comment = comment_box_gen.comment_box(name, 12);
+            string output = commentBox.GenJavaDocComment(1, name);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
             string header = "public interface I" + name + "Manager \n{\n";
 
             string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
@@ -252,7 +252,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A string that is c# code for the header of the logic layer
         private string genManagerHeader() {
-            string comment = comment_box_gen.comment_box(name, 29);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
 
             String result = "";
             result = result + "public class "+name+"Manager : I"+name+"Manager\n";
@@ -279,7 +279,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A logic layer add method, in c#.
         private String genManagerAdd() {
-            string comment = comment_box_gen.comment_box(name, 31);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Add);
             String result = "\n";
             result = result + "public bool Add"+name+"("+name+" "+"_"+name+"){\n";
             result += "bool result = false;;\n";
@@ -305,7 +305,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A logic layer delete method, in c#.
         private String genManagerDelete() {
-            string comment = comment_box_gen.comment_box(name, 32);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Delete);
             string purgeThing = "public int purge" + name + "(" +name +" "+ name.ToLower() + "){\n";
             purgeThing += "int result = 0;\n";
             purgeThing += "try{\n";
@@ -330,7 +330,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A logic layer undelete method, in c#.
         private String genManagerUnDelete() {
-            string comment = comment_box_gen.comment_box(name, 32);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Undelete);
             string purgeThing = "public int unpurge" + name + "(" + name + " " + name.ToLower() + "){\n";
             purgeThing += "int result = 0;\n";
             purgeThing += "try{\n";
@@ -358,7 +358,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A logic layer retreive by PK method, in c#.
         private string genManagerPK() {
-            string comment = comment_box_gen.comment_box(name, 33);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_PK);
             string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
             retreiveThing = retreiveThing + name+" result =null ;\n";
             retreiveThing += "try{\n";
@@ -383,16 +383,16 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A logic layer retreive by all method, in c#.
         private string genManagerAll() {
-            string comment = comment_box_gen.comment_box(name, 34);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_No_Param);
 
             string retreiveAll =  comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(0,"+ appData2.settings.page_size + ");\n}\n";
 
-            comment = comment_box_gen.comment_box(name, 39);
+            comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_One_Param);
             retreiveAll = retreiveAll+ comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
             retreiveAll = retreiveAll+"return get" + name + "ByAll(offset, "+ appData2.settings.page_size + ");\n}\n";
 
-            comment = comment_box_gen.comment_box(name, 40);
+            comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_Two_Param);
             retreiveAll = retreiveAll + comment+ "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
             retreiveAll = retreiveAll + "List<"+name + "> result =new List<"+name+">();\n";
             retreiveAll += "try{\n";
@@ -423,16 +423,16 @@ namespace Data_Objects
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    getfkThing += comment_box_gen.comment_box(name, 36);
+                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_No_Param);
                     getfkThing = getfkThing + "\npublic List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + "){\n" +
                         "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",0);" +
                         "\n}\n";
-                    getfkThing += comment_box_gen.comment_box(name, 37);
+                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_One_Param);
                     getfkThing = getfkThing +
                     "\npublic List<" + name + "> getAll" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ",int offset){\n" +
                  "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",offset);" +
                 "\n}\n";
-                getfkThing += comment_box_gen.comment_box(name, 38);
+                getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_Two_Param);
                     getfkThing = getfkThing +"public List<" + name + "> getAll" + name + "by" + fk_table + "(" +r.data_type.toCSharpDataType() +" "+fk_name + ",int limit, int offset){\n";
                  
                  
@@ -458,7 +458,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A string representing logic layer update, in c#.
         private string genManagerUpdate() {
-            string comment = comment_box_gen.comment_box(name, 35);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Update);
             string updateThing = "public int update" + name + "( "+name+" old"+name+", "+name+ " new"+ name + "){\n";
             updateThing += "int result =0 ;\n";
             updateThing += "try{\n";
@@ -485,7 +485,7 @@ namespace Data_Objects
         {
 
             string output = "";
-            output = comment_box_gen.JavaDocComment(1, name);
+            output = commentBox.GenJavaDocComment(1, name);
             output = "public class " + name + "\n{\n";
             int count = 0;
 
@@ -566,7 +566,7 @@ namespace Data_Objects
             int count = 0;
             string comma = "";
             string output = "";
-            string comment = comment_box_gen.JavaDocComment(1, name);
+            string comment = commentBox.GenJavaDocComment(1, name);
             header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
 
 
@@ -672,7 +672,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for adding to the database
         private string genAccessorAdd()
         {
-            string createThing = comment_box_gen.JavaDocComment(0, name);
+            string createThing = commentBox.GenJavaDocComment(0, name);
             int count = 0;
             string comma = "";
             createThing = "\npublic int add" + name + "(" + name + " _" + name.ToLower();
@@ -718,7 +718,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for retreiving by PK from the database
         private string genAccessorRetreiveByKey()
         {
-            string retreiveThing = comment_box_gen.JavaDocComment(0, name);
+            string retreiveThing = commentBox.GenJavaDocComment(0, name);
             int count = 0;
             string comma = "";
             retreiveThing = "\npublic " + name + " select" + name + "ByPrimaryKey(";
@@ -814,7 +814,7 @@ namespace Data_Objects
 
             int count = 0;
             string comma = "";
-            string retreiveAllThing = comment_box_gen.JavaDocComment(0, name);
+            string retreiveAllThing = commentBox.GenJavaDocComment(0, name);
             retreiveAllThing = "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
 
 
@@ -896,7 +896,7 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing += comment_box_gen.JavaDocComment(0, name);
+                    retreiveAllThing += commentBox.GenJavaDocComment(0, name);
                     retreiveAllThing += "\npublic List<" + name + "> select" + name +"by"+fk_table+ "("+q.data_type.toCSharpDataType()+" "+fk_name+",int limit, int offset){\n";
 
 
@@ -971,7 +971,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for updating a record on the database
         private string genAccessorUpdate()
         {
-            string updateThing = comment_box_gen.JavaDocComment(0, name);
+            string updateThing = commentBox.GenJavaDocComment(0, name);
             int count = 0;
             string comma = "";
             updateThing = "\npublic int update" + name + "(";
@@ -1026,7 +1026,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for deleting from the database
         private string genAccessorDelete()
         {
-            string deleteThing = comment_box_gen.JavaDocComment(0, name);
+            string deleteThing = commentBox.GenJavaDocComment(0, name);
             deleteThing += "\npublic int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing += genSPHeaderA("sp_delete_" + name);
             //add parameters bit
@@ -1053,7 +1053,7 @@ namespace Data_Objects
         /// <returns>A string that is c# code for undeleting from the database
         private string genAccessorUndelete()
         {
-            string deleteThing = comment_box_gen.JavaDocComment(0, name);
+            string deleteThing = commentBox.GenJavaDocComment(0, name);
             deleteThing = deleteThing + "\n public int undelete" + name + "(" + name + " _" + name.ToLower() + "){\n";
             deleteThing += genSPHeaderA("sp_undelete_" + name);
             //add parameters bit
@@ -1086,7 +1086,7 @@ namespace Data_Objects
 
                     int count = 0;
                     string comma = "";
-                    retreiveAllThing += comment_box_gen.JavaDocComment(0, name);
+                    retreiveAllThing += commentBox.GenJavaDocComment(0, name);
                     retreiveAllThing = retreiveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
 
 
@@ -1127,7 +1127,7 @@ namespace Data_Objects
         /// <returns>A string that is xaml window for adding to this table
         public string genXAMLWindow()
         {
-            string comment = comment_box_gen.comment_box(name, 16);
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_XAML_Window);
             string WindowCode = comment;
             int rows = columns.Count + 3;
             int width = 4;
@@ -1190,7 +1190,7 @@ namespace Data_Objects
         {
 
             string result = "";
-            result += comment_box_gen.comment_box(name, 17);
+            result += commentBox.genCommentBox(name, Component_Enum.CSharp_Window_Control);
             result += genStaticVariables();
             result += genConstructor();
             result += genWinLoad();
@@ -1335,7 +1335,7 @@ namespace Data_Objects
         /// <returns>A string that is the header Java code for this object.
         private string genJavaHeader()
         {
-            string result = comment_box_gen.JavaDocComment(1, name);
+            string result = commentBox.GenJavaDocComment(1, name);
             result = result + "\n public class " + name + " {\n";
             return result;
 
@@ -1455,7 +1455,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object header.
         private string genJavaDAOHeader()
         {
-            string result = comment_box_gen.JavaDocComment(1, name + "DAO");
+            string result = commentBox.GenJavaDocComment(1, name + "DAO");
             result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n" +
 
                 "import java.sql.CallableStatement;\n" +
@@ -1911,7 +1911,7 @@ namespace Data_Objects
             string result = "";
             result += importStatements();
             //do get
-            result += comment_box_gen.comment_box(name, 21);
+            result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
             result = result + "public class Add" + name + "Servlet extends HttpServlet{\n";
 
@@ -2065,7 +2065,7 @@ namespace Data_Objects
         public string genviewAllJSP()
         {
             //comment box
-            string result = comment_box_gen.comment_box(name, 20);
+            string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewAll);
             //header comment
             //gen header
             result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
@@ -2150,7 +2150,7 @@ namespace Data_Objects
         {
             int rowcount = 0;
             //comment box
-            string result = comment_box_gen.comment_box(name, 19);
+            string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_Add);
             //header comment
             //gen header
             result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
@@ -2241,7 +2241,7 @@ namespace Data_Objects
         public string genviewAllServlet()
         {
             //this only creates the doGet method
-            string result = comment_box_gen.comment_box(name, 22);
+            string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewAll);
             //gen header
             result += importStatements(); 
             
@@ -2280,7 +2280,7 @@ namespace Data_Objects
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated delete servlet.</returns>
         public string genDeleteServlet() {
-            string result = comment_box_gen.comment_box(name, 25);
+            string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
             result+=importStatements();
             result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")";
             result = result + "public class Delete"+name+"Servlet extends HttpServlet {\n";
@@ -2331,7 +2331,7 @@ namespace Data_Objects
             string result = "";
             result += importStatements();
             //do get
-            result += comment_box_gen.comment_box(name, 21);
+            result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
             result = result + "public class Edit" + name + "Servlet extends HttpServlet{\n";
 
@@ -2488,7 +2488,7 @@ namespace Data_Objects
         public string genViewEditJSP() {
             int rowcount = 0;
             //comment box
-            string result = comment_box_gen.comment_box(name, 26);
+            string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewEdit);
             //header comment
             //gen header
             result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";

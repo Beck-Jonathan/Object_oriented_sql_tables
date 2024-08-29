@@ -3,9 +3,9 @@ using System;
 
 namespace Data_Objects
 {
-    class comment_box_gen
+    public class commentBox
     {
-        public static String JavaDocComment(int type, string tableName)
+        public static String GenJavaDocComment(int type, string tableName)
         {
             string result = "";
             string layerText = "";
@@ -77,171 +77,184 @@ namespace Data_Objects
 
         //creates various commeent boxes based on
         //table name and function type.
-        public static String comment_box(String table, int type)
+        public static String genCommentBox(String table, Component_Enum type)
         {
             String full_comment_box = " ";
             String start_stars = "/******************\n";
             String end_stars = "\n***************/\n";
             String middle = " ";
             String PrintStatement = "";
-            if (type == 1)
+            if (type.Equals(Component_Enum.SQL_table))
             {
                 middle = "Create the " + table + " table";
 
             }
-            if (type == 2)
+            if (type.Equals(Component_Enum.SQL_Audit_Table))
             {
                 middle = "Create the " + table + " Audit table";
             }
-            if (type == 3)
+            if (type.Equals(Component_Enum.SQL_Update))
             {
                 middle = "Create the update script for the " + table + " table";
             }
-            if (type == 4)
+            if (type.Equals(Component_Enum.SQL_Delete))
             {
                 middle = "Create the delete script for the " + table + " table";
             }
-            if (type == 5)
+            if (type.Equals(Component_Enum.SQL_Retreive_By_PK))
             {
                 middle = "Create the retreive by key script for the " + table + " table";
             }
 
-            if (type == 6)
+            if (type.Equals(Component_Enum.SQL_Retreive_By_All))
             {
                 middle = "Create the retreive by all script for the " + table + " table";
             }
-            if (type == 7)
+            if (type.Equals(Component_Enum.SQL_Insert))
             {
                 middle = "Create the insert script for the " + table + " table";
             }
-            if (type == 8)
+            if (type.Equals(Component_Enum.SQL_Insert_Trigger))
             {
                 middle = "Create the insert trigger script for the " + table + " table";
             }
-            if (type == 9)
+            if (type.Equals(Component_Enum.SQL_Update_Trigger))
             {
                 middle = "Create the update trigger script for the " + table + " table";
             }
 
-            if (type == 10)
+            if (type.Equals(Component_Enum.SQL_Delete_Trigger))
             {
                 middle = "Create the delete trigger script for the " + table + " table";
             }
 
-            if (type == 11)
+            if (type.Equals(Component_Enum.CSharp_IAccessor))
             {
                 middle = "Create the I Accessor for the " + table + " table";
             }
 
-            if (type == 12)
+            if (type.Equals(Component_Enum.CSharp_IManager))
             {
                 middle = "create the I manager for the " + table + " table;";
 
             }
 
-            if (type == 13) { middle = "create the Accessor for the " + table + " table"; }
+            if  (type.Equals(Component_Enum.CSharp_Accessor)) { 
+                middle = "create the Accessor for the " + table + " table"; 
+            }
 
-            if (type == 14) { middle = "create the manager for the " + table + " table"; }
-            if (type == 15) { middle = "create the data object for the " + table + " table"; }
-            if (type == 16) { middle = "create the XAML Window for the " + table + " table"; }
-            if (type == 17) { middle = "create the c# Window for the " + table + " table"; }
-            if (type == 18) { middle = "Insert Sample Data For The  " + table + " table"; }
-            if (type == 19) {
+            if (type.Equals(Component_Enum.CSharp_Manager)) {
+                middle = "create the manager for the " + table + " table"; 
+            }
+            if (type.Equals(Component_Enum.CSharp_DataObject)) {
+                middle = "create the data object for the " + table + " table";
+            }
+            if (type.Equals(Component_Enum.CSharp_XAML_Window)) { 
+                middle = "create the XAML Window for the " + table + " table";
+            }
+            if (type.Equals(Component_Enum.CSharp_Window_Control)) {
+                middle = "create the c# Window for the " + table + " table";
+            }
+            if (type.Equals(Component_Enum.SQL_Sample_Data)) {
+                middle = "Insert Sample Data For The  " + table + " table"; 
+            }
+            if (type.Equals(Component_Enum.Java_JSP_Add)) {
                 start_stars = "<%--************\n";
                 middle = "Create the JSP  For adding to The  " + table + " table";
                 end_stars = "\n**********--%>\n";
             }
-            if (type == 20) {
+            if (type.Equals(Component_Enum.Java_JSP_ViewAll)) {
                 start_stars = "<%--************\n";
                 middle = "Create the JSP  For Viewing All of The  " + table + " table";
                 end_stars = "\n**********--%>\n";
             }
-            if (type == 21) { middle = "Create the Servlet  For adding to The  " + table + " table"; }
-            if (type == 22) { middle = "Create the Servlet  For Viewing all of the  " + table + " table"; }
-            if (type == 23)
+            if (type.Equals(Component_Enum.Java_Servlet_Add)) {
+                middle = "Create the Servlet  For adding to The  " + table + " table";
+            }
+            if (type.Equals(Component_Enum.Java_Servlet_ViewAll)) { 
+                middle = "Create the Servlet  For Viewing all of the  " + table + " table"; 
+            }
+            if (type.Equals(Component_Enum.SQL_Undelete))
             {
                 middle = "Create the undelete script for the " + table + " table";
             }
-            if (type == 24) {
+            if (type.Equals(Component_Enum.SQL_Retreive_Active)) {
                 middle = "Create The Retreive_By_Active script for the " + table + " table";
             }
-            if (type == 25)
+            if (type.Equals(Component_Enum.Java_Servlet_Delete))
             {
                 middle = "Create the Servlet For Deleteing from the " + table + " table";
             }
-            if (type == 26)
+            if (type.Equals(Component_Enum.Java_JSP_ViewEdit))
             {
                 
                 start_stars = "<%--************\n";
                 middle = "Create the JSP For Viuw/Edit from the " + table + " table";
                 end_stars = "\n**********--%>\n";
             }
-            if (type == 27)
+            if (type.Equals(Component_Enum.Java_Servlet_ViewEdit))
             {
                 middle = "Create the Servlet Viuw/Edit from the " + table + " table";
             }
-            if (type == 28)
+            if (type.Equals(Component_Enum.SQL_Select_Distinct))
             {
                 middle = "Create the Select Disctint for Drop downs from the " + table + " table";
             }
-            if (type == 29)
+            if (type.Equals(Component_Enum.CSharp_Manager))
             {
                 middle = "Create the Logic Layer Manager for the " + table + " table";
             }
-            if (type == 30)
+            if (type.Equals(Component_Enum.CSharp_Manager_Add))
             {
                 middle = "Create the Logic Layer Add method for the  " + table + " table";
             }
-            if (type == 31)
+            if (type.Equals(Component_Enum.CSharp_Manager_Delete))
             {
                 middle = "Create the Logic Layer Delete method for the " + table + " table";
             }
-            if (type == 32)
+            if (type.Equals(Component_Enum.CSharp_Manager_Undelete))
             {
                 middle = "Create the Logic Layer Undelete method for the " + table + " table";
             }
-            if (type == 33)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_PK))
             {
                 middle = "Create the Logic Layer Retreive by Primary Key method for the" + table + " table";
             }
-            if (type == 34)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_All_No_Param))
             {
                 middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
                 middle += "\n with no paramater supplied.";
             }
-            if (type == 39)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_All_One_Param))
             {
                 middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
                 middle += "\n with one paramater supplied.";
             }
-            if (type == 40)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_All_Two_Param))
             {
                 middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
                 middle += "\n with two paramater supplied.";
             }
-            if (type == 35)
+            if (type.Equals(Component_Enum.CSharp_Manager_Update))
             {
                 middle = "Create the Logic Layer Update method for the " + table + " table";
             }
 
-            if (type == 36)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_No_Param))
             {
                 middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
                 middle += "\n with no paramater supplied.";
             }
-            if (type == 37)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_One_Param))
             {
                 middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
                 middle += "\n with one paramater supplied.";
             }
-            if (type == 38)
+            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_Two_Param))
             {
                 middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
                 middle += "\n with two paramater supplied.";
             }
-
-
-
 
 
             middle += "\n Created By Jonathan Beck " + DateTime.Now.ToShortDateString() ;
@@ -249,7 +262,7 @@ namespace Data_Objects
 
 
             full_comment_box = start_stars + middle + end_stars;
-            //if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
+            if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
             return full_comment_box;
         }
     }

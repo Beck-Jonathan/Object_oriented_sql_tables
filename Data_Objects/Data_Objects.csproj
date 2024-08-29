@@ -41,7 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="comment_box_gen.cs" />
+    <Compile Include="Component_Enum.cs" />
+    <Compile Include="commentBox.cs" />
     <Compile Include="database.cs" />
     <Compile Include="DataTypeConverter.cs" />
     <Compile Include="data_tables.cs" />

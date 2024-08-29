@@ -227,7 +227,7 @@ namespace Data_Objects
         {
             string x = "";
             string full_text = "";
-            String comment_text = comment_box_gen.comment_box(name, 3);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
             int count = 0;
             string comma = "";
             if (settings.TSQLMode)
@@ -293,7 +293,7 @@ namespace Data_Objects
         {
             String function_text = "";
 
-            String comment_text = comment_box_gen.comment_box(name, 4);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
             if (settings.TSQLMode)
             {
                 function_text = "create procedure [dbo].[sp_delete_" + name + "]\n(";
@@ -348,7 +348,7 @@ namespace Data_Objects
         {
             String function_text = "";
 
-            String comment_text = comment_box_gen.comment_box(name, 4);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Undelete);
             if (settings.TSQLMode)
             {
                 function_text = "create procedure [dbo].[sp_undelete_" + name + "]\n(";
@@ -407,7 +407,7 @@ namespace Data_Objects
         public String gen_retreive_by_key()
         {
 
-            String comment_text = comment_box_gen.comment_box(name, 5);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_PK);
             
             
             
@@ -521,7 +521,7 @@ namespace Data_Objects
                     string fk_name = parts[1];
                     String comma = "";
                     int count = 0;
-                    String comment_text = comment_box_gen.comment_box(name, 200);
+                    String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_FK);
 
 
 
@@ -638,7 +638,7 @@ namespace Data_Objects
         public String gen_retreive_by_all()
         {
             String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 6);
+            String comment_text = commentBox.genCommentBox(name,Component_Enum.SQL_Retreive_By_All);
             
             
             
@@ -730,7 +730,7 @@ namespace Data_Objects
         public String gen_retreive_by_active()
         {
             String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 24);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_Active);
 
 
 
@@ -803,7 +803,7 @@ namespace Data_Objects
         /// <returns>generates a string comment box followed by Transact-SQL code that creates the the insert SP for the table </returns>
         public string gen_insert()
         {
-            String comment_text = comment_box_gen.comment_box(name, 7);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Insert);
             
             String function_text = "CREATE PROCEDURE [dbo].[sp_insert" + name + "]\n(";
             int count = 0;
@@ -870,7 +870,7 @@ namespace Data_Objects
         /// <returns> generates a string comment box followed by Transact-SQL code that creates a trigger that fires on updates to the <see cref="table"/> object </returns>
         public String gen_update_trigger()
         {
-            String comment_text = comment_box_gen.comment_box(name, 8);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Update_Trigger);
             String function_text = "\n";
 
             String full_text = comment_text + function_text;
@@ -884,7 +884,7 @@ namespace Data_Objects
         
         public String gen_insert_trigger()
         {
-            String comment_text = comment_box_gen.comment_box(name, 9);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Insert_Trigger);
             String function_text = "\n";
 
             String full_text = comment_text + function_text;
@@ -897,7 +897,7 @@ namespace Data_Objects
         /// <returns> generates a string comment box followed by Transact-SQL code that creates a trigger that fires on deletes to the <see cref="table"/> object </returns>
         public String gen_delete_trigger()
         {
-            String comment_text = comment_box_gen.comment_box(name, 10);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete_Trigger);
             String function_text = "\n";
 
             String full_text = comment_text + function_text;
@@ -906,7 +906,7 @@ namespace Data_Objects
         public String gen_select_distinct_for_dropdown()
         {
             String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 27);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Select_Distinct);
 
 
 
@@ -972,7 +972,7 @@ namespace Data_Objects
             result += "\n";
 
             //comment box
-            result += comment_box_gen.comment_box(name, 18);
+            result += commentBox.genCommentBox(name, Component_Enum.SQL_Sample_Data);
 
             result += "\n";
             result += "/***************************************\n";

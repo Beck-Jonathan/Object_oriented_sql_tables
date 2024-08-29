@@ -216,8 +216,8 @@ namespace Data_Objects
         public String gen_update()
         {
             string x = "";
-            string full_text = "";
-            String comment_text = comment_box_gen.comment_box(name, 3);
+            string full_text = commentBox.genCommentBox(name, Component_Enum.SQL_Update);
+            
             int count = 0;
             string comma = "";
            
@@ -291,7 +291,7 @@ namespace Data_Objects
         {
             String function_text = "";
 
-            String comment_text = comment_box_gen.comment_box(name, 4);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
                              
             
                 function_text =
@@ -355,7 +355,7 @@ namespace Data_Objects
         {
             String function_text = "";
 
-            String comment_text = comment_box_gen.comment_box(name, 23);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Undelete);
 
 
             function_text =
@@ -420,7 +420,7 @@ namespace Data_Objects
         public String gen_retreive_by_key()
         {
 
-            String comment_text = comment_box_gen.comment_box(name, 5);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_PK);
             String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_pk_" + name + ";\n"
                 + "DELIMITER $$\n";
             String secondLine = "CREATE PROCEDURE sp_retreive_by_pk_" + name + "\n"
@@ -528,7 +528,7 @@ namespace Data_Objects
                     string fk_name = parts[1];
                     String comma = "";
                     int count = 0;
-                    String comment_text = comment_box_gen.comment_box(name, 200);
+                    String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_FK);
                     String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_" + name + "_by_" + fk_table + ";\n"
                         + "DELIMITER $$\n";
                     String secondLine = "CREATE PROCEDURE sp_retreive_" + name + "_by_" + fk_table +" \n"
@@ -638,7 +638,7 @@ namespace Data_Objects
         public String gen_retreive_by_all()
         {
             String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 6);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_All);
             string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "(\n" +
@@ -727,7 +727,7 @@ namespace Data_Objects
         /// <returns>generates a string comment box followed by a MySQL code that creates the the retreive by active SP for the table </returns>
         public String gen_retreive_by_active() {
             String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 24);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_Active);
             string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_active_" + name + ";\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_retreive_by_active_" + name + "()\n";
@@ -795,7 +795,7 @@ namespace Data_Objects
         /// <returns>generates a string comment box followed by MySQL code that creates the the insert SP for the table </returns>
         public string gen_insert()
         {
-            String comment_text = comment_box_gen.comment_box(name, 7);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Insert);
             String firstLine =
                  "DROP PROCEDURE IF EXISTS sp_insert_" + name + ";\n"
                 + "DELIMITER $$\n";
@@ -877,7 +877,7 @@ namespace Data_Objects
         /// <returns> generates a string comment box followed by MySQL code that creates a trigger that fires on updates to the <see cref="table"/> object </returns>
         public String gen_update_trigger()
         {
-            String comment_text = comment_box_gen.comment_box(name, 8);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Update_Trigger);
             String function_text = "DELIMITER $$\n"
                 + "DROP TRIGGER IF EXISTS tr_" + name + "_after_update $$\n"
                 + "CREATE TRIGGER tr_" + name + "_after_update\n"
@@ -926,7 +926,7 @@ namespace Data_Objects
         /// <returns> generates a string comment box followed by MySQL code that creates a trigger that fires on inserts to the <see cref="table"/> object </returns>
         public String gen_insert_trigger()
         {
-            String comment_text = comment_box_gen.comment_box(name, 9);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Insert_Trigger);
             String function_text = "DELIMITER $$\n"
                 + "DROP TRIGGER IF EXISTS tr_" + name + "_after_insert $$\n"
                 + "CREATE TRIGGER tr_" + name + "_after_insert\n"
@@ -975,7 +975,7 @@ namespace Data_Objects
         /// <returns> generates a string comment box followed by MySQL code that creates a trigger that fires on deletes to the <see cref="table"/> object </returns>
         public String gen_delete_trigger()
         {
-            String comment_text = comment_box_gen.comment_box(name, 10);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete_Trigger);
             String function_text = "DELIMITER $$\n"
                 + "DROP TRIGGER IF EXISTS tr_" + name + "_after_delete $$\n"
                 + "CREATE TRIGGER tr_" + name + "_after_delete\n"
@@ -1020,7 +1020,7 @@ namespace Data_Objects
 
         public String gen_select_distinct_for_dropdown() {
             String gx = " ";
-            String comment_text = comment_box_gen.comment_box(name, 27);
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Select_Distinct);
             string firstLine = "DROP PROCEDURE IF EXISTS sp_select_distinct_and_active_"+name+"_for_dropdown;\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_select_distinct_and_active_"+name+"_for_dropdown()\n";
@@ -1081,7 +1081,7 @@ namespace Data_Objects
             result += "\n";
 
             //comment box
-            result += comment_box_gen.comment_box(name, 18);
+            result += commentBox.genCommentBox(name, Component_Enum.SQL_Sample_Data);
 
             result += "\n";
             result += "/***************************************\n";
