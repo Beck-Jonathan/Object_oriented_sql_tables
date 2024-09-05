@@ -31,7 +31,7 @@ namespace LogicLayer
             catch (Exception ex )
             {
 
-                throw new IOException("unable to read file. \n" + ex.Message);
+                throw new IOException("unable to read file.", ex);
             }
         
         }
@@ -43,7 +43,7 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to set save location. \n" + ex.Message);
+                throw new IOException("unable to set save location.", ex);
             }
             
         }
@@ -55,7 +55,7 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to read location. \n" + ex.Message);
+                throw new IOException("unable to read location.", ex);
             }
         
         }
@@ -67,7 +67,7 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to clear location. \n" + ex.Message);
+                throw new IOException("unable to clear location.", ex);
             }
             
         }

@@ -83,7 +83,17 @@ namespace Object_oriented_sql_tables
             appData2.settings.page_size = page_size;
             // to clean the destination foloder
             var folder = file_write_manager.SeparatePath;
-            file_write.startUp(new DirectoryInfo(folder));
+            try
+            {
+                file_write.startUp(new DirectoryInfo(folder));
+            }
+            catch (Exception ex)
+            {
+
+                MessageBox.Show(ex.Message);
+            }
+            
+            
             String database_head = database.print_database_header();
             //file_write.sqlBuddy2.Write(database_head);
             int count = 0;
@@ -103,14 +113,35 @@ namespace Object_oriented_sql_tables
                 if (these_settings[0])
                 {
                     s = t.gen_columns();
-                    file_write.fileWrite(s,t.name,"sql","table");
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "table");
+
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message+"\n"+ex.InnerException.Message);
+                    }
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add primary keys to table
                 if (these_settings[1])
                 {
                     s = t.gen_primary_keys();
-                    file_write.fileWrite(s, t.name, "sql", "table");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "table");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -118,21 +149,54 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_alternate_keys();
-                    file_write.fileWrite(s, t.name, "sql", "table");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "table");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add foreign keys to table
                 if (these_settings[2])
                 {
                     s = t.gen_foreign_keys();
-                    file_write.fileWrite(s, t.name, "sql", "table");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "table");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
 
                 //gen table footer
                 if (true) {
                     s = t.gen_table_footer();
-                    file_write.fileWrite(s, t.name, "sql", "table");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "table");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -141,7 +205,18 @@ namespace Object_oriented_sql_tables
                 if (these_settings[3])
                 {
                     s = t.gen_audit_table();
-                    file_write.fileWrite(s, t.name, "sql", "audit_table");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "audit_table");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -152,7 +227,18 @@ namespace Object_oriented_sql_tables
                 if (these_settings[4])
                 {
                     s = t.gen_update();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add an SP_delete and su_undelete to table
@@ -160,11 +246,32 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_delete();
 
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                     s = t.gen_undelete();
 
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
 
 
@@ -173,21 +280,54 @@ namespace Object_oriented_sql_tables
                 if (these_settings[6])
                 {
                     s = t.gen_retreive_by_key();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected an an SP_retreive that shows all data in table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_all();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected create an sp_retrive that gets all active data in the table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_active();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -196,7 +336,18 @@ namespace Object_oriented_sql_tables
                 {
 
                     s = t.gen_retreive_by_fkey();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -204,7 +355,18 @@ namespace Object_oriented_sql_tables
                 if (true) {
                     
                         s = t.gen_select_distinct_for_dropdown();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
 
 
@@ -213,33 +375,88 @@ namespace Object_oriented_sql_tables
                 if (these_settings[8])
                 {
                     s = t.gen_insert();
-                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add a trigger for inserts
                 if (these_settings[9])
                 {
                     s = t.gen_insert_trigger();
-                    file_write.fileWrite(s, t.name, "sql", "Triggers");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Triggers");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 // if selected, add a trigger for updates
                 if (these_settings[10])
                 {
                     s = t.gen_update_trigger();
-                    file_write.fileWrite(s, t.name, "sql", "Triggers");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Triggers");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 // if selected, add a triger for delets
                 if (these_settings[11])
                 {
                     s = t.gen_delete_trigger();
-                    file_write.fileWrite(s, t.name, "sql", "Triggers");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Triggers");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
 
                 //if selected, add a space for adding sample data
                 if (true)
                 {
                     s = t.gen_sample_space();
-                    file_write.fileWrite(s,tbx_databasename.Text, "sql", "Sample");
+
+                    try
+                    {
+                        file_write.fileWrite(s, tbx_databasename.Text, "sql", "Sample");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
 
                 }
             }
@@ -249,50 +466,149 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_IThingAccessor();
-                    file_write.fileWrite(s, t.name, "CSharp", "IAccessor");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "IAccessor");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 //needs to be these settings 13
                 if (true)
                 {
                     s = t.gen_ThingAccessor();
-                    file_write.fileWrite(s, t.name, "CSharp", "Accessor");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "Accessor");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 //needs to be these settings[14]
                 if (true)
                 {
                     s = t.gen_IThingManager();
-                    file_write.fileWrite(s, t.name, "CSharp", "IManager");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "IManager");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true)
                  {
                     s = t.gen_ThingMananger();
-                    file_write.fileWrite(s, t.name, "CSharp", "Manager");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "Manager");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                   
                 }
                 if (true)
                 {
                     s = t.gen_DataObject();
-                    file_write.fileWrite(s, t.name, "CSharp", "DataObject");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "DataObject");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true) //change this to these setings 17
                 {
                     s = t.genXAMLWindow();
-                    file_write.fileWrite(s, t.name, "CSharp", "XAMLWindow");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "XAMLWindow");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true) //change this to these setings 18
                 {
                     s = t.genWindowCSharp();
-                    file_write.fileWrite(s, t.name, "CSharp", "CSharpWindowCode");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharp", "CSharpWindowCode");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true) //change this to these setings 19
                 {
                     s = t.genJavaModel();
-                    file_write.fileWrite(s, t.name, "JavaModel", "Model");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaModel", "Model");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
 
                 if (true) //change this to these setings 20
                 {
                     s = t.genJavaDAO();
-                    file_write.fileWrite(s, t.name, "JavaModelDAO", "ModelDAO");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaModelDAO", "ModelDAO");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 // if (true) //change this to these setings 21 Creates a sql file iwth the table name
                 // {
@@ -309,54 +625,153 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 23
                 {
                     s = t.genCreateJSP();
-                    file_write.fileWrite(s, t.name, "JavaJSP", "CreateJSP");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaJSP", "CreateJSP");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true) //change this to these setings 24
                 {
                     s = t.genCreateServelet();
-                    file_write.fileWrite(s, t.name, "JavaServlet", "CreateServlet");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaServlet", "CreateServlet");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true) //change this to these setings 25
                 {
                     s = t.genviewAllJSP();
-                    file_write.fileWrite(s, t.name, "JavaJSP", "ViewAllJSP");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaJSP", "ViewAllJSP");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
                 if (true) //change this to these setings 26
                 {
                     s = t.genviewAllServlet();
-                    file_write.fileWrite(s, t.name, "JavaServlet", "ViewAllServlet");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaServlet", "ViewAllServlet");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
 
                 if (true) //change this to these setings 27
                 {
                     s = t.genDeleteServlet();
-                    file_write.fileWrite(s, t.name, "JavaServlet", "DeleteServlet");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaServlet", "DeleteServlet");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
 
                 if ( x==0) //change this to these setings 28 && x==0
                 {
                     x++;
                     s = t.genIndexJSP();
-                    file_write.fileWrite(s, "index", "JavaJSP", "Index");
+
+                    try
+                    {
+                        file_write.fileWrite(s, "index", "JavaJSP", "Index");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
 
                 if (true)
                 {  //change this to these settings 29
                 s=t.genViewEditJSP();
-                    file_write.fileWrite(s, t.name, "JavaJSP", "ViewEditJSP");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaJSP", "ViewEditJSP");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
                 }
 
                 if (true)
                 {    //change to these settings 30
                     s = t.genViewEditServlet();
+
+                    try
+                    {
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewEditServlet");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
 
                 }
 
                 if (true)
                 {    //change to these settings 31
                     s = t.jQueryValidation();
-                    file_write.fileWrite(s, t.name, "jQuery", "AddEditValidate");
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "jQuery", "AddEditValidate");
+                    }
+                    catch (Exception ex)
+                    {
+
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                    
 
                 }
 

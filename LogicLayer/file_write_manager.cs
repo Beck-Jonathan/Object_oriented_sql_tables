@@ -38,7 +38,7 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to write file"+ex.Message);
+                throw new IOException("unable to write file",ex);
             }
         
             return;
@@ -52,7 +52,7 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to write file" + ex.Message);
+                throw new IOException("unable to write file" , ex);
             }
         
             return;
