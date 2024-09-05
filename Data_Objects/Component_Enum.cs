@@ -1,12 +1,4 @@
-﻿using Data_Objects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Data_Objects
+﻿namespace Data_Objects
 {
     public enum Component_Enum
     {
@@ -85,14 +77,15 @@ namespace Data_Objects
         CSharp_Accessor_Add,
         CSharp_Accessor_Delete,
         CSharp_Accessor_Undelete,
-        CSharp_Accessor_Retreive_By_PK,        
+        CSharp_Accessor_Retreive_By_PK,
         CSharp_Accessor_Retreive_All_Two_Param,
-        CSharp_Accessor_Update,        
+        CSharp_Accessor_Update,
         CSharp_Accessor_Retreive_By_FK_Two_Param,
         CSharp_Accessor_Select_Distinct_For_Dropdown,
 
     }
-    public enum JavaDoc_Method_Type { 
+    public enum JavaDoc_Method_Type
+    {
         Java_DAO_Add,
         Java_DAO_Delete,
         Java_DAO_Undelete,

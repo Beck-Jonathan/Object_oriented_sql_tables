@@ -75,7 +75,8 @@ namespace Data_Objects
             return result;
 
         }
-        public static string firstCharLower(this string value) {
+        public static string firstCharLower(this string value)
+        {
 
             return Char.ToLower(value[0]) + value.Substring(1);
         }

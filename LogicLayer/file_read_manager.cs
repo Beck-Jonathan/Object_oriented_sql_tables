@@ -1,16 +1,11 @@
 ﻿using Data_Access;
 using Data_Access_Interfaces;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace LogicLayer
 {
-    
+
     public class file_read_manager : iFile_read_manager
     {
         iFile_Read reader;
@@ -23,19 +18,21 @@ namespace LogicLayer
             this.reader = new file_read();
         }
 
-        public void readdata() {
+        public void readdata()
+        {
             try
             {
                 reader.readdata();
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
 
                 throw new IOException("unable to read file.", ex);
             }
-        
+
         }
-        public void saveLocaiton() {
+        public void saveLocaiton()
+        {
             try
             {
                 reader.saveLocaiton();
@@ -45,9 +42,10 @@ namespace LogicLayer
 
                 throw new IOException("unable to set save location.", ex);
             }
-            
+
         }
-        public string readlocaiton() {
+        public string readlocaiton()
+        {
             try
             {
                 return reader.readlocaiton();
@@ -57,9 +55,10 @@ namespace LogicLayer
 
                 throw new IOException("unable to read location.", ex);
             }
-        
+
         }
-        public void clearLocation() {
+        public void clearLocation()
+        {
             try
             {
                 reader.clearLocation();
@@ -69,7 +68,7 @@ namespace LogicLayer
 
                 throw new IOException("unable to clear location.", ex);
             }
-            
+
         }
 
     }

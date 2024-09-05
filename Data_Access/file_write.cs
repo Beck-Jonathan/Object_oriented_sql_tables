@@ -16,7 +16,7 @@ namespace Data_Access
         public static string FilesPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\sql_files\\";
         static string jspPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputJSP.txt";
         static string servletPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputservlet.txt";
-         
+
         //public static StreamWriter WriteBuddy = new StreamWriter(newPath);
         public static StreamWriter CSharpBuddy = new StreamWriter(codePath);
         public static StreamWriter XAMLBuddy = new StreamWriter(XAMLPath);
@@ -28,36 +28,38 @@ namespace Data_Access
         public static StreamWriter JSPBuddy = new StreamWriter(jspPath);
         public static StreamWriter ServletBuddy = new StreamWriter(servletPath);
         public static string SeparatePath = "C:\\Table_Gen\\";
-        public void startUp(DirectoryInfo directoryInfo) {
+        public void startUp(DirectoryInfo directoryInfo)
+        {
             try
             {
 
-            
-            System.IO.Directory.CreateDirectory(SeparatePath);
 
-            foreach (FileInfo file in directoryInfo.GetFiles())
+                System.IO.Directory.CreateDirectory(SeparatePath);
+
+                foreach (FileInfo file in directoryInfo.GetFiles())
                 {
-                
-                file.Delete();
+
+                    file.Delete();
                 }
 
                 foreach (DirectoryInfo subfolder in directoryInfo.GetDirectories())
                 {
-                if (!subfolder.Name.Equals("temp"))
-                {
-                    startUp(subfolder);
-                }
+                    if (!subfolder.Name.Equals("temp"))
+                    {
+                        startUp(subfolder);
+                    }
                 }
             }
             catch (Exception ex)
             {
 
-                throw new IOException("unable to create folders",ex);
+                throw new IOException("unable to create folders", ex);
             }
 
         }
-            
-        public void fileWrite(string output, string table, string type,string method) {
+
+        public void fileWrite(string output, string table, string type, string method)
+        {
             try
             {
                 table = table.Replace("?", "");
@@ -70,11 +72,11 @@ namespace Data_Access
             catch (Exception ex)
             {
 
-                throw new IOException("unable to write file",ex);
+                throw new IOException("unable to write file", ex);
             }
-            
-        
-        
+
+
+
         }
 
         public string getSeparatePath()

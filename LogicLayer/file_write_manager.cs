@@ -1,11 +1,7 @@
 ﻿using Data_Access;
 using Data_Access_Interfaces;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LogicLayer
 {
@@ -30,7 +26,8 @@ namespace LogicLayer
             SettingsPath2 = writer.getSettingsPath2();
         }
 
-        public void startUp(DirectoryInfo directoryInfo) {
+        public void startUp(DirectoryInfo directoryInfo)
+        {
             try
             {
                 writer.startUp(directoryInfo);
@@ -38,13 +35,14 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to write file",ex);
+                throw new IOException("unable to write file", ex);
             }
-        
+
             return;
         }
 
-        public void fileWrite(string output, string table, string type, string method) {
+        public void fileWrite(string output, string table, string type, string method)
+        {
             try
             {
                 writer.fileWrite(output, table, type, method);
@@ -52,9 +50,9 @@ namespace LogicLayer
             catch (Exception ex)
             {
 
-                throw new IOException("unable to write file" , ex);
+                throw new IOException("unable to write file", ex);
             }
-        
+
             return;
         }
     }

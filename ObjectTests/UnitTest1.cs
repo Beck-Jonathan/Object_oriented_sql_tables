@@ -1,9 +1,6 @@
-using Data_Objects;
-using Data_Access_Interfaces;
-using Data_Access;
 using Data_Access_Fake;
+using Data_Objects;
 using LogicLayer;
-using System.Collections;
 namespace ObjectTests
 
 {
@@ -34,7 +31,7 @@ namespace ObjectTests
             List<char> errorschar = new List<char>();
 
             string actual = commentBox.genCommentBox("User", Component_Enum.SQL_Update);
-            string expected = "/******************\nCreate the update script for the User table\n Created By Jonathan Beck "+ DateTime.Now.ToShortDateString() + "\n***************/\n";
+            string expected = "/******************\nCreate the update script for the User table\n Created By Jonathan Beck " + DateTime.Now.ToShortDateString() + "\n***************/\n";
             for (int i = 0; i < actual.Length; i++)
             {
                 if (actual[i] != expected[i])
@@ -44,11 +41,11 @@ namespace ObjectTests
                     errorschar.Add(expected[i]);
                 }
             }
-                Assert.AreEqual(expected, actual);
+            Assert.AreEqual(expected, actual);
 
 
-            }
+        }
 
-        
+
     }
 }

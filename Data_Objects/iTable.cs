@@ -171,7 +171,7 @@ namespace Data_Objects
         /// <returns> generates a string comment box followed by specified SQL language insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields. </returns>
         String gen_sample_space();
 
-       
+
 
 
     }

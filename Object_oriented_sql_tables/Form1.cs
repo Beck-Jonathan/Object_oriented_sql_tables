@@ -1,14 +1,10 @@
 ﻿using appData2;
-using Data_Access;
 using Data_Objects;
 using LogicLayer;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using System.Windows.Forms;
-using System.Xml.Linq;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 
@@ -22,8 +18,8 @@ namespace Object_oriented_sql_tables
         public static List<char> these_settings = new List<char>();
         public Form1()
         {
-            file_read=new file_read_manager();
-            file_write =new file_write_manager();
+            file_read = new file_read_manager();
+            file_write = new file_write_manager();
             page_size = 5;
             settings.app_path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             settings.app_path = settings.app_path.Substring(0, settings.app_path.Length - 30);
@@ -67,7 +63,7 @@ namespace Object_oriented_sql_tables
             //openFileDialog.InitialDirectory = settings.app_path;
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
-            
+
             settings.path = filepath;
             btn_selectfile.Enabled = false;
             btn_read_table.Enabled = true;
@@ -92,16 +88,15 @@ namespace Object_oriented_sql_tables
 
                 MessageBox.Show(ex.Message);
             }
-            
-            
+
+
             String database_head = database.print_database_header();
             //file_write.sqlBuddy2.Write(database_head);
             int count = 0;
             List<Boolean> these_settings = new List<Boolean>();
             List<foreignKey> foreignKeys = data_tables.all_foreignKey;
-            bool batchcreated = false;
             string analysis = data_tables.analyzeRelationships();
-            file_write.fileWrite(analysis, "analysis", "analysis","analysis");
+            file_write.fileWrite(analysis, "analysis", "analysis", "analysis");
             foreach (iTable t in data_tables.all_tables)
             {
                 t.name = t.name.Replace("[dbo].[", "");
@@ -121,9 +116,9 @@ namespace Object_oriented_sql_tables
                     catch (Exception ex)
                     {
 
-                        MessageBox.Show(ex.Message+"\n"+ex.InnerException.Message);
+                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add primary keys to table
@@ -141,7 +136,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -160,7 +155,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add foreign keys to table
@@ -178,12 +173,13 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
 
                 //gen table footer
-                if (true) {
+                if (true)
+                {
                     s = t.gen_table_footer();
 
                     try
@@ -196,7 +192,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -216,7 +212,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -238,7 +234,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add an SP_delete and su_undelete to table
@@ -257,7 +253,7 @@ namespace Object_oriented_sql_tables
                     }
 
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                     s = t.gen_undelete();
 
@@ -271,7 +267,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
 
 
@@ -291,7 +287,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected an an SP_retreive that shows all data in table
@@ -309,7 +305,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected create an sp_retrive that gets all active data in the table
@@ -327,7 +323,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
 
@@ -347,14 +343,15 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
 
                 //select distinct for drop downs
-                if (true) {
-                    
-                        s = t.gen_select_distinct_for_dropdown();
+                if (true)
+                {
+
+                    s = t.gen_select_distinct_for_dropdown();
 
                     try
                     {
@@ -366,7 +363,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
 
 
@@ -386,7 +383,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add a trigger for inserts
@@ -404,7 +401,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 // if selected, add a trigger for updates
                 if (these_settings[10])
@@ -421,7 +418,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 // if selected, add a triger for delets
                 if (these_settings[11])
@@ -438,7 +435,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
 
                 //if selected, add a space for adding sample data
@@ -456,7 +453,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
 
                 }
             }
@@ -477,7 +474,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 //needs to be these settings 13
                 if (true)
@@ -494,7 +491,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 //needs to be these settings[14]
                 if (true)
@@ -511,10 +508,10 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true)
-                 {
+                {
                     s = t.gen_ThingMananger();
 
                     try
@@ -527,7 +524,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                   
+
                 }
                 if (true)
                 {
@@ -543,7 +540,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true) //change this to these setings 17
                 {
@@ -559,7 +556,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true) //change this to these setings 18
                 {
@@ -575,7 +572,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true) //change this to these setings 19
                 {
@@ -591,7 +588,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
 
                 if (true) //change this to these setings 20
@@ -608,7 +605,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 // if (true) //change this to these setings 21 Creates a sql file iwth the table name
                 // {
@@ -636,7 +633,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true) //change this to these setings 24
                 {
@@ -652,7 +649,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true) //change this to these setings 25
                 {
@@ -668,7 +665,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
                 if (true) //change this to these setings 26
                 {
@@ -684,7 +681,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
 
                 if (true) //change this to these setings 27
@@ -701,10 +698,10 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
 
-                if ( x==0) //change this to these setings 28 && x==0
+                if (x == 0) //change this to these setings 28 && x==0
                 {
                     x++;
                     s = t.genIndexJSP();
@@ -719,12 +716,12 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
 
                 if (true)
                 {  //change this to these settings 29
-                s=t.genViewEditJSP();
+                    s = t.genViewEditJSP();
 
                     try
                     {
@@ -736,7 +733,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
                 }
 
                 if (true)
@@ -753,7 +750,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
 
                 }
 
@@ -771,7 +768,7 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-                    
+
 
                 }
 
@@ -822,11 +819,11 @@ namespace Object_oriented_sql_tables
             catch (Exception ex)
             {
 
-               MessageBox.Show(ex.Message+"\n"+ex.InnerException.Message);
+                MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                 this.Close();
 
             }
-            
+
 
             settings.table_count = data_tables.all_tables.Count;
             for (int i = 0; i < settings.table_count; i++)
