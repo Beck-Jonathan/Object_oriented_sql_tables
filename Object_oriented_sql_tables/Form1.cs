@@ -815,7 +815,18 @@ namespace Object_oriented_sql_tables
 
         private void btn_read_table_Click(object sender, EventArgs e)
         {
-            file_read.readdata();
+            try
+            {
+                file_read.readdata();
+            }
+            catch (Exception ex)
+            {
+
+               MessageBox.Show(ex.Message+"\n"+ex.InnerException.Message);
+                this.Close();
+
+            }
+            
 
             settings.table_count = data_tables.all_tables.Count;
             for (int i = 0; i < settings.table_count; i++)
