@@ -1,8 +1,9 @@
-﻿using System.IO;
+﻿using Data_Access_Interfaces;
+using System.IO;
 
 namespace Data_Access
 {
-    public static class file_write
+    public class file_write : iFile_Write
     {
         //the output file is in the same folder as the input folder, just with "sql" appended to the file name
         static string newPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputsqlSPs.txt";
@@ -26,7 +27,7 @@ namespace Data_Access
         public static StreamWriter JSPBuddy = new StreamWriter(jspPath);
         public static StreamWriter ServletBuddy = new StreamWriter(servletPath);
         public static string SeparatePath = "C:\\Table_Gen\\";
-        public static void startUp(DirectoryInfo directoryInfo) {
+        public void startUp(DirectoryInfo directoryInfo) {
             System.IO.Directory.CreateDirectory(SeparatePath);
 
             foreach (FileInfo file in directoryInfo.GetFiles())
@@ -45,7 +46,7 @@ namespace Data_Access
             
         }
             
-        public static void fileWrite(string output, string table, string type,string method) {
+        public void fileWrite(string output, string table, string type,string method) {
             table=table.Replace("?", "");
             System.IO.Directory.CreateDirectory(SeparatePath + type + "\\");
             StreamWriter writer = new StreamWriter(SeparatePath + type + "\\" + table+"_"+method+".txt",true);
@@ -56,5 +57,19 @@ namespace Data_Access
         
         }
 
+        public string getSeparatePath()
+        {
+            return SeparatePath;
+        }
+
+        public string getSettingsPath()
+        {
+            return SettingsPath;
+        }
+
+        public string getSettingsPath2()
+        {
+            return SettingsPath2;
+        }
     }
 }

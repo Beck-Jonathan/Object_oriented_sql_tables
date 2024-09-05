@@ -1,4 +1,6 @@
 ﻿using appData2;
+using Data_Access_Interfaces;
+using Data_Access_Fake;
 using Data_Objects;
 using System;
 using System.Collections.Generic;
@@ -7,12 +9,13 @@ using System.Threading;
 
 namespace Data_Access
 {
-    public class file_read
+    public class file_read : iFile_Read
     {
+        
         static String readpath = settings.path;
         static List<foreignKey> keys = new List<foreignKey>();
 
-        public static void readdata()
+        public void readdata()
         {
             Boolean duplicate = false;
             saveLocaiton();
@@ -209,21 +212,21 @@ namespace Data_Access
             settings.generate_options();
             
         }
-        public static void saveLocaiton()
+        public void saveLocaiton()
         {
             file_write.SettingsBuddy.Write(settings.path);
             file_write.SettingsBuddy.Flush();
 
 
         }
-        public static string readlocaiton()
+        public string readlocaiton()
         {
             StreamReader streamReader = new StreamReader(file_write.SettingsPath);
             return streamReader.ReadLine();
 
         }
 
-        public static void clearLocation() { 
+        public void clearLocation() { 
         
         }
     }
