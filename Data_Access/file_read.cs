@@ -18,18 +18,37 @@ namespace Data_Access
         public void readdata()
         {
             Boolean duplicate = false;
-            saveLocaiton();
+            try
+            {
+                saveLocaiton();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            
             int skip_count = 0;
             bool working = false;
-            DirectoryInfo copy = new DirectoryInfo("C:\\Table_Gen\\temp\\");
-            System.IO.Directory.CreateDirectory("C:\\Table_Gen\\temp\\");
-            foreach (FileInfo file in copy.GetFiles())
+            try
             {
-                
-                file.Delete();
+                DirectoryInfo copy = new DirectoryInfo("C:\\Table_Gen\\temp\\");
+                System.IO.Directory.CreateDirectory("C:\\Table_Gen\\temp\\");
+                foreach (FileInfo file in copy.GetFiles())
+                {
+
+                    file.Delete();
+                }
             }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            
             // Read the file selected by user and setup various varables
             StreamReader SqlBuddy = null;
+            
             while (!working)
             {
                 try
@@ -52,9 +71,22 @@ namespace Data_Access
             char[] audit_seperator = { ' ' };
             List<Column> rows = new List<Column>();
             int count = 0;
-            SqlBuddy.ReadLine();
+            try
+            {
+                SqlBuddy.ReadLine();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
             //skip first line since it's just heading data
             // read until the end
+            try
+            {
+
+            
             while ((ln = SqlBuddy.ReadLine()) != null)
             {
 
@@ -210,19 +242,43 @@ namespace Data_Access
             settings.table_count = data_tables.all_tables.Count;
             //generate default options for all tables
             settings.generate_options();
-            
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
         }
         public void saveLocaiton()
         {
-            file_write.SettingsBuddy.Write(settings.path);
-            file_write.SettingsBuddy.Flush();
+            try
+            {
+                file_write.SettingsBuddy.Write(settings.path);
+                file_write.SettingsBuddy.Flush();
+            }
+            catch (Exception ex)
+            {
+
+                throw new IOException("unable to write settings",ex);
+            }
+            
 
 
         }
         public string readlocaiton()
         {
-            StreamReader streamReader = new StreamReader(file_write.SettingsPath);
-            return streamReader.ReadLine();
+            try
+            {
+                StreamReader streamReader = new StreamReader(file_write.SettingsPath);
+                return streamReader.ReadLine();
+            }
+            catch (Exception ex)
+            {
+
+                throw new IOException("unable to read settings", ex);
+            }
+            
 
         }
 
