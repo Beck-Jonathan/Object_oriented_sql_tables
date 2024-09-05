@@ -1,9 +1,11 @@
 ﻿using appData2;
 using Data_Access;
 using Data_Objects;
+using LogicLayer;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -14,10 +16,14 @@ namespace Object_oriented_sql_tables
 {
     public partial class Form1 : Form
     {
+        public file_read_manager file_read;
+        public file_write_manager file_write;
         public static int page_size;
         public static List<char> these_settings = new List<char>();
         public Form1()
         {
+            file_read=new file_read_manager();
+            file_write =new file_write_manager();
             page_size = 5;
             settings.app_path = System.Reflection.Assembly.GetExecutingAssembly().Location;
             settings.app_path = settings.app_path.Substring(0, settings.app_path.Length - 30);
@@ -48,8 +54,8 @@ namespace Object_oriented_sql_tables
             OpenFileDialog openFileDialog = new OpenFileDialog();
             try
             {
-                System.IO.File.Delete(file_write.SettingsPath);
-                System.IO.File.Copy(file_write.SettingsPath2, file_write.SettingsPath);
+                System.IO.File.Delete(file_write_manager.SettingsPath);
+                System.IO.File.Copy(file_write_manager.SettingsPath2, file_write_manager.SettingsPath);
                 openFileDialog.InitialDirectory = file_read.readlocaiton();
             }
             catch (Exception)
@@ -61,6 +67,7 @@ namespace Object_oriented_sql_tables
             //openFileDialog.InitialDirectory = settings.app_path;
             openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
+            
             settings.path = filepath;
             btn_selectfile.Enabled = false;
             btn_read_table.Enabled = true;
@@ -75,10 +82,10 @@ namespace Object_oriented_sql_tables
             page_size = (int)NUD_page_size.Value;
             appData2.settings.page_size = page_size;
             // to clean the destination foloder
-            var folder = file_write.SeparatePath;
+            var folder = file_write_manager.SeparatePath;
             file_write.startUp(new DirectoryInfo(folder));
             String database_head = database.print_database_header();
-            file_write.sqlBuddy2.Write(database_head);
+            //file_write.sqlBuddy2.Write(database_head);
             int count = 0;
             List<Boolean> these_settings = new List<Boolean>();
             List<foreignKey> foreignKeys = data_tables.all_foreignKey;
@@ -97,14 +104,14 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_columns();
                     file_write.fileWrite(s,t.name,"sql","table");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add primary keys to table
                 if (these_settings[1])
                 {
                     s = t.gen_primary_keys();
                     file_write.fileWrite(s, t.name, "sql", "table");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
 
                 // if selected, create the alternate keys
@@ -112,21 +119,21 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_alternate_keys();
                     file_write.fileWrite(s, t.name, "sql", "table");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add foreign keys to table
                 if (these_settings[2])
                 {
                     s = t.gen_foreign_keys();
                     file_write.fileWrite(s, t.name, "sql", "table");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
 
                 //gen table footer
                 if (true) {
                     s = t.gen_table_footer();
                     file_write.fileWrite(s, t.name, "sql", "table");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
 
 
@@ -135,7 +142,7 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_audit_table();
                     file_write.fileWrite(s, t.name, "sql", "audit_table");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
 
 
@@ -146,7 +153,7 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_update();
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add an SP_delete and su_undelete to table
                 if (these_settings[5])
@@ -154,11 +161,11 @@ namespace Object_oriented_sql_tables
                     s = t.gen_delete();
 
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                     s = t.gen_undelete();
 
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
 
 
                 }
@@ -167,28 +174,38 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_retreive_by_key();
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected an an SP_retreive that shows all data in table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_all();
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected create an sp_retrive that gets all active data in the table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_active();
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
+
+                //if selected create an sp_select that gets all data by a foreign key
+                if (true)
+                {
+
+                    s = t.gen_retreive_by_fkey();
+                    file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    //file_write.sqlBuddy2.Write(s);
+                }
+
                 //select distinct for drop downs
                 if (true) {
                     
                         s = t.gen_select_distinct_for_dropdown();
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
 
 
                 }
@@ -197,7 +214,7 @@ namespace Object_oriented_sql_tables
                 {
                     s = t.gen_insert();
                     file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
-                    file_write.sqlBuddy2.Write(s);
+                    //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add a trigger for inserts
                 if (these_settings[9])
@@ -335,19 +352,26 @@ namespace Object_oriented_sql_tables
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewEditServlet");
 
                 }
-                
+
+                if (true)
+                {    //change to these settings 31
+                    s = t.jQueryValidation();
+                    file_write.fileWrite(s, t.name, "jQuery", "AddEditValidate");
+
+                }
+
 
 
 
                 count++;
             }
 
-            file_write.sqlBuddy2.Flush();
-            file_write.CSharpBuddy.Flush();
-            file_write.XAMLBuddy.Flush();
-            file_write.BatchBuddy.Flush();
-            file_write.JSPBuddy.Flush();
-            file_write.ServletBuddy.Flush();
+            //file_write.sqlBuddy2.Flush();
+            //file_write.CSharpBuddy.Flush();
+            //file_write.XAMLBuddy.Flush();
+            //file_write.BatchBuddy.Flush();
+            //file_write.JSPBuddy.Flush();
+            //file_write.ServletBuddy.Flush();
             MessageBox.Show("generation complete");
             this.Close();
 

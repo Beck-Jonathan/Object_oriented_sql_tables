@@ -1,4 +1,6 @@
 ﻿using appData2;
+using Data_Access_Interfaces;
+using Data_Access_Fake;
 using Data_Objects;
 using System;
 using System.Collections.Generic;
@@ -7,16 +9,25 @@ using System.Threading;
 
 namespace Data_Access
 {
-    public class file_read
+    public class file_read : iFile_Read
     {
+        
         static String readpath = settings.path;
         static List<foreignKey> keys = new List<foreignKey>();
 
-        public static void readdata()
+        public void readdata()
         {
+            Boolean duplicate = false;
             saveLocaiton();
             int skip_count = 0;
             bool working = false;
+            DirectoryInfo copy = new DirectoryInfo("C:\\Table_Gen\\temp\\");
+            System.IO.Directory.CreateDirectory("C:\\Table_Gen\\temp\\");
+            foreach (FileInfo file in copy.GetFiles())
+            {
+                
+                file.Delete();
+            }
             // Read the file selected by user and setup various varables
             StreamReader SqlBuddy = null;
             while (!working)
@@ -27,9 +38,10 @@ namespace Data_Access
                 }
                 catch (Exception)
                 {
-
-                    working = false;
-                    Thread.Sleep(5000);
+                    
+                    File.Copy(settings.path, "C:\\Table_Gen\\temp\\" + System.IO.Path.GetFileName(settings.path));
+                    duplicate = true;
+                    SqlBuddy = new StreamReader("C:\\Table_Gen\\temp\\" + System.IO.Path.GetFileName(settings.path));
                 }
                 working = true;
             }
@@ -198,19 +210,24 @@ namespace Data_Access
             settings.table_count = data_tables.all_tables.Count;
             //generate default options for all tables
             settings.generate_options();
+            
         }
-        public static void saveLocaiton()
+        public void saveLocaiton()
         {
             file_write.SettingsBuddy.Write(settings.path);
             file_write.SettingsBuddy.Flush();
 
 
         }
-        public static string readlocaiton()
+        public string readlocaiton()
         {
             StreamReader streamReader = new StreamReader(file_write.SettingsPath);
             return streamReader.ReadLine();
 
+        }
+
+        public void clearLocation() { 
+        
         }
     }
 }
