@@ -1,5 +1,4 @@
-﻿
-namespace Object_oriented_sql_tables
+﻿namespace Object_oriented_sql_tables
 {
     partial class Form1
     {
@@ -7,7 +6,6 @@ namespace Object_oriented_sql_tables
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-
         /// <summary>
         /// Clean up any resources being used.
         /// </summary>
@@ -20,9 +18,7 @@ namespace Object_oriented_sql_tables
             }
             base.Dispose(disposing);
         }
-
         #region Windows Form Designer generated code
-
         /// <summary>
         /// Required method for Designer support - do not modify
         /// the contents of this method with the code editor.
@@ -219,11 +215,8 @@ namespace Object_oriented_sql_tables
             ((System.ComponentModel.ISupportInitialize)(this.NUD_page_size)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
-
         #endregion
-
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btn_selectfile;
         private System.Windows.Forms.Button btn_generateTable;
@@ -238,4 +231,3 @@ namespace Object_oriented_sql_tables
         private System.Windows.Forms.NumericUpDown NUD_page_size;
     }
 }
-

@@ -1,6 +1,5 @@
 ﻿using appData2;
 using System;
-
 namespace Data_Objects
 {
     public class commentBox
@@ -12,13 +11,10 @@ namespace Data_Objects
         public static String GenXMLMethodComment(table table, XML_Method_Type method)
         {
             string result = "";
-
-
             String summary = "";
             String name = "///<para />Created By Jonathan Beck " + DateTime.Now.ToString() + "<para />";
             String Params = "";
             String returns = "";
-
             switch (method)
             {
                 case XML_Method_Type.CSharp_Manager_Add:
@@ -66,7 +62,6 @@ namespace Data_Objects
                     summary = "Logic layer update method for " + table.name + " objects";
                     Params = "///<param name=\"old" + table.name.ToLower() + "\">the <see cref=\"" + table.name + "\"/> to be updated</param>";
                     Params += "\n///<param name=new\"" + table.name.ToLower() + "\">the <see cref=\"" + table.name + "\"/> the updated version</param>";
-
                     returns = "Int, number of records updated";
                     break;
                 case XML_Method_Type.CSharp_Manager_Retreive_By_FK_No_Param:
@@ -127,12 +122,10 @@ namespace Data_Objects
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
-
                 case XML_Method_Type.CSharp_Accessor_Update:
                     summary = "Data Access layer Update method for " + table.name + " objects";
                     Params = "\n///<param name=\"_old" + table.name + "\">the <see cref=\"" + table.name + "\"/> to be updated</param>";
                     Params += "\n///<param name=\"new" + table.name + "\">the <see cref=\"" + table.name + "\"/> the updated version</param>";
-
                     returns = "Int, number of records updated";
                     break;
                 case XML_Method_Type.CSharp_Accessor_Retreive_By_FK_Two_Param:
@@ -144,22 +137,16 @@ namespace Data_Objects
             summary = "\n///<summary>\n///" + summary + "\n" + name + "\n///</summary>";
             returns = "\n///<returns>\n///" + returns + "\n///</returns>\n";
             result = result + summary + Params + returns;
-
-
             return result;
         }
-
         public static String GenJavaDocMethodComment(table table, JavaDoc_Method_Type method)
         {
             string result = "";
-
-
             String summary = "";
             String header = "/**";
             String name = "\n* @author Jonathan Beck";
             String Params = "";
             String returns = "";
-
             switch (method)
             {
                 case JavaDoc_Method_Type.Java_DAO_Add:
@@ -201,34 +188,19 @@ namespace Data_Objects
                 default:
                     break;
             }
-
-
-
-
             result = result + header + summary + Params + returns + name + "\n */\n";
-
-
             return result;
         }
-
-
-
-
-
-
         //creates various commeent boxes based on
         //table name and function type.
         public static String genCommentBox(String table, Component_Enum type)
         {
-            String full_comment_box = " ";
             String start_stars = "/******************\n";
             String end_stars = "\n***************/\n";
             String middle = " ";
-            String PrintStatement = "";
             if (type.Equals(Component_Enum.SQL_table))
             {
                 middle = "Create the " + table + " table";
-
             }
             if (type.Equals(Component_Enum.SQL_Audit_Table))
             {
@@ -246,7 +218,6 @@ namespace Data_Objects
             {
                 middle = "Create the retreive by key script for the " + table + " table";
             }
-
             if (type.Equals(Component_Enum.SQL_Retreive_By_All))
             {
                 middle = "Create the retreive by all script for the " + table + " table";
@@ -263,28 +234,22 @@ namespace Data_Objects
             {
                 middle = "Create the update trigger script for the " + table + " table";
             }
-
             if (type.Equals(Component_Enum.SQL_Delete_Trigger))
             {
                 middle = "Create the delete trigger script for the " + table + " table";
             }
-
             if (type.Equals(Component_Enum.CSharp_IAccessor))
             {
                 middle = "Create the I Accessor for the " + table + " table";
             }
-
             if (type.Equals(Component_Enum.CSharp_IManager))
             {
                 middle = "create the I manager for the " + table + " table;";
-
             }
-
             if (type.Equals(Component_Enum.CSharp_Accessor))
             {
                 middle = "create the Accessor for the " + table + " table";
             }
-
             if (type.Equals(Component_Enum.CSharp_Manager))
             {
                 middle = "create the manager for the " + table + " table";
@@ -339,7 +304,6 @@ namespace Data_Objects
             }
             if (type.Equals(Component_Enum.Java_JSP_ViewEdit))
             {
-
                 start_stars = "<%--************\n";
                 middle = "Create the JSP For Viuw/Edit from the " + table + " table";
                 end_stars = "\n**********--%>\n";
@@ -391,7 +355,6 @@ namespace Data_Objects
             {
                 middle = "Create the Logic Layer Update method for the " + table + " table";
             }
-
             if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_No_Param))
             {
                 middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
@@ -407,16 +370,11 @@ namespace Data_Objects
                 middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
                 middle += "\n with two paramater supplied.";
             }
-
-
             middle += "\n Created By Jonathan Beck " + DateTime.Now.ToShortDateString();
-            PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
-
-
-            full_comment_box = start_stars + middle + end_stars;
+            string PrintStatement = "print '' Print '***" + middle + "***' \n go \n";
+            string full_comment_box = start_stars + middle + end_stars;
             if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
             return full_comment_box;
         }
     }
 }
-

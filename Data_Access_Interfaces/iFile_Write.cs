@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-
 namespace Data_Access_Interfaces
 {
     public interface iFile_Write

@@ -1,6 +1,5 @@
 ﻿using appData2;
 using System;
-
 namespace Data_Objects
 {
     public static class database

@@ -4,13 +4,8 @@ USE WFTDA_debug;
 /******************
 Create the ARENAS table
 ***************/
-
-
 DROP TABLE IF EXISTS ARENAS;
-
 CREATE TABLE ARENAS(
-
-
 arena_name	nvarchar(50)	not null	unique	comment 'The name of the arena'
 ,city	nvarchar(50)	not null	comment 'City where the arena is located'
 ,state	nvarchar(50)	not null	comment 'State wthere the arena is located'
@@ -21,13 +16,8 @@ arena_name	nvarchar(50)	not null	unique	comment 'The name of the arena'
 /******************
 Create the ARENAS Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS ARENAS_audit;
-
 CREATE TABLE ARENAS_audit(
-
-
 arena_name	nvarchar(50)	not null	unique	comment 'The name of the arena'
 ,city	nvarchar(50)	not null	comment 'City where the arena is located'
 ,state	nvarchar(50)	not null	comment 'State wthere the arena is located'
@@ -61,7 +51,6 @@ UPDATE ARENAS
 ,contact_phone = contact_phone_param
 ,capacity = capacity_param
 WHERE arena_name=arena_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -88,7 +77,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM ARENAS
   WHERE arena_name=arena_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -115,7 +103,6 @@ arena_name
 ,state 
 ,contact_phone 
 ,capacity 
-
  FROM ARENAS
 where arena_name=arena_name_param
  ; END $$
@@ -128,7 +115,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_ARENAS()
 begin 
  SELECT 
-
 arena_name
 ,city
 ,state
@@ -189,7 +175,6 @@ arena_name
 ,state 
 ,contact_phone 
 ,capacity 
-
 , action_type
 , action_date
 , action_user
@@ -199,7 +184,6 @@ new.arena_name
 ,new.state 
 ,new.contact_phone 
 ,new.capacity 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -223,7 +207,6 @@ arena_name
 ,state 
 ,contact_phone 
 ,capacity 
-
 , action_type
 , action_date
 , action_user
@@ -233,7 +216,6 @@ new.arena_name
 ,new.state 
 ,new.contact_phone 
 ,new.capacity 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -245,13 +227,8 @@ DELIMITER ;
 /******************
 Create the TEAM table
 ***************/
-
-
 DROP TABLE IF EXISTS TEAM;
-
 CREATE TABLE TEAM(
-
-
 team_name	nvarchar(50)	not null	unique	comment 'The team Nickname'
 ,city	nvarchar(50)	not null	comment 'City where the team is headquartered'
 ,state	nvarchar(50)	not null	comment 'Seate where the team is headquarterd'
@@ -262,13 +239,8 @@ team_name	nvarchar(50)	not null	unique	comment 'The team Nickname'
 /******************
 Create the TEAM Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS TEAM_audit;
-
 CREATE TABLE TEAM_audit(
-
-
 team_name	nvarchar(50)	not null	unique	comment 'The team Nickname'
 ,city	nvarchar(50)	not null	comment 'City where the team is headquartered'
 ,state	nvarchar(50)	not null	comment 'Seate where the team is headquarterd'
@@ -302,7 +274,6 @@ UPDATE TEAM
 ,division = division_param
 ,arena_name = arena_name_param
 WHERE team_name=team_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -329,7 +300,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM TEAM
   WHERE team_name=team_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -356,7 +326,6 @@ team_name
 ,state 
 ,division 
 ,arena_name 
-
  FROM TEAM
 where team_name=team_name_param
  ; END $$
@@ -369,7 +338,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_TEAM()
 begin 
  SELECT 
-
 team_name
 ,city
 ,state
@@ -430,7 +398,6 @@ team_name
 ,state 
 ,division 
 ,arena_name 
-
 , action_type
 , action_date
 , action_user
@@ -440,7 +407,6 @@ new.team_name
 ,new.state 
 ,new.division 
 ,new.arena_name 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -464,7 +430,6 @@ team_name
 ,state 
 ,division 
 ,arena_name 
-
 , action_type
 , action_date
 , action_user
@@ -474,7 +439,6 @@ new.team_name
 ,new.state 
 ,new.division 
 ,new.arena_name 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -486,13 +450,8 @@ DELIMITER ;
 /******************
 Create the SKATER table
 ***************/
-
-
 DROP TABLE IF EXISTS SKATER;
-
 CREATE TABLE SKATER(
-
-
 derby_name	nvarchar(50)	not null	unique	comment 'Skaters chosen Derby Name'
 ,first_name	nvarchar(50)	not null	comment 'Skater Name assigned at birth'
 ,last_name	nvarchar(50)	not null	comment 'Skater Family Name'
@@ -503,13 +462,8 @@ derby_name	nvarchar(50)	not null	unique	comment 'Skaters chosen Derby Name'
 /******************
 Create the SKATER Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS SKATER_audit;
-
 CREATE TABLE SKATER_audit(
-
-
 derby_name	nvarchar(50)	not null	unique	comment 'Skaters chosen Derby Name'
 ,first_name	nvarchar(50)	not null	comment 'Skater Name assigned at birth'
 ,last_name	nvarchar(50)	not null	comment 'Skater Family Name'
@@ -543,7 +497,6 @@ UPDATE SKATER
 ,phone_number = phone_number_param
 ,team_affiliation = team_affiliation_param
 WHERE derby_name=derby_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -570,7 +523,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM SKATER
   WHERE derby_name=derby_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -597,7 +549,6 @@ derby_name
 ,last_name 
 ,phone_number 
 ,team_affiliation 
-
  FROM SKATER
 where derby_name=derby_name_param
  ; END $$
@@ -610,7 +561,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_SKATER()
 begin 
  SELECT 
-
 derby_name
 ,first_name
 ,last_name
@@ -671,7 +621,6 @@ derby_name
 ,last_name 
 ,phone_number 
 ,team_affiliation 
-
 , action_type
 , action_date
 , action_user
@@ -681,7 +630,6 @@ new.derby_name
 ,new.last_name 
 ,new.phone_number 
 ,new.team_affiliation 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -705,7 +653,6 @@ derby_name
 ,last_name 
 ,phone_number 
 ,team_affiliation 
-
 , action_type
 , action_date
 , action_user
@@ -715,7 +662,6 @@ new.derby_name
 ,new.last_name 
 ,new.phone_number 
 ,new.team_affiliation 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -727,13 +673,8 @@ DELIMITER ;
 /******************
 Create the INVOICES_ISSUED table
 ***************/
-
-
 DROP TABLE IF EXISTS INVOICES_ISSUED;
-
 CREATE TABLE INVOICES_ISSUED(
-
-
 invoice_number	int	not null	comment 'The league assigned invoice number'
 ,derby_name	nvarchar(50)	not null	comment 'Skaters chosen Derby Name'
 ,practice_date	date	not null	comment '"The Date of the practice attended, that this invoice is for"'
@@ -745,13 +686,8 @@ invoice_number	int	not null	comment 'The league assigned invoice number'
 /******************
 Create the INVOICES_ISSUED Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS INVOICES_ISSUED_audit;
-
 CREATE TABLE INVOICES_ISSUED_audit(
-
-
 invoice_number	int	not null	comment 'The league assigned invoice number'
 ,derby_name	nvarchar(50)	not null	comment 'Skaters chosen Derby Name'
 ,practice_date	date	not null	comment '"The Date of the practice attended, that this invoice is for"'
@@ -788,7 +724,6 @@ UPDATE INVOICES_ISSUED
 ,amount = amount_param
 ,receipt_date = receipt_date_param
 WHERE invoice_number=invoice_number_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -815,7 +750,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM INVOICES_ISSUED
   WHERE invoice_number=invoice_number_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -843,7 +777,6 @@ invoice_number
 ,date_issued 
 ,amount 
 ,receipt_date 
-
  FROM INVOICES_ISSUED
 where invoice_number=invoice_number_param
  ; END $$
@@ -856,7 +789,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_INVOICES_ISSUED()
 begin 
  SELECT 
-
 invoice_number
 ,derby_name
 ,practice_date
@@ -921,7 +853,6 @@ invoice_number
 ,date_issued 
 ,amount 
 ,receipt_date 
-
 , action_type
 , action_date
 , action_user
@@ -932,7 +863,6 @@ new.invoice_number
 ,new.date_issued 
 ,new.amount 
 ,new.receipt_date 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -957,7 +887,6 @@ invoice_number
 ,date_issued 
 ,amount 
 ,receipt_date 
-
 , action_type
 , action_date
 , action_user
@@ -968,7 +897,6 @@ new.invoice_number
 ,new.date_issued 
 ,new.amount 
 ,new.receipt_date 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -980,13 +908,8 @@ DELIMITER ;
 /******************
 Create the MIXERS table
 ***************/
-
-
 DROP TABLE IF EXISTS MIXERS;
-
 CREATE TABLE MIXERS(
-
-
 game_id	int	not null	unique	comment 'The internal id for this bout'
 ,arena_name	nvarchar(50)	not null	comment 'The Arena this mixer bout took place in'
 ,event_date	date	not null	comment 'The Date this mixer bout occured'
@@ -995,13 +918,8 @@ game_id	int	not null	unique	comment 'The internal id for this bout'
 /******************
 Create the MIXERS Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS MIXERS_audit;
-
 CREATE TABLE MIXERS_audit(
-
-
 game_id	int	not null	unique	comment 'The internal id for this bout'
 ,arena_name	nvarchar(50)	not null	comment 'The Arena this mixer bout took place in'
 ,event_date	date	not null	comment 'The Date this mixer bout occured'
@@ -1029,7 +947,6 @@ UPDATE MIXERS
  set arena_name = arena_name_param
 ,event_date = event_date_param
 WHERE game_id=game_id_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1056,7 +973,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM MIXERS
   WHERE game_id=game_id_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1081,7 +997,6 @@ game_id_param int
 game_id 
 ,arena_name 
 ,event_date 
-
  FROM MIXERS
 where game_id=game_id_param
  ; END $$
@@ -1094,7 +1009,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_MIXERS()
 begin 
  SELECT 
-
 game_id
 ,arena_name
 ,event_date
@@ -1147,7 +1061,6 @@ insert intoMIXERS_audit (
 game_id 
 ,arena_name 
 ,event_date 
-
 , action_type
 , action_date
 , action_user
@@ -1155,7 +1068,6 @@ game_id
 new.game_id 
 ,new.arena_name 
 ,new.event_date 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1177,7 +1089,6 @@ insert intoMIXERS_audit (
 game_id 
 ,arena_name 
 ,event_date 
-
 , action_type
 , action_date
 , action_user
@@ -1185,7 +1096,6 @@ game_id
 new.game_id 
 ,new.arena_name 
 ,new.event_date 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1197,13 +1107,8 @@ DELIMITER ;
 /******************
 Create the MIXER_PARTICIPANTS table
 ***************/
-
-
 DROP TABLE IF EXISTS MIXER_PARTICIPANTS;
-
 CREATE TABLE MIXER_PARTICIPANTS(
-
-
 game_id	int	not null	comment 'the internal_id for this bout'
 ,game_count	int	not null	comment 'The assigned_id for a skater participating in this bout'
 ,derby_name	nvarchar(50)	not null	comment 'Skaters chosen Derby Name'
@@ -1213,13 +1118,8 @@ game_id	int	not null	comment 'the internal_id for this bout'
 /******************
 Create the MIXER_PARTICIPANTS Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS MIXER_PARTICIPANTS_audit;
-
 CREATE TABLE MIXER_PARTICIPANTS_audit(
-
-
 game_id	int	not null	comment 'the internal_id for this bout'
 ,game_count	int	not null	comment 'The assigned_id for a skater participating in this bout'
 ,derby_name	nvarchar(50)	not null	comment 'Skaters chosen Derby Name'
@@ -1250,7 +1150,6 @@ UPDATE MIXER_PARTICIPANTS
 ,points_scored = points_scored_param
 WHERE game_id=game_id_param
 AND game_count=game_count_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1279,7 +1178,6 @@ START TRANSACTION;
 DELETE FROM MIXER_PARTICIPANTS
   WHERE game_id=game_id_param
 AND game_count=game_count_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1306,7 +1204,6 @@ game_id
 ,game_count 
 ,derby_name 
 ,points_scored 
-
  FROM MIXER_PARTICIPANTS
 where game_id=game_id_param
 AND game_count=game_count_param
@@ -1320,7 +1217,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_MIXER_PARTICIPANTS()
 begin 
  SELECT 
-
 game_id
 ,game_count
 ,derby_name
@@ -1377,7 +1273,6 @@ game_id
 ,game_count 
 ,derby_name 
 ,points_scored 
-
 , action_type
 , action_date
 , action_user
@@ -1386,7 +1281,6 @@ new.game_id
 ,new.game_count 
 ,new.derby_name 
 ,new.points_scored 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1409,7 +1303,6 @@ game_id
 ,game_count 
 ,derby_name 
 ,points_scored 
-
 , action_type
 , action_date
 , action_user
@@ -1418,7 +1311,6 @@ new.game_id
 ,new.game_count 
 ,new.derby_name 
 ,new.points_scored 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1430,13 +1322,8 @@ DELIMITER ;
 /******************
 Create the VENDORS table
 ***************/
-
-
 DROP TABLE IF EXISTS VENDORS;
-
 CREATE TABLE VENDORS(
-
-
 vendor_name	nvarchar(50)	not null	comment 'the name of the vendor'
 ,vendor_address	nvarchar(100)	not null	comment 'The address of the vendor'
 ,vendor_city	nvarchar(50)	not null	comment 'the city of the vendor'
@@ -1449,13 +1336,8 @@ vendor_name	nvarchar(50)	not null	comment 'the name of the vendor'
 /******************
 Create the VENDORS Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS VENDORS_audit;
-
 CREATE TABLE VENDORS_audit(
-
-
 vendor_name	nvarchar(50)	not null	comment 'the name of the vendor'
 ,vendor_address	nvarchar(100)	not null	comment 'The address of the vendor'
 ,vendor_city	nvarchar(50)	not null	comment 'the city of the vendor'
@@ -1495,7 +1377,6 @@ UPDATE VENDORS
 ,vendor_phone_number = vendor_phone_number_param
 ,vendor_type = vendor_type_param
 WHERE vendor_name=vendor_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1522,7 +1403,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM VENDORS
   WHERE vendor_name=vendor_name_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1551,7 +1431,6 @@ vendor_name
 ,vendor_contact_name 
 ,vendor_phone_number 
 ,vendor_type 
-
  FROM VENDORS
 where vendor_name=vendor_name_param
  ; END $$
@@ -1564,7 +1443,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_VENDORS()
 begin 
  SELECT 
-
 vendor_name
 ,vendor_address
 ,vendor_city
@@ -1633,7 +1511,6 @@ vendor_name
 ,vendor_contact_name 
 ,vendor_phone_number 
 ,vendor_type 
-
 , action_type
 , action_date
 , action_user
@@ -1645,7 +1522,6 @@ new.vendor_name
 ,new.vendor_contact_name 
 ,new.vendor_phone_number 
 ,new.vendor_type 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1671,7 +1547,6 @@ vendor_name
 ,vendor_contact_name 
 ,vendor_phone_number 
 ,vendor_type 
-
 , action_type
 , action_date
 , action_user
@@ -1683,7 +1558,6 @@ new.vendor_name
 ,new.vendor_contact_name 
 ,new.vendor_phone_number 
 ,new.vendor_type 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1695,13 +1569,8 @@ DELIMITER ;
 /******************
 Create the INVOICES_RECEIVED table
 ***************/
-
-
 DROP TABLE IF EXISTS INVOICES_RECEIVED;
-
 CREATE TABLE INVOICES_RECEIVED(
-
-
 invoice_sequence	int	not null	unique	comment 'The Auto incremetned id of the Vendor'
 ,invoice_id	nvarchar(250)	not null	comment 'The invoice_ID assigned by the issuer'
 ,vendor_name	nvarchar(50)	not null	comment 'the id of the vendor that issued this'
@@ -1714,13 +1583,8 @@ invoice_sequence	int	not null	unique	comment 'The Auto incremetned id of the Ven
 /******************
 Create the INVOICES_RECEIVED Audit table
 ***************/
-
-
 DROP TABLE IF EXISTS INVOICES_RECEIVED_audit;
-
 CREATE TABLE INVOICES_RECEIVED_audit(
-
-
 invoice_sequence	int	not null	unique	comment 'The Auto incremetned id of the Vendor'
 ,invoice_id	nvarchar(250)	not null	comment 'The invoice_ID assigned by the issuer'
 ,vendor_name	nvarchar(50)	not null	comment 'the id of the vendor that issued this'
@@ -1760,7 +1624,6 @@ UPDATE INVOICES_RECEIVED
 ,payment_date = payment_date_param
 ,game_id = game_id_param
 WHERE invoice_sequence=invoice_sequence_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1787,7 +1650,6 @@ SET sql_error = true;
 START TRANSACTION;
 DELETE FROM INVOICES_RECEIVED
   WHERE invoice_sequence=invoice_sequence_param
-
  ; if sql_error = FALSE then 
  SET update_count = row_count(); 
  COMMIT;
@@ -1816,7 +1678,6 @@ invoice_sequence
 ,amount 
 ,payment_date 
 ,game_id 
-
  FROM INVOICES_RECEIVED
 where invoice_sequence=invoice_sequence_param
  ; END $$
@@ -1829,7 +1690,6 @@ DELIMITER $$
 CREATE PROCEDURE sp_retreive_by_all_INVOICES_RECEIVED()
 begin 
  SELECT 
-
 invoice_sequence
 ,invoice_id
 ,vendor_name
@@ -1898,7 +1758,6 @@ invoice_sequence
 ,amount 
 ,payment_date 
 ,game_id 
-
 , action_type
 , action_date
 , action_user
@@ -1910,7 +1769,6 @@ new.invoice_sequence
 ,new.amount 
 ,new.payment_date 
 ,new.game_id 
-
  , 'insert'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user
@@ -1936,7 +1794,6 @@ invoice_sequence
 ,amount 
 ,payment_date 
 ,game_id 
-
 , action_type
 , action_date
 , action_user
@@ -1948,7 +1805,6 @@ new.invoice_sequence
 ,new.amount 
 ,new.payment_date 
 ,new.game_id 
-
  , 'update'-- action_type
 , NOW()-- action_date
 ,  CURRENT_USER()-- action_user

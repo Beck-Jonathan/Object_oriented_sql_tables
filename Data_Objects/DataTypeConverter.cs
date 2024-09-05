@@ -1,5 +1,4 @@
 ﻿using System;
-
 namespace Data_Objects
 {
     public static class DataTypeConverter
@@ -11,9 +10,7 @@ namespace Data_Objects
             if (result == "bit") { result = "bool"; }
             if (result == "Int" || cSharpDataType == "Integer") { result = "Int32"; }
             if (String.Compare(result, "datetime", true) == 0) { result = "DateTime"; }
-
             return result;
-
         }
         public static string toCSharpDataType(this string sqlDataType)
         {
@@ -22,12 +19,8 @@ namespace Data_Objects
             if (result == "bit") { result = "bool"; }
             if (result == "Int" || sqlDataType == "Integer") { result = "int"; }
             if (String.Compare(result, "datetime", true) == 0) { result = "DateTime"; }
-
             return result;
-
-
         }
-
         public static string toJavaDataType(this string sqlDataType)
         {
             string result = sqlDataType.Replace("[", "").Replace("]", "");
@@ -37,7 +30,6 @@ namespace Data_Objects
             if (result.ToLower().Equals("int") || sqlDataType.ToLower().Equals("Integer")) { result = "Integer"; }
             if (result.ToLower().Equals("datetime")) { result = "Date"; }
             return result;
-
         }
         public static string toJavaDAODataType(this string sqlDataType)
         {
@@ -48,21 +40,13 @@ namespace Data_Objects
             if (result.ToLower().Contains("int") || sqlDataType.ToLower().Equals("integer")) { result = "Int"; }
             if (result.ToLower().Contains("date")) { result = "LocalDate"; }
             return result;
-
         }
-
         public static string bracketStrip(this string fieldName)
         {
             string result = fieldName;
             result = result.Replace("[", "").Replace("]", "");
-
-
-
             return result;
-
-
         }
-
         public static string toSQLDBType(this string dataType, int length)
         {
             string result = dataType;
@@ -71,13 +55,10 @@ namespace Data_Objects
             {
                 result = result + "," + length;
             }
-
             return result;
-
         }
         public static string firstCharLower(this string value)
         {
-
             return Char.ToLower(value[0]) + value.Substring(1);
         }
     }

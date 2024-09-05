@@ -1,10 +1,8 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
-
 namespace Data_Objects
 {
-
     public class TSqlTable : table, iTable
     {
         ///<inheritdoc>
@@ -13,7 +11,6 @@ namespace Data_Objects
             this.name = "[dbo].[" + name + "]";
             this.columns = columns;
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates lines that specify the primary keys of the Transact-SQL Table
@@ -23,8 +20,6 @@ namespace Data_Objects
         public String gen_primary_keys()
         {
             //generate the primary keys based on key_gen that was done in the rwos
-
-
             {
                 name = name.Replace("[dbo].[", "");
                 name = name.Replace("]", "");
@@ -40,10 +35,8 @@ namespace Data_Objects
                     }
                 }
                 key_string += "),\n";
-
                 return key_string;
             }
-
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
@@ -64,27 +57,19 @@ namespace Data_Objects
                     if (count > 0) { and = ",\n"; }
                     if (r.foreign_keys[0].Length > 0)
                     {
-
                         String[] chunks = s.Split('.');
                         String second_table = chunks[0];
                         String formatted_key = and + "CONSTRAINT [fk_" + name + "_" + second_table + count + "] foreign key ([" + chunks[1] + "]) references [" + chunks[0] + "]([" + chunks[1] + "])" + "";
-
                         foreign_keys.Add(formatted_key);
-
-
                     }
                     count++;
                 }
             };
-
-
-
             foreach (string tuv in foreign_keys)
             {
                 String s = tuv;
                 output_keys += s;
             }
-
             return output_keys;
         }
         /// <summary>
@@ -105,35 +90,25 @@ namespace Data_Objects
                     {
                         if (settings.TSQLMode)
                         {
-
                             String formatted_key = ",\vCONSTRAINT [AK_" + r.column_name.bracketStrip() + "] UNIQUE(" + r.column_name + ")";
-
                             alternate_keys.Add(formatted_key);
                         }
                         else
                         {
-
                             String formatted_key = "\n UNIQUE (" + r.column_name + ")\n";
-
                             alternate_keys.Add(formatted_key);
-
                         }
                     }
                     count++;
                 }
             };
-
-
-
             foreach (string tuv in alternate_keys)
             {
                 String s = tuv;
                 output_keys += s;
             }
-
             return output_keys;
         }
-
         /// <summary>
         /// Generates a genertic footer for a Transact-SQL  <see cref="table"/>
         /// Jonathan Beck
@@ -160,7 +135,6 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string Transact-SQL code that creates the header of the audit <see cref="table"/> </returns>
-
         public String audit_gen_header()
         {
             Header.table_name = this.name;
@@ -174,7 +148,6 @@ namespace Data_Objects
         /// <returns>A string Transact-SQL code that creates the the columns of the table </returns>
         public String gen_columns()
         {
-
             int count = 0;
             String x = this.gen_header();
             x += "";
@@ -186,11 +159,8 @@ namespace Data_Objects
                 count++;
             }
             x += ",\n";
-
-
             return x;
         }
-
         /// <summary>
         /// 
         /// generates lines that specify the the Transact-SQL audit <see cref="table"/>
@@ -213,8 +183,6 @@ namespace Data_Objects
                 ", action_date DATETIME NOT NULL COMMENT 'when it happened'\n" +
                 ", action_user VARCHAR(255) NOT NULL COMMENT 'Who did it'\n";
             x += ");\n";
-
-
             return x;
         }
         /// <summary>
@@ -228,18 +196,14 @@ namespace Data_Objects
         {
             string full_text = "";
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
-            int count = 0;
-            string comma = "";
             if (settings.TSQLMode)
             {
-                string function_text = "";
-                function_text = "CREATE PROCEDURE [dbo].[sp_update_" + name + "]\n(";
-                count = 0;
-                comma = "";
+                string function_text = "CREATE PROCEDURE [dbo].[sp_update_" + name + "]\n(";
+                int count = 0;
+                string comma = "";
                 foreach (Column r in columns)
                 {
                     if (count > 0) { comma = ","; }
-
                     String add = comma + "\n@old" + r.column_name.bracketStrip() + r.data_type + r.length_text + "";
                     if (r.primary_key != 'y' || r.primary_key != 'Y')
                     {
@@ -259,8 +223,6 @@ namespace Data_Objects
                         function_text = function_text + comma + "\n" + r.column_name.bracketStrip() + " = @new" + r.column_name.bracketStrip() + "";
                         count++;
                     }
-
-
                 }
                 function_text += "\nWHERE\n";
                 comma = "";
@@ -269,20 +231,12 @@ namespace Data_Objects
                     if (count > 0) { comma = "and "; }
                     function_text = function_text + "\n" + comma + r.column_name.bracketStrip() + " = @old" + r.column_name.bracketStrip() + "";
                     count++;
-
                 }
-
-
-
                 function_text += "\nreturn @@rowcount\nend\ngo\n";
                 full_text = comment_text + function_text;
-
             }
-
             return full_text;
-
         }
-
         /// <summary>
         /// 
         /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a standard Delete function. This funciton will ask for the pimary key(s) of the table
@@ -292,7 +246,6 @@ namespace Data_Objects
         public String gen_delete()
         {
             String function_text = "";
-
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
             if (settings.TSQLMode)
             {
@@ -324,20 +277,11 @@ namespace Data_Objects
                         count++;
                     }
                 }
-
                 function_text += "\nreturn @@rowcount \nend \ngo\n";
-
-
             }
-
             String full_text = comment_text + function_text;
             return full_text;
-
-
-
-
         }
-
         /// <summary>
         /// 
         /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a standard unDelete function. This funciton will ask for the pimary key(s) of the table
@@ -347,7 +291,6 @@ namespace Data_Objects
         public String gen_undelete()
         {
             String function_text = "";
-
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Undelete);
             if (settings.TSQLMode)
             {
@@ -379,22 +322,10 @@ namespace Data_Objects
                         count++;
                     }
                 }
-
                 function_text += "\nreturn @@rowcount \n end \n go\n";
-
-
             }
-
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
-
-
-
-
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
@@ -403,21 +334,12 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns> a string comment box followed by a  string Transact-SQL code that creates the the retreive by Primary key SP for the table </returns>
-
         public String gen_retreive_by_key()
         {
-
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_PK);
-
-
-
-
             String function_text = "CREATE PROCEDURE [dbo].[sp_retreive_by_pk_" + name + "]\n(";
-
-
             int count = 0;
-            String comma = "";
-            comma = "";
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -425,17 +347,14 @@ namespace Data_Objects
                 {
                     String add = "";
                     add = comma + "\n" + r.column_name.Replace("]", "").Replace("[", "@") + " " + r.data_type + r.length_text + "";
-
                     function_text += add;
                     count++;
                 }
             }
             function_text += "\n)";
-
             count = 0;
             comma = "";
             String asString = "\nas";
-
             function_text = function_text + asString + "\n Begin \n select";
             foreach (Column r in columns)
             {
@@ -447,8 +366,6 @@ namespace Data_Objects
             {
                 if (fk.mainTable.Equals(name))
                 {
-
-
                     foreach (table t in data_tables.all_tables)
                     {
                         if (t.name.Equals(fk.referenceTable))
@@ -458,9 +375,7 @@ namespace Data_Objects
                                 if (count > 0) { comma = ","; }
                                 function_text = function_text + comma + gen_Select_Line(t.name, r.column_name);
                                 count++;
-
                             }
-
                         }
                     }
                 }
@@ -482,24 +397,15 @@ namespace Data_Objects
                     if (keys_count > 0) { initial_word = "AND "; }
                     string add = "";
                     add = initial_word + r.column_name + "=" + r.column_name.Replace("]", "").Replace("[", "@") + " \n";
-
                     function_text += add;
                     keys_count++;
                 }
             }
-
-
             function_text = function_text + " END \n" +
                    " GO\n";
-
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a retreive by foreign key function. This funciton will ask for a foregn key(s) of the table, 
@@ -508,7 +414,6 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>generates a string comment box followed by a  string Transact-SQL code that creates the the retreive by Foreign-key SP for the table </returns>
-
         public String gen_retreive_by_fkey()
         {
             String full_text = "";
@@ -522,27 +427,14 @@ namespace Data_Objects
                     String comma = "";
                     int count = 0;
                     String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_FK);
-
-
-
                     String function_text = "CREATE PROCEDURE [dbo].[sp_retreive_" + name + "_by_" + fk_table + "]\n(";
-
-
-
-
                     String add = "";
                     add = "@" + fk_name.bracketStrip() + "_param " + r.data_type + r.length_text + "\n";
-
                     function_text = function_text + add +
                         "@limit_param int\n" +
                         "@offset_param int\n ";
-
-
                     function_text += ")";
-
-
                     String asString = "\nas";
-
                     function_text = function_text + asString + "\n Begin \n select \n";
                     foreach (Column s in columns)
                     {
@@ -554,8 +446,6 @@ namespace Data_Objects
                     {
                         if (fk.mainTable.Equals(name))
                         {
-
-
                             foreach (table t in data_tables.all_tables)
                             {
                                 if (t.name.Equals(fk.referenceTable))
@@ -565,14 +455,10 @@ namespace Data_Objects
                                         if (count > 0) { comma = ","; }
                                         function_text = function_text + comma + gen_Select_Line(t.name, u.column_name);
                                         count++;
-
                                     }
-
                                 }
                             }
                         }
-
-
                     }
                     function_text = function_text + "\n FROM " + name + "\n";
                     foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -591,7 +477,6 @@ namespace Data_Objects
                             if (keys_count > 0) { initial_word = "AND "; }
                             add = "";
                             add = initial_word + name + "." + fk_name + "=" + s.column_name.Replace("]", "").Replace("[", "@") + "_param\n";
-
                             function_text += add;
                             keys_count++;
                         }
@@ -611,22 +496,13 @@ namespace Data_Objects
                     }
                     function_text += "limit @limit_param\n";
                     function_text += "offset @offset_param\n";
-
-
-
                     function_text = function_text + " END \n" +
                                " GO\n";
-
-
-
-
-
                     full_text += comment_text + function_text;
                 }
             }
             return full_text;
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a string comment box followed by a  a Transact-SQL stored procedure that creates a retreive  all key function. This funciton  
@@ -638,27 +514,15 @@ namespace Data_Objects
         public String gen_retreive_by_all()
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_All);
-
-
-
             String firstLine = "";
             String secondLine = "CREATE PROCEDURE [dbo].[sp_retreive_by_all_" + name + "](\n" +
                 "@limit_param int\n" +
                 "@offset_param int " +
                 ")\nAS\n";
-
             String function_text = firstLine + secondLine;
-
-
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
             function_text += "begin \n SELECT ";
-            count = 0;
-            comma = "";
-
+            int count = 0;
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -669,8 +533,6 @@ namespace Data_Objects
             {
                 if (fk.mainTable.Equals(name))
                 {
-
-
                     foreach (table t in data_tables.all_tables)
                     {
                         if (t.name.Equals(fk.referenceTable))
@@ -680,9 +542,7 @@ namespace Data_Objects
                                 if (count > 0) { comma = ","; }
                                 function_text = function_text + comma + gen_Select_Line(t.name, r.column_name);
                                 count++;
-
                             }
-
                         }
                     }
                 }
@@ -711,10 +571,6 @@ namespace Data_Objects
             function_text += "limit @limit_param\n";
             function_text += "offset @offset_param\n";
             function_text += "\n ;\n END  \n GO\n";
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -729,24 +585,12 @@ namespace Data_Objects
         public String gen_retreive_by_active()
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_Active);
-
-
-
             String firstLine = "";
             String secondLine = "CREATE PROCEDURE [dbo].[sp_retreive_by_active_" + name + "]\nAS\n";
-
             String function_text = firstLine + secondLine;
-
-
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
             function_text += "begin \n SELECT ";
-            count = 0;
-            comma = "";
-
+            int count = 0;
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -757,8 +601,6 @@ namespace Data_Objects
             {
                 if (fk.mainTable.Equals(name))
                 {
-
-
                     foreach (table t in data_tables.all_tables)
                     {
                         if (t.name.Equals(fk.referenceTable))
@@ -768,9 +610,7 @@ namespace Data_Objects
                                 if (count > 0) { comma = ","; }
                                 function_text = function_text + comma + gen_Select_Line(t.name, r.column_name);
                                 count++;
-
                             }
-
                         }
                     }
                 }
@@ -784,14 +624,9 @@ namespace Data_Objects
                 }
             }
             function_text = function_text + "\n " + "where is_active=1\n" + ";\n END  \n GO\n";
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a string comment box followed by a Transact-SQL stored procedure that creates a standard insert function. This funciton will ask for  each field, 
@@ -802,7 +637,6 @@ namespace Data_Objects
         public string gen_insert()
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Insert);
-
             String function_text = "CREATE PROCEDURE [dbo].[sp_insert" + name + "]\n(";
             int count = 0;
             String comma = "";
@@ -813,7 +647,6 @@ namespace Data_Objects
                     if (count > 0) { comma = ","; }
                     string add = "";
                     add = "" + comma + "\n@" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + "";
-
                     function_text += add;
                     count++;
                 }
@@ -831,12 +664,6 @@ namespace Data_Objects
                     }
                 }
             }
-
-            count = 0;
-            comma = "";
-
-
-
             function_text += "\n)\n VALUES \n(";
             comma = "";
             count = 0;
@@ -848,16 +675,9 @@ namespace Data_Objects
                     function_text = function_text + comma + "\n@" + r.column_name.bracketStrip() + "";
                     count++;
                 }
-
             }
             function_text += "\n)\n";
-
-
-
             function_text += "return @@rowcount\nend\nGo\n";
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -870,7 +690,6 @@ namespace Data_Objects
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Update_Trigger);
             String function_text = "\n";
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -879,12 +698,10 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns> generates a string comment box followed by Transact-SQL code that creates a trigger that fires on inserts to the <see cref="table"/> object </returns>
-
         public String gen_insert_trigger()
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Insert_Trigger);
             String function_text = "\n";
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -897,31 +714,18 @@ namespace Data_Objects
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete_Trigger);
             String function_text = "\n";
-
             String full_text = comment_text + function_text;
             return full_text;
         }
         public String gen_select_distinct_for_dropdown()
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Select_Distinct);
-
-
-
             String firstLine = "";
             String secondLine = "CREATE PROCEDURE [dbo].[sp_select_distinct_and_active_" + name + "_for_dropdown]\nAS\n";
-
             String function_text = firstLine + secondLine;
-
-
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
             function_text += "begin \n SELECT DISTINCT \n";
-            count = 0;
-            comma = "";
-
+            int count = 0;
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -934,14 +738,9 @@ namespace Data_Objects
             function_text = function_text + "\n FROM " + name + "\n " +
                 "where is_active=1\n" +
                 ";\n END  \n GO\n";
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
-
         /// <summary>       
         /// generates a standard Transact-SQL select line for to be used by the stored procedures, such as select by PK or select by FK.
         /// Takes a string table name nad string column name as paramaters
@@ -952,25 +751,19 @@ namespace Data_Objects
         /// <returns>  a standard Transact-SQL select line to be used by the stored procedures, </returns>
         private string gen_Select_Line(string tablename, string column_name)
         {
-
             return "\n[" + tablename + "]." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
-
         }
-
         /// <summary>       
         /// generates a string comment box followed by a Transact-SQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields.. 
         /// Jonathan Beck
         /// </summary>
         /// <returns> generates a string comment box followed by Transact-SQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields. </returns>
-
         public string gen_sample_space()
         {
             string result = "";
             result += "\n";
-
             //comment box
             result += commentBox.genCommentBox(name, Component_Enum.SQL_Sample_Data);
-
             result += "\n";
             result += "/***************************************\n";
             result = result + "INSERT INTO " + name + " (";
@@ -999,17 +792,9 @@ namespace Data_Objects
                 }
                 result += ")";
             }
-
             result += "\n;\n";
             result += "*******************************/\n";
-
-
             return result;
-
-
-
         }
-
-
     }
 }

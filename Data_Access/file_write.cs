@@ -1,7 +1,6 @@
 ﻿using Data_Access_Interfaces;
 using System;
 using System.IO;
-
 namespace Data_Access
 {
     public class file_write : iFile_Write
@@ -16,7 +15,6 @@ namespace Data_Access
         public static string FilesPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\sql_files\\";
         static string jspPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputJSP.txt";
         static string servletPath = "C:\\Users\\jjbec\\Desktop\\Letter_B\\Table_Gen\\output_File\\outputservlet.txt";
-
         //public static StreamWriter WriteBuddy = new StreamWriter(newPath);
         public static StreamWriter CSharpBuddy = new StreamWriter(codePath);
         public static StreamWriter XAMLBuddy = new StreamWriter(XAMLPath);
@@ -32,16 +30,11 @@ namespace Data_Access
         {
             try
             {
-
-
-                System.IO.Directory.CreateDirectory(SeparatePath);
-
+                _ = System.IO.Directory.CreateDirectory(SeparatePath);
                 foreach (FileInfo file in directoryInfo.GetFiles())
                 {
-
                     file.Delete();
                 }
-
                 foreach (DirectoryInfo subfolder in directoryInfo.GetDirectories())
                 {
                     if (!subfolder.Name.Equals("temp"))
@@ -52,18 +45,15 @@ namespace Data_Access
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to create folders", ex);
             }
-
         }
-
         public void fileWrite(string output, string table, string type, string method)
         {
             try
             {
                 table = table.Replace("?", "");
-                System.IO.Directory.CreateDirectory(SeparatePath + type + "\\");
+                _ = System.IO.Directory.CreateDirectory(SeparatePath + type + "\\");
                 StreamWriter writer = new StreamWriter(SeparatePath + type + "\\" + table + "_" + method + ".txt", true);
                 writer.Write(output + "\n");
                 writer.Flush();
@@ -71,24 +61,17 @@ namespace Data_Access
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to write file", ex);
             }
-
-
-
         }
-
         public string getSeparatePath()
         {
             return SeparatePath;
         }
-
         public string getSettingsPath()
         {
             return SettingsPath;
         }
-
         public string getSettingsPath2()
         {
             return SettingsPath2;

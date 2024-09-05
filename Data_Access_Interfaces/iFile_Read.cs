@@ -7,5 +7,4 @@
         string readlocaiton();
         void clearLocation();
     }
-
 }

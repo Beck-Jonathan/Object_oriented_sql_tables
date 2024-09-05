@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-
 namespace Object_oriented_sql_tables
 {
-
     class Program
     {
         /// <summary>

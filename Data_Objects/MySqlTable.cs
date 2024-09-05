@@ -1,7 +1,6 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
-
 namespace Data_Objects
 {
     public class MySqlTable : table, iTable
@@ -11,9 +10,7 @@ namespace Data_Objects
             this.name = name;
             this.columns = columns;
         }
-
         //various components of a table
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates lines that specify the primary keys of the MySQL Table
@@ -23,8 +20,6 @@ namespace Data_Objects
         public String gen_primary_keys()
         {
             //generate the primary keys based on key_gen that was done in the rwos
-
-
             String key_string = "CONSTRAINT " + name + "_PK PRIMARY KEY (";
             int count = 0;
             foreach (Column r in columns)
@@ -37,10 +32,7 @@ namespace Data_Objects
                 }
             }
             key_string += "),";
-
             return key_string;
-
-
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
@@ -53,40 +45,27 @@ namespace Data_Objects
             int count = 0;
             foreign_keys = new List<String>();
             String output_keys = "";
-
             foreach (Column r in columns)
             {
                 foreach (string s in r.foreign_keys)
                 {
                     if (r.foreign_keys[0].Length > 0)
                     {
-
                         string start = "";
                         if (count > 0) { start = ",\n"; }
                         String[] chunks = s.Split('.');
                         String second_table = chunks[0];
                         String formatted_key = start + "CONSTRAINT fk_" + name + "_" + second_table + count + " foreign key (" + chunks[1] + ") references " + chunks[0] + " (" + chunks[1] + ")" + "";
-
                         foreign_keys.Add(formatted_key);
-
-
                     }
                     count++;
                 }
             };
-
-
-
             foreach (string tuv in foreign_keys)
             {
                 String s = tuv;
                 output_keys += s;
             }
-
-
-
-
-
             return output_keys;
         }
         /// <summary>
@@ -105,25 +84,17 @@ namespace Data_Objects
                 {
                     if (r.unique == 'y' || r.unique == 'Y')
                     {
-
                         String formatted_key = ",\n UNIQUE (" + r.column_name + ")";
-
                         alternate_keys.Add(formatted_key);
-
-
                     }
                     count++;
                 }
             };
-
-
-
             foreach (string tuv in alternate_keys)
             {
                 String s = tuv;
                 output_keys += s;
             }
-
             return output_keys;
         }
         /// <summary>
@@ -165,7 +136,6 @@ namespace Data_Objects
         /// <returns>A string MySQL code that creates the the columns of the table </returns>
         public String gen_columns()
         {
-
             int count = 0;
             String x = this.gen_header();
             x += "\n";
@@ -177,8 +147,6 @@ namespace Data_Objects
                 count++;
             }
             x += ",\n";
-
-
             return x;
         }
         /// <summary>
@@ -203,8 +171,6 @@ namespace Data_Objects
                 ", action_date DATETIME NOT NULL COMMENT 'when it happened'\n" +
                 ", action_user VARCHAR(255) NOT NULL COMMENT 'Who did it'\n";
             x += ");\n";
-
-
             return x;
         }
         /// <summary>
@@ -217,19 +183,15 @@ namespace Data_Objects
         public String gen_update()
         {
             string full_text = commentBox.genCommentBox(name, Component_Enum.SQL_Update);
-
             int count = 0;
             string comma = "";
             string firstLine = "DROP PROCEDURE IF EXISTS sp_update_" + name + ";\n DELIMITER $$\n";
-
             string secondLine = "CREATE PROCEDURE sp_update_" + name + "\n"
                 + "(";
-
             String function_text =
                  firstLine + secondLine; foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
-
                 String add = comma + "old" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + "\n";
                 if (r.primary_key != 'y' && r.primary_key != 'Y')
                 {
@@ -238,11 +200,8 @@ namespace Data_Objects
                 function_text += add;
                 count++;
             }
-
-
             function_text = function_text + ")\n" +
                 "begin \n" +
-
                 "UPDATE " + name + "\n set "
                 ;
             comma = "";
@@ -261,21 +220,15 @@ namespace Data_Objects
             String initial_word = "WHERE ";
             foreach (Column r in columns)
             {
-
                 if (keys_count > 0) { initial_word = "AND "; }
                 String add = initial_word + r.column_name + "= old" + r.column_name + "\n";
                 function_text += add;
                 keys_count++;
-
             }
             function_text = function_text + "\n ; end $$\n" +
-
                " DELIMITER ;\n";
-
             full_text += function_text;
-
             return full_text;
-
         }
         /// <summary>
         /// 
@@ -285,19 +238,14 @@ namespace Data_Objects
         /// <returns>A string comment box followed by a  string MySQL code that creates the the delete SP for the table </returns>
         public String gen_delete()
         {
-            String function_text = "";
-
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
-
-
-            function_text =
-                 "DROP PROCEDURE IF EXISTS sp_delete_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_delete_" + name + "\n"
-                + "(";
+            string function_text =
+     "DROP PROCEDURE IF EXISTS sp_delete_" + name + ";\n"
+    + "DELIMITER $$\n"
+    + "CREATE PROCEDURE sp_delete_" + name + "\n"
+    + "(";
             int count;
-            String comma = "";
-            comma = "";
+            string comma = "";
             count = 0;
             foreach (Column r in columns)
             {
@@ -309,13 +257,11 @@ namespace Data_Objects
                     count++;
                 }
             }
-
             function_text = function_text + ")\n" +
                 "BEGIN\n" +
                 "UPDATE " + name + "\n  "
                 ;
             function_text += " set is_active=0\n";
-            comma = "";
             int keys_count = 0;
             String initial_word = "WHERE ";
             foreach (Column r in columns)
@@ -329,17 +275,10 @@ namespace Data_Objects
                 }
             }
             function_text = function_text + "\n" +
-
                " ; END $$\n" +
                " DELIMITER ;\n";
-
-
             String full_text = comment_text + function_text;
             return full_text;
-
-
-
-
         }
         /// <summary>
         /// 
@@ -349,20 +288,14 @@ namespace Data_Objects
         /// <returns> a string comment box followed by a  string MySQL code that creates the the undelete SP for the table </returns>
         public String gen_undelete()
         {
-            String function_text = "";
-
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Undelete);
-
-
-            function_text =
-                 "DROP PROCEDURE IF EXISTS sp_undelete_" + name + ";\n"
-                + "DELIMITER $$\n"
-                + "CREATE PROCEDURE sp_undelete_" + name + "\n"
-                + "(";
-            int count = 0;
+            string function_text =
+     "DROP PROCEDURE IF EXISTS sp_undelete_" + name + ";\n"
+    + "DELIMITER $$\n"
+    + "CREATE PROCEDURE sp_undelete_" + name + "\n"
+    + "(";
             String comma = "";
-
-            count = 0;
+            int count = 0;
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -373,14 +306,11 @@ namespace Data_Objects
                     count++;
                 }
             }
-            count = 0;
             function_text = function_text + ")\n" +
                 "BEGIN\n" +
-
                 "UPDATE " + name + "\n  "
                 ;
             function_text += " set is_active=1\n";
-            comma = "";
             int keys_count = 0;
             String initial_word = "WHERE ";
             foreach (Column r in columns)
@@ -394,17 +324,10 @@ namespace Data_Objects
                 }
             }
             function_text = function_text + "\n" +
-
                " ; END $$\n" +
                " DELIMITER ;\n";
-
-
             String full_text = comment_text + function_text;
             return full_text;
-
-
-
-
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
@@ -415,17 +338,14 @@ namespace Data_Objects
         /// <returns> a string comment box followed by a  string MySQL code that creates the the retreive by Primary key SP for the table </returns>
         public String gen_retreive_by_key()
         {
-
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_PK);
             String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_pk_" + name + ";\n"
                 + "DELIMITER $$\n";
             String secondLine = "CREATE PROCEDURE sp_retreive_by_pk_" + name + "\n"
                 + "(\n";
-
             String function_text = firstLine + secondLine;
             int count = 0;
-            String comma = "";
-            comma = "";
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -438,7 +358,6 @@ namespace Data_Objects
                 }
             }
             function_text += ")";
-
             count = 0;
             comma = "";
             String asString = "";
@@ -449,7 +368,6 @@ namespace Data_Objects
                 if (count > 0) { comma = ","; }
                 function_text = function_text + comma + genSelectLine(name, r.column_name);
                 count++;
-
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
             {
@@ -469,7 +387,6 @@ namespace Data_Objects
                     }
                 }
             }
-
             function_text = function_text + "\n FROM " + name + "\n";
             foreach (foreignKey fk in data_tables.all_foreignKey)
             {
@@ -486,26 +403,16 @@ namespace Data_Objects
                 {
                     if (keys_count > 0) { initial_word = "AND "; }
                     string add = "";
-
                     add = initial_word + r.column_name + "=" + r.column_name + "_param\n";
-
                     function_text += add;
                     keys_count++;
                 }
             }
-
-
-
             function_text = function_text + " ; END $$\n" +
                " DELIMITER ;\n";
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive by foreign key function. This funciton will ask for a foregn key(s) of the table, 
@@ -517,7 +424,6 @@ namespace Data_Objects
         public String gen_retreive_by_fkey()
         {
             string fulltext = "";
-
             foreach (Column r in columns)
             {
                 if (r.references != "")
@@ -532,25 +438,14 @@ namespace Data_Objects
                         + "DELIMITER $$\n";
                     String secondLine = "CREATE PROCEDURE sp_retreive_" + name + "_by_" + fk_table + " \n"
                         + "(\n";
-
-
                     String function_text = firstLine + secondLine;
-
-
                     String add = "";
-
                     add = fk_name + "_param " + r.data_type + r.length_text + ",\n";
                     function_text = function_text + add +
                     "limit_param int ,\n " +
                         "offset_param int \n";
-
-
-
                     function_text += ")";
-
-
                     String asString = "";
-
                     function_text = function_text + asString + "\n Begin \n select \n";
                     foreach (Column s in columns)
                     {
@@ -593,7 +488,6 @@ namespace Data_Objects
                             if (keys_count > 0) { initial_word = "AND "; }
                             add = "";
                             add = initial_word + name + "." + fk_name + "=" + fk_name + "_param\n";
-
                             function_text += add;
                             keys_count++;
                         }
@@ -612,20 +506,15 @@ namespace Data_Objects
                             count++;
                         }
                     }
-
                     function_text += "limit limit_param\n";
                     function_text += "offset offset_param\n";
                     function_text = function_text + " ; END $$\n" +
                            " DELIMITER ;\n";
-
-
                     fulltext = fulltext + comment_text + function_text;
-
                 }
             }
             return fulltext;
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive  all key function. This funciton  
@@ -644,19 +533,10 @@ namespace Data_Objects
                 "offset_param int \n" +
                 ")" +
                 "\n";
-
             String function_text = firstLine + secondLine;
-
-
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
             function_text += "begin \n SELECT \n";
-            count = 0;
-            comma = "";
-
+            int count = 0;
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -681,8 +561,6 @@ namespace Data_Objects
                     }
                 }
             }
-
-
             function_text = function_text + "\n FROM " + name + "\n";
             foreach (foreignKey fk in data_tables.all_foreignKey)
             {
@@ -705,13 +583,9 @@ namespace Data_Objects
                     count++;
                 }
             }
-
             function_text += "limit limit_param\n";
             function_text += "offset offset_param\n";
             function_text += "\n ;\n END $$ \n DELIMITER ;\n";
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -729,19 +603,10 @@ namespace Data_Objects
             string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_active_" + name + ";\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_retreive_by_active_" + name + "()\n";
-
             String function_text = firstLine + secondLine;
-
-
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
             function_text += "begin \n SELECT \n";
-            count = 0;
-            comma = "";
-
+            int count = 0;
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -766,7 +631,6 @@ namespace Data_Objects
                     }
                 }
             }
-
             function_text = function_text + "\n FROM " + name + "\n";
             foreach (foreignKey fk in data_tables.all_foreignKey)
             {
@@ -775,12 +639,8 @@ namespace Data_Objects
                     function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName + "\n";
                 }
             }
-
             function_text = function_text + "where is_active=1\n" +
                 " ;\n END $$ \n DELIMITER ;\n";
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -798,8 +658,6 @@ namespace Data_Objects
                  "DROP PROCEDURE IF EXISTS sp_insert_" + name + ";\n"
                 + "DELIMITER $$\n";
             String secondLine = "CREATE PROCEDURE sp_insert_" + name + "(\n";
-
-
             String function_text = firstLine + secondLine;
             int count = 0;
             String comma = "";
@@ -809,21 +667,13 @@ namespace Data_Objects
                 {
                     if (count > 0) { comma = ","; }
                     string add = "";
-
-
-
                     add = comma + "in " + r.column_name + "_param " + r.data_type + r.length_text + "\n";
-
                     function_text += add;
                     count++;
                 }
             }
-
-
-
             function_text = function_text + ")\n" +
             "begin \n" +
-
             "INSERT INTO  " + name + "\n(";
             comma = "";
             foreach (Column r in columns)
@@ -834,7 +684,6 @@ namespace Data_Objects
                     comma = ",";
                 }
             }
-
             function_text += ")\n values \n(";
             count = 0;
             comma = "";
@@ -849,22 +698,9 @@ namespace Data_Objects
                 }
             }
             function_text += ")\n";
-
-            count = 0;
-            comma = "";
-
-
-
-
-
             function_text = function_text +
                " ; END $$\n" +
                " DELIMITER ;\n";
-
-
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -885,7 +721,6 @@ namespace Data_Objects
                 + "insert into " + name + "_audit (\n";
             int count = 0;
             String comma = "";
-
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -898,7 +733,6 @@ namespace Data_Objects
                 + "\n) values(\n";
             count = 0;
             comma = "";
-
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -913,7 +747,6 @@ namespace Data_Objects
                 + "\nend  $$"
                 + "\nDELIMITER ;"
                 + "\n   ;\n";
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -934,7 +767,6 @@ namespace Data_Objects
                 + "insert into " + name + "_audit (\n";
             int count = 0;
             String comma = "";
-
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -947,7 +779,6 @@ namespace Data_Objects
                 + "\n) values(\n";
             count = 0;
             comma = "";
-
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -962,7 +793,6 @@ namespace Data_Objects
                 + "\nend  $$"
                 + "\nDELIMITER ;"
                 + "\n   ;\n";
-
             String full_text = comment_text + function_text;
             return full_text;
         }
@@ -983,7 +813,6 @@ namespace Data_Objects
                 + "insert into " + name + "_audit (\n";
             int count = 0;
             String comma = "";
-
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -996,7 +825,6 @@ namespace Data_Objects
                 + "\n) values(\n";
             count = 0;
             comma = "";
-
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -1011,30 +839,19 @@ namespace Data_Objects
                 + "\nend  $$"
                 + "\nDELIMITER ;"
                 + "\n   ;\n";
-
             String full_text = comment_text + function_text;
             return full_text;
         }
-
         public String gen_select_distinct_for_dropdown()
         {
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Select_Distinct);
             string firstLine = "DROP PROCEDURE IF EXISTS sp_select_distinct_and_active_" + name + "_for_dropdown;\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_select_distinct_and_active_" + name + "_for_dropdown()\n";
-
             String function_text = firstLine + secondLine;
-
-
-
-            int count = 0;
-            String comma = "";
-            comma = "";
-            count = 0;
             function_text += "begin \n SELECT DISTINCT\n";
-            count = 0;
-            comma = "";
-
+            int count = 0;
+            string comma = "";
             foreach (Column r in columns)
             {
                 if (count > 0) { comma = ","; }
@@ -1044,18 +861,12 @@ namespace Data_Objects
                 }
                 count++;
             }
-
             function_text = function_text + "\n FROM " + name + "\n" +
                 "where is_active=1\n" +
                 " ;\n END $$ \n DELIMITER ;\n";
-
-
-
             String full_text = comment_text + function_text;
             return full_text;
-
         }
-
         /// <summary>       
         /// generates a standard MySQL select line for to be used by the stored procedures, such as select by PK or select by FK.
         /// Takes a string table name nad string column name as paramaters
@@ -1066,8 +877,6 @@ namespace Data_Objects
         /// <returns>  a standard MySQL select line to be used by the stored procedures, </returns>
         private string genSelectLine(string tablename, string column_name)
         {
-
-
             return "\n" + tablename + "." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
         }
         /// <summary>       
@@ -1079,10 +888,8 @@ namespace Data_Objects
         {
             string result = "";
             result += "\n";
-
             //comment box
             result += commentBox.genCommentBox(name, Component_Enum.SQL_Sample_Data);
-
             result += "\n";
             result += "/***************************************\n";
             result = result + "INSERT INTO " + name + " (";
@@ -1119,17 +926,9 @@ namespace Data_Objects
                 }
                 result += ")";
             }
-
             result += "\n;\n";
             result += "*******************************/\n";
-
-
             return result;
-
-
-
         }
-
-
     }
 }

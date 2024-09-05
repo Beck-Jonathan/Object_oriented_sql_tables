@@ -2,7 +2,6 @@
 using Data_Access_Interfaces;
 using System;
 using System.IO;
-
 namespace LogicLayer
 {
     public class file_write_manager : iFile_write_manager
@@ -25,7 +24,6 @@ namespace LogicLayer
             SettingsPath = writer.getSettingsPath();
             SettingsPath2 = writer.getSettingsPath2();
         }
-
         public void startUp(DirectoryInfo directoryInfo)
         {
             try
@@ -34,13 +32,10 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to write file", ex);
             }
-
             return;
         }
-
         public void fileWrite(string output, string table, string type, string method)
         {
             try
@@ -49,10 +44,8 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to write file", ex);
             }
-
             return;
         }
     }

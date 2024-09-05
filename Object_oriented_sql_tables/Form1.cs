@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
-
-
-
 namespace Object_oriented_sql_tables
 {
     public partial class Form1 : Form
@@ -43,7 +40,6 @@ namespace Object_oriented_sql_tables
             btn_generateTable.Enabled = false;
             clb_options.Enabled = false;
         }
-
         //open file dialog
         private void button1_Click(object sender, System.EventArgs e)
         {
@@ -56,14 +52,11 @@ namespace Object_oriented_sql_tables
             }
             catch (Exception)
             {
-
                 openFileDialog.InitialDirectory = "c:\\";
             }
-
             //openFileDialog.InitialDirectory = settings.app_path;
-            openFileDialog.ShowDialog();
+            _ = openFileDialog.ShowDialog();
             string filepath = openFileDialog.FileName;
-
             settings.path = filepath;
             btn_selectfile.Enabled = false;
             btn_read_table.Enabled = true;
@@ -85,25 +78,21 @@ namespace Object_oriented_sql_tables
             }
             catch (Exception ex)
             {
-
-                MessageBox.Show(ex.Message);
+                _ = MessageBox.Show(ex.Message);
             }
-
-
-            String database_head = database.print_database_header();
+            _ = database.print_database_header();
             //file_write.sqlBuddy2.Write(database_head);
             int count = 0;
-            List<Boolean> these_settings = new List<Boolean>();
-            List<foreignKey> foreignKeys = data_tables.all_foreignKey;
+            _ = new List<Boolean>();
             string analysis = data_tables.analyzeRelationships();
             file_write.fileWrite(analysis, "analysis", "analysis", "analysis");
             foreach (iTable t in data_tables.all_tables)
             {
                 t.name = t.name.Replace("[dbo].[", "");
                 t.name = t.name.Replace("]", "");
-                these_settings = settings.all_options[count];
-                string s = "";
-                List<String> st = new List<String>();
+                List<bool> these_settings = settings.all_options[count];
+                _ = new List<String>();
+                string s;
                 // if selected, add rows to table
                 if (these_settings[0])
                 {
@@ -111,349 +100,256 @@ namespace Object_oriented_sql_tables
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
-
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add primary keys to table
                 if (these_settings[1])
                 {
                     s = t.gen_primary_keys();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
-
                 // if selected, create the alternate keys
                 if (true)
                 {
                     s = t.gen_alternate_keys();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add foreign keys to table
                 if (these_settings[2])
                 {
                     s = t.gen_foreign_keys();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
-
                 //gen table footer
                 if (true)
                 {
                     s = t.gen_table_footer();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
-
-
                 // if selected, create a matching audit table
                 if (these_settings[3])
                 {
                     s = t.gen_audit_table();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "audit_table");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                     //file_write.sqlBuddy2.Write(s);
                 }
-
-
-
-
                 // if selected, add an SP_update to table
                 if (these_settings[4])
                 {
                     s = t.gen_update();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add an SP_delete and su_undelete to table
                 if (these_settings[5])
                 {
                     s = t.gen_delete();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
-
                     //file_write.sqlBuddy2.Write(s);
                     s = t.gen_undelete();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
-
-
                 }
                 // if selected, add an SP_retreive that requires a PK
                 if (these_settings[6])
                 {
                     s = t.gen_retreive_by_key();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected an an SP_retreive that shows all data in table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_all();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
                 //if selected create an sp_retrive that gets all active data in the table
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_active();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
-
                 //if selected create an sp_select that gets all data by a foreign key
                 if (true)
                 {
-
                     s = t.gen_retreive_by_fkey();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
-
                 //select distinct for drop downs
                 if (true)
                 {
-
                     s = t.gen_select_distinct_for_dropdown();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
-
-
                 }
                 // if selected, add SP_insert to add records to table
                 if (these_settings[8])
                 {
                     s = t.gen_insert();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                     //file_write.sqlBuddy2.Write(s);
                 }
                 // if selected, add a trigger for inserts
                 if (these_settings[9])
                 {
                     s = t.gen_insert_trigger();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Triggers");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 // if selected, add a trigger for updates
                 if (these_settings[10])
                 {
                     s = t.gen_update_trigger();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Triggers");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 // if selected, add a triger for delets
                 if (these_settings[11])
                 {
                     s = t.gen_delete_trigger();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Triggers");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
-
                 //if selected, add a space for adding sample data
                 if (true)
                 {
                     s = t.gen_sample_space();
-
                     try
                     {
                         file_write.fileWrite(s, tbx_databasename.Text, "sql", "Sample");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
-
                 }
             }
             foreach (table t in data_tables.all_tables)
@@ -462,155 +358,117 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_IThingAccessor();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "IAccessor");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 //needs to be these settings 13
                 if (true)
                 {
                     s = t.gen_ThingAccessor();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "Accessor");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 //needs to be these settings[14]
                 if (true)
                 {
                     s = t.gen_IThingManager();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "IManager");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true)
                 {
                     s = t.gen_ThingMananger();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "Manager");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true)
                 {
                     s = t.gen_DataObject();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "DataObject");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true) //change this to these setings 17
                 {
                     s = t.genXAMLWindow();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "XAMLWindow");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true) //change this to these setings 18
                 {
                     s = t.genWindowCSharp();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "CSharpWindowCode");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true) //change this to these setings 19
                 {
                     s = t.genJavaModel();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaModel", "Model");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
-
                 if (true) //change this to these setings 20
                 {
                     s = t.genJavaDAO();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaModelDAO", "ModelDAO");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 // if (true) //change this to these setings 21 Creates a sql file iwth the table name
                 // {
                 //   s = t.name.bracketStrip().Replace("?","");
                 //  System.IO.File.Create(file_write.FilesPath + s + ".sql");
-
                 //}
                 //if (true) //change this to these setings 22, creates a bat file to run all of the sql iles you just created
                 // {
@@ -621,174 +479,123 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 23
                 {
                     s = t.genCreateJSP();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaJSP", "CreateJSP");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true) //change this to these setings 24
                 {
                     s = t.genCreateServelet();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "CreateServlet");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true) //change this to these setings 25
                 {
                     s = t.genviewAllJSP();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaJSP", "ViewAllJSP");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
                 if (true) //change this to these setings 26
                 {
                     s = t.genviewAllServlet();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewAllServlet");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
-
                 if (true) //change this to these setings 27
                 {
                     s = t.genDeleteServlet();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "DeleteServlet");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
-
                 if (x == 0) //change this to these setings 28 && x==0
                 {
                     x++;
                     s = t.genIndexJSP();
-
                     try
                     {
                         file_write.fileWrite(s, "index", "JavaJSP", "Index");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
-
                 if (true)
                 {  //change this to these settings 29
                     s = t.genViewEditJSP();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaJSP", "ViewEditJSP");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
                 }
-
                 if (true)
                 {    //change to these settings 30
                     s = t.genViewEditServlet();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewEditServlet");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
-
                 }
-
                 if (true)
                 {    //change to these settings 31
                     s = t.jQueryValidation();
-
                     try
                     {
                         file_write.fileWrite(s, t.name, "jQuery", "AddEditValidate");
                     }
                     catch (Exception ex)
                     {
-
-                        MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
-
-
                 }
-
-
-
-
                 count++;
             }
-
             //file_write.sqlBuddy2.Flush();
             //file_write.CSharpBuddy.Flush();
             //file_write.XAMLBuddy.Flush();
             //file_write.BatchBuddy.Flush();
             //file_write.JSPBuddy.Flush();
             //file_write.ServletBuddy.Flush();
-            MessageBox.Show("generation complete");
+            _ = MessageBox.Show("generation complete");
             this.Close();
-
-
         }
-
         private void initialize_settings()
         {
             for (int i = 0; i < settings.table_count; i++)
@@ -797,18 +604,12 @@ namespace Object_oriented_sql_tables
                 {
                     settings.all_options[i][j] = true;
                 }
-
             }
-
-
-
         }
-
         private void tbx_databasename_TextChanged(object sender, EventArgs e)
         {
             settings.database_name = tbx_databasename.Text;
         }
-
         private void btn_read_table_Click(object sender, EventArgs e)
         {
             try
@@ -817,17 +618,12 @@ namespace Object_oriented_sql_tables
             }
             catch (Exception ex)
             {
-
-                MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                 this.Close();
-
             }
-
-
             settings.table_count = data_tables.all_tables.Count;
             for (int i = 0; i < settings.table_count; i++)
             {
-
             }
             foreach (table t in data_tables.all_tables)
             {
@@ -837,11 +633,9 @@ namespace Object_oriented_sql_tables
             cbx_table_names.Enabled = true;
             btn_selectfile.Enabled = false;
             btn_read_table.Enabled = false;
-
             btn_generateTable.Enabled = true;
             clb_options.Enabled = true;
         }
-
         private void cbx_table_names_SelectedIndexChanged(object sender, EventArgs e)
         {
             clb_options.Enabled = true;
@@ -850,9 +644,7 @@ namespace Object_oriented_sql_tables
             {
                 clb_options.SetItemChecked(i, these_settings[i]);
             }
-
         }
-
         private void clb_options_SelectedIndexChanged(object sender, EventArgs e)
         {
             List<Boolean> these_settings = new List<Boolean>();
@@ -861,23 +653,17 @@ namespace Object_oriented_sql_tables
                 these_settings.Add(clb_options.GetItemChecked(i));
             }
             settings.all_options[cbx_table_names.SelectedIndex] = these_settings;
-
         }
-
         private void cbxTSql_CheckedChanged(object sender, EventArgs e)
         {
             settings.TSQLMode = cbxTSql.Checked;
         }
-
         private void btn_cSharp_Click(object sender, EventArgs e)
         {
             // csharpsettings();
-
         }
-
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
-
         }
     }
 }

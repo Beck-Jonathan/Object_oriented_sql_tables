@@ -1,9 +1,6 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
-
-
-
 namespace Data_Objects
 {
     public class table
@@ -26,36 +23,23 @@ namespace Data_Objects
                 this.name = name;
             }
             this.columns = columns;
-
         }
-
-
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates an data access layer interface for c#
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that represents the data access layer interface in c#</returns>
-
         public String gen_IThingAccessor()
         {
-            string output = "";
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IAccessor);
             string header = "public interface I" + name + "Accessor \n{\n";
-
             string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
-
-
-
             string selectThingbyPK = name + " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
             string selectallThing = "List<" + name + "> selectAll" + name + "();\n";
             string updateThing = "int update" + name + "(";
-
             updateThing = updateThing + name + "_old" + name + " , " + name + " _new" + name;
             updateThing += ");\n";
-
-
             string deleteThing = "int delete" + name + "(" + name + " _" + name + ");\n";
             string undeleteThing = "int undelete" + name + "(" + name + " _" + name + ");\n";
             string dropdownThing = "";
@@ -65,7 +49,6 @@ namespace Data_Objects
                 if (fk.mainTable == name)
                 {
                     dropdownThing = dropdownThing + "List<String> selectDistinct" + fk.referenceTable + "ForDropDown();\n";
-
                 }
             }
             string selectfkThing = "";
@@ -77,16 +60,11 @@ namespace Data_Objects
                     string fk_table = parts[0];
                     string fk_name = parts[1];
                     selectfkThing = selectfkThing + "select" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ", int limit, int offset);";
-
                 }
             }
-
-
-            output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + "}\n\n";
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + "}\n\n";
             return output;
         }
-
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates an data access layer  for c#
@@ -95,7 +73,6 @@ namespace Data_Objects
         /// <returns>A string that represents the data access layer  in c# </returns>
         public String gen_ThingAccessor()
         {
-
             //nneds proper number and code choice
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
             //good
@@ -114,18 +91,10 @@ namespace Data_Objects
             string deleteThing = genAccessorDelete();
             //good
             string undeleteThing = genAccessorUndelete();
-
             string distinctThing = genAccessorDistinct();
-
-
             string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + "}\n\n";
             //good
-
-
-
             return output;
-
-
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
@@ -135,14 +104,10 @@ namespace Data_Objects
         /// <returns>A string that represents the data access layer interface in c# </returns>
         public String gen_IThingManager()
         {
-            string output = commentBox.GenXMLClassComment(this, XMLClassType.CSharpIManager);
+            _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpIManager);
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
             string header = "public interface I" + name + "Manager \n{\n";
-
             string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
-
-
-
             string getThingbyPK = name + " get" + name + "ByPrimaryKey(string " + name + "ID);\n";
             string getallThing = "List<" + name + "> getAll" + name + "();\n" +
                                    "List<" + name + "> getAll" + name + "(int offset);\n" +
@@ -161,39 +126,29 @@ namespace Data_Objects
                                    "List<" + name + "> getAll" + name + "by" + fk_table + "(" + fk_name + ",int limit, int offset);\n";
                 }
             }
-
-
-
             string editThing = "int edit" + name + "(";
             editThing = editThing + name + " _old" + name + " , " + name + " _new" + name;
             editThing += ");\n";
             string purgeThing = "int purge" + name + "(string " + name + "ID);\n";
             string unPurgeThing = "int unpurge" + name + "(string " + name + "ID);\n";
             string dropdownThing = "";
-
             foreach (foreignKey fk in all_foreignKey)
             {
                 if (fk.mainTable == name)
                 {
                     dropdownThing = dropdownThing + "List<String> getDistinct" + fk.referenceTable + "ForDropDown();\n";
-
                 }
             }
-            output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + "}\n\n";
+            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + "}\n\n";
             foreach (foreignKey key in data_tables.all_foreignKey)
             {
                 if (key.referenceTable == name)
                 {
                     output = output + "List<" + key.mainTable + "> getAll" + key.mainTable + "by" + name + "();\n";
-
                 }
             }
-
-
             return output;
-
         }
-
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a logic layer  for c#
@@ -213,8 +168,6 @@ namespace Data_Objects
             String Update = genManagerUpdate();
             //String dropdown = genManagerDropDown();
             String footer = "\n}\n";
-
-
             result = result
                 + header
                 + Add
@@ -227,13 +180,8 @@ namespace Data_Objects
                 // + dropdown
                 + footer
                 ;
-
-
-
             return result;
-
         }
-
         /// <summary>
         /// Generates a dependency-inversion based header for the Logic layer manager, which incorportates a constructor
         /// that takes the data access object.
@@ -243,7 +191,6 @@ namespace Data_Objects
         private string genManagerHeader()
         {
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_IManager);
-
             String result = "";
             result = result + "public class " + name + "Manager : I" + name + "Manager\n";
             result += "{\n";
@@ -258,9 +205,7 @@ namespace Data_Objects
             result += "{\n";
             result = result + "_" + name.ToLower() + "Accessor = " + name.ToLower() + "Accessor;\n";
             result += "}\n";
-
             return comment + result;
-
         }
         /// <summary>
         /// Generates a logic layer method that takes in an object this <see cref="table"/> reprents and passes it to the data
@@ -284,10 +229,7 @@ namespace Data_Objects
             result += "return result;\n";
             result += "}\n";
             result += "\n";
-
             return comment + result;
-
-
         }
         /// <summary>
         /// Generates a logic layer method that takes in an object this <see cref="table"/> reprents and passes it to the data
@@ -310,10 +252,7 @@ namespace Data_Objects
             purgeThing += "throw ex;\n";
             purgeThing += "}\n";
             purgeThing += "return result;\n}\n";
-
-
             return comment + purgeThing;
-
         }
         /// <summary>
         /// Generates a logic layer method that takes in an object this <see cref="table"/> reprents and passes it to the data
@@ -336,13 +275,7 @@ namespace Data_Objects
             purgeThing += "throw ex;\n";
             purgeThing += "}\n";
             purgeThing += "return result;\n}\n";
-
-
             return comment + purgeThing;
-
-
-
-
         }
         /// <summary>
         /// Generates a logic layer method that takes in an object ID and passes it to the data
@@ -365,9 +298,6 @@ namespace Data_Objects
             retreiveThing += "}\n";
             retreiveThing += "return result;\n}\n";
             return comment + retreiveThing;
-
-
-
         }
         /// <summary>
         /// Generates a logic layer method that takes in no paramaters and passes a request to the data
@@ -381,12 +311,10 @@ namespace Data_Objects
             comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_No_Param);
             string retreiveAll = comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
             retreiveAll = retreiveAll + "return get" + name + "ByAll(0," + appData2.settings.page_size + ");\n}\n";
-
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_One_Param);
             comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_One_Param);
             retreiveAll = retreiveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
             retreiveAll = retreiveAll + "return get" + name + "ByAll(offset, " + appData2.settings.page_size + ");\n}\n";
-
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_Two_Param);
             comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
             retreiveAll = retreiveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
@@ -402,7 +330,6 @@ namespace Data_Objects
             retreiveAll += "}\n";
             retreiveAll += "return result;\n}\n";
             return retreiveAll;
-
         }
         /// <summary>
         /// Generates a logic layer method that takes in an object ID and passes it to the data
@@ -431,8 +358,6 @@ namespace Data_Objects
                 "\n}\n";
                     getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_Two_Param);
                     getfkThing = getfkThing + "public List<" + name + "> getAll" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ",int limit, int offset){\n";
-
-
                     getfkThing = getfkThing + "List<" + name + "> result =new List<" + name + ">();\n";
                     getfkThing += "try{\n";
                     getfkThing = getfkThing + "result = _" + name.ToLower() + "Accessor.select" + name + "by" + fk_table + "(" + fk_name + ",offset,limit);\n";
@@ -470,27 +395,18 @@ namespace Data_Objects
             updateThing += "}\n";
             updateThing += "return result;\n}\n";
             return comment + updateThing;
-
-
-
         }
-
         /// Generates a c# data object with markup reflecting min and max length, etc.
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string representing c# data object </returns>
         public String gen_DataObject()
         {
-
-            string output = "";
-            output = commentBox.GenXMLClassComment(this, XMLClassType.CSharpDataObject);
-            output = "public class " + name + "\n{\n";
+            _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpDataObject);
+            string output = "public class " + name + "\n{\n";
             int count = 0;
-
-
             foreach (Column r in columns)
             {
-
                 String DataAnnotationRequired = "";
                 String DataAnnotationLength = "";
                 if (r.nullable == 'n' || r.nullable == 'N')
@@ -500,7 +416,6 @@ namespace Data_Objects
                 if (r.length != 0)
                 {
                     DataAnnotationLength = "[StringLength(" + r.length + ")]\n";
-
                 }
                 String DataAnnotationDisplayName = "[Display(Name = \"" + r.column_name.bracketStrip() + "\")]\n";
                 String add = "public " + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip() + "{ set; get; }\n";
@@ -508,13 +423,11 @@ namespace Data_Objects
                 count++;
             }
             output += "\n}\n";
-
             if (foreign_keys.Count > 0)
             {
                 output = output + "public class " + name + "VM: " + name + "\n{\n";
                 foreach (Column r in columns)
                 {
-
                     if (r.foreign_key == "y" || r.foreign_key == "Y")
                     {
                         int dotPosition = r.references.IndexOf('.');
@@ -528,32 +441,20 @@ namespace Data_Objects
                         if (r.length != 0)
                         {
                             DataAnnotationLength = "[StringLength(" + r.length + ")]\n";
-
                         }
                         String DataAnnotationDisplayName = "[Display(Name = \"" + r.column_name + "\")]\n";
                         output = output + "public " + keytype + " _" + keytype.ToLower() + "{ get ; set; }\n";
-
                     }
-
                 }
                 output += "}\n";
             }
-
-
-
-
             return output;
-
-
         }
         //Not implemented
         public String gen_functions()
         {
             string x = " ";
-
             return x;
-
-
         }
         /// <summary>
         /// Generates a header for the data access layer accessor, 
@@ -562,14 +463,9 @@ namespace Data_Objects
         /// <returns>A string that is c# code for the header of the data access layer </returns>
         private string genAccessorClassHeader()
         {
-            string header = "";
-            string comment = commentBox.GenXMLClassComment(this, XMLClassType.CSharpAccessor);
-            header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
-
-
+            _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpAccessor);
+            string header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
             return header;
-
-
         }
         /// <summary>
         /// Generates a header for functions of the  accessor, 
@@ -579,21 +475,17 @@ namespace Data_Objects
         private String genSPHeaderA(string commandText)
         {
             //for update, insert, delete
-            String output = "";
-            output = "int rows = 0;\n"
-            + "// start with a connection object\n"
-            + "var conn = SqlConnectionProvider.GetConnection();\n"
-            + "// set the command text\n"
-            + "var commandText = \"" + commandText + "\";\n"
-            + "// create the command object\n"
-            + "var cmd = new SqlCommand(commandText, conn);\n"
-            + "// set the command type\n"
-            + "cmd.CommandType = CommandType.StoredProcedure;\n"
-            + "// we need to add parameters to the command\n";
-
-
+            string output = "int rows = 0;\n"
++ "// start with a connection object\n"
++ "var conn = SqlConnectionProvider.GetConnection();\n"
++ "// set the command text\n"
++ "var commandText = \"" + commandText + "\";\n"
++ "// create the command object\n"
++ "var cmd = new SqlCommand(commandText, conn);\n"
++ "// set the command type\n"
++ "cmd.CommandType = CommandType.StoredProcedure;\n"
++ "// we need to add parameters to the command\n";
             return output;
-
         }
         /// <summary>
         /// Generates a header for functions of the  accessor, 
@@ -603,19 +495,16 @@ namespace Data_Objects
         private String genSPHeaderB(string DataObject, string commandText)
         {
             //for single data object
-            string output = "";
-            output = DataObject + " output = new " + DataObject + "();\n"
-            + "// start with a connection object\n"
-            + "var conn = SqlConnectionProvider.GetConnection();\n"
-            + "// set the command text\n"
-            + "var commandText = \"" + commandText + "\";\n"
-            + "// create the command object\n"
-            + "var cmd = new SqlCommand(commandText, conn);\n"
-            + "// set the command type\n"
-            + "cmd.CommandType = CommandType.StoredProcedure;\n"
-            + "// we need to add parameters to the command\n";
-
-
+            string output = DataObject + " output = new " + DataObject + "();\n"
++ "// start with a connection object\n"
++ "var conn = SqlConnectionProvider.GetConnection();\n"
++ "// set the command text\n"
++ "var commandText = \"" + commandText + "\";\n"
++ "// create the command object\n"
++ "var cmd = new SqlCommand(commandText, conn);\n"
++ "// set the command type\n"
++ "cmd.CommandType = CommandType.StoredProcedure;\n"
++ "// we need to add parameters to the command\n";
             return output;
         }
         /// <summary>
@@ -626,17 +515,16 @@ namespace Data_Objects
         private String genSPHeaderC(string DataObject, string commandText)
         {
             //for list of data object
-            string output = "";
-            output = "List<" + DataObject + "> output = new " + "List<" + DataObject + ">();\n"
-            + "// start with a connection object\n"
-            + "var conn = SqlConnectionProvider.GetConnection();\n"
-            + "// set the command text\n"
-            + "var commandText = \"" + commandText + "\";\n"
-            + "// create the command object\n"
-            + "var cmd = new SqlCommand(commandText, conn);\n"
-            + "// set the command type\n"
-            + "cmd.CommandType = CommandType.StoredProcedure;\n"
-            + "// There are no parameters to set or add\n";
+            string output = "List<" + DataObject + "> output = new " + "List<" + DataObject + ">();\n"
++ "// start with a connection object\n"
++ "var conn = SqlConnectionProvider.GetConnection();\n"
++ "// set the command text\n"
++ "var commandText = \"" + commandText + "\";\n"
++ "// create the command object\n"
++ "var cmd = new SqlCommand(commandText, conn);\n"
++ "// set the command type\n"
++ "cmd.CommandType = CommandType.StoredProcedure;\n"
++ "// There are no parameters to set or add\n";
             return output;
         }
         /// <summary>
@@ -647,19 +535,17 @@ namespace Data_Objects
         /// <returns>A string that is c# code for the footer of the data access layer methods </returns>
         private string genSPfooter(int mode)
         {
-
             string returntype = "output";
             if (mode == 2) { returntype = "rows"; }
-            string output = "";
-            output = " \ncatch (Exception ex)\n"
-            + "{\n"
-            + "    throw ex;\n"
-            + "}\n"
-            + "finally\n"
-            + "{\n"
-            + "    conn.Close();\n"
-            + "}\n"
-            + "return " + returntype + ";\n}\n";
+            string output = " \ncatch (Exception ex)\n"
++ "{\n"
++ "    throw ex;\n"
++ "}\n"
++ "finally\n"
++ "{\n"
++ "    conn.Close();\n"
++ "}\n"
++ "return " + returntype + ";\n}\n";
             return output;
         }
         /// <summary>
@@ -671,7 +557,6 @@ namespace Data_Objects
         {
             string createThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Add);
             createThing += "\npublic int add" + name + "(" + name + " _" + name.ToLower();
-
             createThing += "){\n";
             createThing += genSPHeaderA("sp_insert_" + name);
             //add parameters
@@ -697,13 +582,8 @@ namespace Data_Objects
             createThing += "rows = cmd.ExecuteNonQuery();\n}\n";
             //capture reuslts
             createThing += "";
-
             //cath block and onwards
             createThing += genSPfooter(2);
-
-
-
-
             return createThing;
         }
         /// <summary>
@@ -749,9 +629,7 @@ namespace Data_Objects
             //excute the quuery
             retreiveThing += "try \n { \n //open the connection \n conn.Open();  ";
             retreiveThing += "//execute the command and capture result\n";
-
             retreiveThing += "var reader = cmd.ExecuteReader();\n";
-
             //capture reuslts
             retreiveThing += "//process the results\n";
             retreiveThing += "if (reader.HasRows)\n if (reader.Read())\n{";
@@ -760,14 +638,11 @@ namespace Data_Objects
             {
                 retreiveThing = getCSharpOrdinal(r);
                 count++;
-
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
             {
                 if (fk.mainTable.Equals(name))
                 {
-
-
                     foreach (table t in data_tables.all_tables)
                     {
                         if (t.name.Equals(fk.referenceTable))
@@ -778,26 +653,16 @@ namespace Data_Objects
                                 if (count > 0) { comma = ","; }
                                 retreiveThing += getCSharpOrdinal(t, r);
                                 count++;
-
                             }
-
                         }
                     }
                 }
             }
-
             retreiveThing += "\n}\n";
             retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" + name + " not found\");\n}\n}";
-
             //cath block and onwards
             retreiveThing += genSPfooter(0);
-
-
-
-
             return retreiveThing;
-
-
         }
         /// <summary>
         /// Generates an method for the data access layer retreive by all method for this <see cref="table"/> 
@@ -806,44 +671,32 @@ namespace Data_Objects
         /// <returns>A string that is c# code for retreving all from the database 
         private string genAccessorRetreiveAll()
         {
-
-            int count = 0;
             string retreiveAllThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
             retreiveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
-
-
             retreiveAllThing += genSPHeaderC(name, "sp_retreive_by_all_" + name);
             //no paramaters to set or add
             retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
             retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
             retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
             retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
-
-
-
             //excute the quuery
             retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
             retreiveAllThing += "//execute the command and capture result\n";
-
             retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
-
             //capture reuslts
             retreiveAllThing += "//process the results\n";
             retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
             retreiveAllThing = retreiveAllThing + "var _" + name + "= new " + name + "();\n";
-            count = 0;
+            int count = 0;
             foreach (Column r in columns)
             {
                 retreiveAllThing += getCSharpOrdinal(r);
                 count++;
-
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
             {
                 if (fk.mainTable.Equals(name))
                 {
-
-
                     foreach (table t in data_tables.all_tables)
                     {
                         if (t.name.Equals(fk.referenceTable))
@@ -856,23 +709,16 @@ namespace Data_Objects
                                 }
                                 retreiveAllThing += getCSharpOrdinal(t, r);
                                 count++;
-
                             }
-
                         }
                     }
                 }
             }
             retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
             retreiveAllThing += "\n}\n}";
-
             //cath block and onwards
             retreiveAllThing += genSPfooter(0);
-
-
             return retreiveAllThing;
-
-
         }
         /// <summary>
         /// Generates an method for the data access layer retreive by FK method for this <see cref="table"/> 
@@ -889,30 +735,21 @@ namespace Data_Objects
                     string[] parts = q.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-
                     int count = 0;
                     retreiveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Retreive_By_FK_Two_Param);
                     retreiveAllThing += "\npublic List<" + name + "> select" + name + "by" + fk_table + "(" + q.data_type.toCSharpDataType() + " " + fk_name + ",int limit, int offset){\n";
-
-
                     retreiveAllThing += genSPHeaderC(name, "sp_retreive_" + name + "_by_" + q.column_name.bracketStrip());
                     //no paramaters to set or add
-
                     retreiveAllThing += "cmd.Parameters.Add(\"@" + q.column_name.bracketStrip() + "\", SqlDbType." + q.data_type.bracketStrip().toSQLDBType(q.length) + ");\n";
                     retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
                     retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
                     retreiveAllThing += "cmd.Parameters[\"@" + q.column_name.bracketStrip() + "\"].Value = " + fk_name + " ;\n";
                     retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
                     retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
-
-
-
                     //excute the quuery
                     retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
                     retreiveAllThing += "//execute the command and capture result\n";
-
                     retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
-
                     //capture reuslts
                     retreiveAllThing += "//process the results\n";
                     retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
@@ -922,14 +759,11 @@ namespace Data_Objects
                     {
                         retreiveAllThing += getCSharpOrdinal(r);
                         count++;
-
                     }
                     foreach (foreignKey fk in data_tables.all_foreignKey)
                     {
                         if (fk.mainTable.Equals(name))
                         {
-
-
                             foreach (table t in data_tables.all_tables)
                             {
                                 if (t.name.Equals(fk.referenceTable))
@@ -942,24 +776,18 @@ namespace Data_Objects
                                         }
                                         retreiveAllThing += getCSharpOrdinal(t, r);
                                         count++;
-
                                     }
-
                                 }
                             }
                         }
                     }
                     retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
                     retreiveAllThing += "\n}\n}";
-
                     //cath block and onwards
                     retreiveAllThing += genSPfooter(0);
                 }
             }
-
             return retreiveAllThing;
-
-
         }
         /// <summary>
         /// Generates an method for the data access layer update method method for this <see cref="table"/> 
@@ -970,17 +798,13 @@ namespace Data_Objects
         {
             string updateThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Update);
             updateThing += "\npublic int update" + name + "(";
-
-
             updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
             updateThing += "){\n";
-
             updateThing += genSPHeaderA("sp_update_" + name);
             //add parameters
             foreach (Column r in columns)
             {
                 updateThing = updateThing + "cmd.Parameters.Add(\"@old" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
-
                 if (r.primary_key != 'y' && r.primary_key != 'Y' && r.increment == 0)
                 {
                     updateThing = updateThing + "cmd.Parameters.Add(\"@new" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
@@ -1004,15 +828,9 @@ namespace Data_Objects
             updateThing += "throw new ArgumentException(\"invalid values, update failed\");\n}\n}";
             //capture reuslts
             updateThing += "";
-
             //cath block and onwards
             updateThing += genSPfooter(2);
-
-
-
-
             return updateThing;
-
         }
         /// <summary>
         /// Generates an method for the data access layer delete method for this <see cref="table"/> 
@@ -1080,35 +898,23 @@ namespace Data_Objects
                 {
                     retreiveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Select_Distinct_For_Dropdown);
                     retreiveAllThing = retreiveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
-
-
-
                     retreiveAllThing += genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
                     //no paramaters to set or add
-
-
-
                     //excute the quuery
                     retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
                     retreiveAllThing += "//execute the command and capture result\n";
-
                     retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
-
                     //capture reuslts
                     retreiveAllThing += "//process the results\n";
                     retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
                     retreiveAllThing = retreiveAllThing + "String _" + fk.referenceTable + "= reader.Get" + columns[0].data_type.toSqlReaderDataType() + "(0);\n";
                     retreiveAllThing = retreiveAllThing + "output.Add(_" + fk.referenceTable + ");";
                     retreiveAllThing += "\n}\n}";
-
                     //cath block and onwards
                     retreiveAllThing += genSPfooter(0);
                 }
             }
-
-
             return retreiveAllThing;
-
         }
         /// <summary>
         /// Generates a rudamentary xaml window for creating records for  this <see cref="table"/> 
@@ -1143,7 +949,6 @@ namespace Data_Objects
                 WindowCode += "<ColumnDefinition />\n";
             }
             WindowCode += "</Grid.ColumnDefinitions>\n";
-
             for (int i = 0; i < columns.Count; i++)
             {
                 WindowCode += "< Label x:Name = \"lbl" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"1\" Grid.Row = \"" + (i + 1) + "\" Content = \"" + columns[i].column_name + " \" />\n";
@@ -1159,17 +964,12 @@ namespace Data_Objects
                 {
                     WindowCode += "< TextBox x:Name = \"tbx" + name + columns[i].column_name.bracketStrip() + "\" Grid.Column = \"2\" Grid.Row = \"" + (i + 1) + "\" />\n";
                 }
-
             }
             WindowCode += "<Button x:Name=\"btnUpdate" + name + "\" Grid.Column=\"2\" Grid.Row=\"" + (rows - 1) + "\" Content=\"Edit " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
             WindowCode += "<Button x:Name=\"btnAdd" + name + "\" Grid.Column=\"3\" Grid.Row=\"" + (rows - 1) + "\" Content=\"Add " + name + "\" Height=\"40px\" Width=\"200px\"/>\n";
             WindowCode += "< StatusBar Grid.Row =" + rows + ">\n";
-
-
             WindowCode += "< StatusBarItem x: Name = \"statMessage\" Content = \"Welcome, please login to continue\" Padding = \"20px, 0px\" />\n </ StatusBar >\n </Grid>\n";
             return WindowCode;
-
-
         }
         /// <summary>
         /// Generates a rudamentary c# codebase for controlling the XAML window for this <see cref="table"/> 
@@ -1178,7 +978,6 @@ namespace Data_Objects
         /// <returns>A string that is c# to control the XAML window for this table
         public string genWindowCSharp()
         {
-
             string result = "";
             result += commentBox.genCommentBox(name, Component_Enum.CSharp_Window_Control);
             result += genStaticVariables();
@@ -1187,21 +986,13 @@ namespace Data_Objects
             result += genAddButton();
             result += genEditButton();
             return result;
-
-
-
-
-
-
         }
         //Generates the add button for the XAML window
         private string genAddButton()
         {
             string result = "";
-
             //else if (columns[i].column_name.bracketStrip().ToLower() == "active") 
             // else   //this means textbox
-
             result = result + "private void btnAdd" + name + "_click(object sender, RoutedEventArgs e)\n";
             result = result + "if((string)btnAdd" + name + ".Content == \"Add " + name + "\")\n";
             foreach (Column c in columns)
@@ -1210,13 +1001,11 @@ namespace Data_Objects
                 {
                     result = result + "cbx" + name + c.column_name.bracketStrip() + ".IsEnabled=true;\n";
                     result = result + "cbx" + name + c.column_name.bracketStrip() + ".SelectedItem=null;\n";
-
                 }
                 else if (c.column_name.bracketStrip().ToLower() == "active")
                 {
                     result = result + "chk" + name + c.column_name.bracketStrip() + ".IsEnabled=true;\n";
                     result = result + "chk" + name + c.column_name.bracketStrip() + ".IsChecked=true;\n";
-
                 }
                 else
                 {
@@ -1225,13 +1014,11 @@ namespace Data_Objects
                 }
             }
             result += "else\n{\nif (validInputs())\n{\n";
-
             result = result + name + " new" + name + " = new " + name + "();\n";
             foreach (Column c in columns)
             {
                 if (c.foreign_key == "y" || c.foreign_key == "Y")
                 {
-
                     result = result + "new" + name + "." + c.column_name.bracketStrip() + " = " + "cbx" + name + c.column_name.bracketStrip() + ".Text;\n";
                 }
                 else if (c.column_name.bracketStrip().ToLower() == "active")
@@ -1242,7 +1029,6 @@ namespace Data_Objects
                 {
                     result = result + "new" + name + "." + c.column_name.bracketStrip() + " = " + "tbx" + name + c.column_name.bracketStrip() + ".Text;\n";
                 }
-
             }
             result += "try\n{\n";
             result = result + "bool result = _" + name.Substring(0, 1).ToLower() + "m.add" + name + "(new" + name + ");\n";
@@ -1253,54 +1039,41 @@ namespace Data_Objects
             result += "this.DialogResult=false\n}\n}";
             result += "\nelse{\nMessageBox.Show(\"invalid inputs\");\n}\n}\n}";
             return result;
-
         }
         //Generates the edit button of the window
         private string genEditButton()
         {
             string result = "";
-
             return result;
-
         }
         //Generates the input validator for the window
         private string genValidInputs()
         {
             string result = "";
-
             return result;
-
         }
         //Generates the input constructor for the window
         private string genConstructor()
         {
-            string result = "";
-            result = "public " + name + "AddEditDelete(" + name + " " + name.Substring(0, 1).ToLower();
+            string result = "public " + name + "AddEditDelete(" + name + " " + name.Substring(0, 1).ToLower();
             result += ")\n{\n";
             result += " InitializeComponent();\n";
             result = result + "_" + name.ToLower() + "=" + name.Substring(0, 1).ToLower() + ";\n";
             result = result + "_" + name.Substring(0, 1).ToLower() + "m = new" + name + "Manager();\n}\n";
-
-
             return result;
-
         }
         //Generates the input winload events for the window
         private string genWinLoad()
         {
             string result = "";
-
             return result;
-
         }
         //Generates the get static variables method for the window
         private string genStaticVariables()
         {
-            string result = "";
-            result = "public " + name + " _" + name.ToLower() + "= null;\n";
-            result = "public " + name + "Manager+ _" + name.Substring(0, 1) + "m = null;\n";
+            _ = "public " + name + " _" + name.ToLower() + "= null;\n";
+            string result = "public " + name + "Manager+ _" + name.Substring(0, 1) + "m = null;\n";
             return result;
-
         }
         /// <summary>
         /// Generates a rudamentary Java data object for this <see cref="table"/> 
@@ -1315,7 +1088,6 @@ namespace Data_Objects
             result += genJavaContructor();
             result += genJavaSetterAndGetter();
             result += genJavaFooter();
-
             return result;
         }
         /// <summary>
@@ -1328,7 +1100,6 @@ namespace Data_Objects
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
             result = result + "\n public class " + name + " {\n";
             return result;
-
         }
         /// <summary>
         /// Generates the instance variables for Java data object for this <see cref="table"/> 
@@ -1341,10 +1112,8 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 result = result + "private " + r.data_type.toJavaDataType() + " " + r.column_name + ";\n";
-
             }
             return result;
-
         }
         /// <summary>
         /// Generates the constructor for the Java data object for this <see cref="table"/> 
@@ -1353,7 +1122,6 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's constructor.
         private string genJavaContructor()
         {
-            string result = "";
             string defaultConstructor = "\npublic " + name + "(){}\n";
             string ParamConsctructor = "\npublic " + name + "(";
             string comma = "";
@@ -1365,13 +1133,11 @@ namespace Data_Objects
             ParamConsctructor += ") {\n";
             foreach (Column r in columns)
             {
-
                 ParamConsctructor = ParamConsctructor + "\nthis." + r.column_name + " = " + r.column_name + ";";
             }
             ParamConsctructor += "\n}\n";
-            result = defaultConstructor + ParamConsctructor;
+            string result = defaultConstructor + ParamConsctructor;
             return result;
-
         }
         /// <summary>
         /// Generates the setters and getters for the  instance variables for Java data object for this <see cref="table"/> 
@@ -1395,13 +1161,11 @@ namespace Data_Objects
                 }
                 if (r.data_type == "int")
                 {
-
                 }
                 setter = setter + "this." + r.column_name + " = " + r.column_name + ";\n}";
                 result = result + getter + "\n" + setter + "\n";
             }
             return result;
-
         }
         /// <summary>
         /// Generates the footer for this Java data object for this <see cref="table"/> 
@@ -1411,9 +1175,7 @@ namespace Data_Objects
         private string genJavaFooter()
         {
             string result = "\n}\n";
-
             return result;
-
         }
         /// <summary>
         /// Generates the Java DAO object for this <see cref="table"/> 
@@ -1433,10 +1195,7 @@ namespace Data_Objects
             result += genJavaDelete(); //returns ""
             result += genJavaunDelete(); //returns ""
             result += genJavaDAOFooter(); //work
-
             return result;
-
-
         }
         /// <summary>
         /// Generates the header for the Java DAO object for this <see cref="table"/> 
@@ -1447,7 +1206,6 @@ namespace Data_Objects
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
             result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n" +
-
                 "import java.sql.CallableStatement;\n" +
                 "import java.sql.Connection;\n" +
                 "import java.sql.ResultSet;\n" +
@@ -1455,14 +1213,9 @@ namespace Data_Objects
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
                 "import java.time.LocalDate;\n" +
-
                 "import static com.beck.javaiii_kirkwood.personal_project.data.Database.getConnection;\n";
-
-
             result = result + "public class " + name + "DAO {\n\n";
             return result;
-
-
         }
         /// <summary>
         /// Generates the footer for the Java DAO object for this <see cref="table"/> 
@@ -1473,8 +1226,6 @@ namespace Data_Objects
         {
             string result = "\n}\n";
             return result;
-
-
         }
         /// <summary>
         /// Generates the retreive by PK for the Java DAO object for this <see cref="table"/> 
@@ -1483,8 +1234,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object retreive by PK function.
         private string genJavaDAORetreiveByKey()
         {
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_PK);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_PK);
             string nullValue = "";
             string comma = "";
             result = result + "public static " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
@@ -1500,12 +1250,9 @@ namespace Data_Objects
             result += "\nif(resultSet.next()){";
             foreach (Column r in columns)
             {
-
-
                 result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
                 if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
                 {
-
                     result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
                 }
             }
@@ -1519,39 +1266,28 @@ namespace Data_Objects
                         {
                             foreach (Column r in t.columns)
                             {
-
                                 result = result + r.data_type.toJavaDataType() + " " + t.name + "_" + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + t.name + "_" + r.column_name.bracketStrip() + "\");\n";
                                 if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
                                 {
-
                                     result = result + "if(resultSet.wasNull()){\n" + t.name + "_" + r.column_name.bracketStrip() + "=" + nullValue + ";}\n";
                                 }
-
                             }
                         }
                     }
                 }
             }
-
             result = result + "result = new " + name + "(";
             foreach (Column r in columns)
             {
                 result = result + comma + " " + r.column_name.bracketStrip();
                 comma = ",";
             }
-
             result += ");";
             result += "}\n}\n}\n";
             result += "} catch (SQLException e) {\n";
             result += " throw new RuntimeException(e);\n}\n";
             result += "return result;\n}\n";
-
-
-
-
             return result;
-
-
         }
         /// <summary>
         /// Generates the retreive by all for the Java DAO object for this <see cref="table"/> 
@@ -1560,9 +1296,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object retreive all.
         private string genJavaDAORetreiveAll()
         {
-            string nullValue = "\"\"";
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
             result = result + "public static List<" + name + "> getAll" + name + "() {\n";
             result = result + "return getAll" + name + "(" + appData2.settings.page_size + ",0);";
@@ -1581,6 +1315,7 @@ namespace Data_Objects
             result += "while (resultSet.next()) {";
             foreach (Column r in columns)
             {
+                string nullValue;
                 if (r.data_type.toJavaDataType().Equals("Integer"))
                 {
                     nullValue = "0";
@@ -1589,7 +1324,6 @@ namespace Data_Objects
                 result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
                 if (r.nullable == 'y' || r.nullable == 'Y')
                 {
-
                     result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
                 }
             }
@@ -1604,12 +1338,8 @@ namespace Data_Objects
             result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
             result += "}\n";
-
             result += "return result;}\n";
-
             return result;
-
-
         }
         /// <summary>
         /// Generates the retreive active for the Java DAO object for this <see cref="table"/> 
@@ -1618,9 +1348,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object retreive active function.
         public String genJavaDAORetriveActive()
         {
-            string nullValue = "\"\"";
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
             result = result + "public static List<" + name + "> getActive" + name + "() {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
@@ -1631,6 +1359,7 @@ namespace Data_Objects
             result += "while (resultSet.next()) {\n";
             foreach (Column r in columns)
             {
+                string nullValue;
                 if (r.data_type.toJavaDataType().Equals("Integer"))
                 {
                     nullValue = "0";
@@ -1639,7 +1368,6 @@ namespace Data_Objects
                 result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
                 if (r.nullable == 'y' || r.nullable == 'Y')
                 {
-
                     result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
                 }
             }
@@ -1654,9 +1382,7 @@ namespace Data_Objects
             result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
             result += "}\n";
-
             result += "return result;}\n";
-
             return result;
         }
         /// <summary>
@@ -1666,9 +1392,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object retreive by FK.
         public String genJavaDAORetriveByFK()
         {
-            string nullValue = "\"\"";
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
             string comma = "";
             foreach (Column s in columns)
             {
@@ -1677,7 +1401,6 @@ namespace Data_Objects
                     string[] parts = s.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-
                     result = result + "public static List<" + name + "> get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + ") {\n";
                     result = result + "return get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + "," + appData2.settings.page_size + ",0);";
                     result += "}\n";
@@ -1696,6 +1419,7 @@ namespace Data_Objects
                     result += "while (resultSet.next()) {";
                     foreach (Column r in columns)
                     {
+                        string nullValue;
                         if (r.data_type.toJavaDataType().Equals("Integer"))
                         {
                             nullValue = "0";
@@ -1704,7 +1428,6 @@ namespace Data_Objects
                         result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
                         if (r.nullable == 'y' || r.nullable == 'Y')
                         {
-
                             result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
                         }
                     }
@@ -1719,11 +1442,9 @@ namespace Data_Objects
                     result += "} catch (SQLException e) {\n";
                     result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
                     result += "}\n";
-
                     result += "return result;\n}\n";
                 }
             }
-
             return result;
         }
         /// <summary>
@@ -1733,8 +1454,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object update function.
         private string genJavaDAOUpdate()
         {
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
             result = result + "\n public static int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException{\n";
             result += "int result = 0;\n";
             result += "try (Connection connection = getConnection()) {\n";
@@ -1770,8 +1490,6 @@ namespace Data_Objects
             result = result + "throw new RuntimeException(\"Could not update " + name + " . Try again later\");\n";
             result += "}\n}\n}\n return result;\n}\n";
             return result;
-
-
         }
         /// <summary>
         /// Generates the delete method for the Java DAO object for this <see cref="table"/> 
@@ -1780,8 +1498,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object delete method.
         private string genJavaDelete()
         {
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
             result = result + "public static int delete" + name + "(int " + name.ToLower() + "ID) {\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
@@ -1801,8 +1518,6 @@ namespace Data_Objects
             result += "}\n";
             result += "";
             return result;
-
-
         }
         /// <summary>
         /// Generates the undelete method for the Java DAO object for this <see cref="table"/> 
@@ -1811,8 +1526,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object undelete method.
         private string genJavaunDelete()
         {
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
             result = result + "public static int undelete" + name + "(int " + name.ToLower() + "ID) {\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
@@ -1832,8 +1546,6 @@ namespace Data_Objects
             result += "}\n";
             result += "";
             return result;
-
-
         }
         /// <summary>
         /// Generates the create method for the Java DAO object for this <see cref="table"/> 
@@ -1842,8 +1554,7 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's associated DAO object create method.
         private string genJavaDAOCreate()
         {
-            string result = "";
-            result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
             string comma = "";
             result = result + "public static int add(" + name + " _" + name.ToLower() + ") {\n";
             result += "int numRowsAffected=0;";
@@ -1877,26 +1588,19 @@ namespace Data_Objects
             result += "return numRowsAffected;\n}";
             result += "\n";
             return result;
-
-
         }
         /// <summary>
         /// Generates the batch command to load the <see cref="database"/>
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  a batch command to load this <see cref="database"/>
-
         public string getBatch()
         {
             string result = "";
             result = result + "sqlcmd -S localhost -E -i " + name + ".sql\n";
             result += "ECHO .\n";
             return result;
-
-
-
         }
-
         /// <summary>
         /// Generates the create Servlet for the Java  object for this <see cref="table"/> 
         /// Jonathan Beck
@@ -1910,20 +1614,17 @@ namespace Data_Objects
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
             result = result + "public class Add" + name + "Servlet extends HttpServlet{\n";
-
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
-
                     result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getActive" + parts[0] + "();\n";
                     //grab a list of the parents, assign and create a static variable
                 }
             }
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
-
             result += privLevelStatement();
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
@@ -1936,19 +1637,10 @@ namespace Data_Objects
                     result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
-
-
                 }
             }
-
-
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
-
-
-
-
-
             //this only creates the doPost method
             result += "\n";
             //gen header
@@ -1964,8 +1656,6 @@ namespace Data_Objects
                     result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
-
-
                 }
             }
             //get data
@@ -1994,7 +1684,6 @@ namespace Data_Objects
             {
                 if (r.increment == 0 && r.default_value == "")
                 {
-
                     string errorname = name.ToLower() + r.column_name + "error";
                     result += "try {\n";
                     if (r.data_type.ToLower().Equals("int"))
@@ -2013,14 +1702,9 @@ namespace Data_Objects
                     result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
                     result += "errors++;\n";
                     result += "}\n";
-
                 }
-
-
-
             }
             //add it to the databsae, maybe?
-
             result += "int result=0;\n";
             result += "if (errors==0){\n";
             result = result + "try{\nresult=" + name + "DAO.add(" + name.ToLower() + ");\n}";
@@ -2036,22 +1720,14 @@ namespace Data_Objects
             result += "\n}\n";
             //set db message
             result += "}\n";
-
             //send it back
             result += "req.setAttribute(\"results\", results);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Create a " + name + " \");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "\n}\n}\n";
-
-
             //get_buttons
             //get_footer
-
-
-
-
             return result;
-
         }
         /// <summary>
         /// Generates the View All JSP for the Java  object for this <see cref="table"/> 
@@ -2091,19 +1767,16 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
-
                 if (!r.data_type.ToLower().Equals("bit"))
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
                         result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\">${fn:escapeXml(" + name.ToLower() + "." + name.ToLower() + "_ID)}</a></td>";
                     }
-
                     else
                     {
                         result = result + "<td>${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}</td>\n";
                     }
-
                 }
                 else
                 {
@@ -2129,18 +1802,11 @@ namespace Data_Objects
             result += "</div>\n";
             result += "</main>\n";
             result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
-
-
             //gen_header
             //gen_fileds
             //get_buttons
             //get_footer
-
-
-
-
             return result;
-
         }
         //Generates the Java Create JSP
         public string genCreateJSP()
@@ -2180,7 +1846,6 @@ namespace Data_Objects
                             result += "</div>\n";
                             rowcount++;
                         }
-
                         else
                         {
                             string[] parts = r.foreign_keys[i].Split('.');
@@ -2196,7 +1861,6 @@ namespace Data_Objects
                             result += "</c:forEach>\n";
                             result += "</select>\n";
                             result += "";
-
                             result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                             result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
                             result += "</c:if>\n";
@@ -2204,8 +1868,6 @@ namespace Data_Objects
                             result += "</div>\n";
                             rowcount++;
                             i++;
-
-
                         }
                     }
                 }
@@ -2220,15 +1882,9 @@ namespace Data_Objects
             result += "</div>\n";
             result += "</form>\n";
             result += "</div>\n";
-
             //get_footer
             result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
-
-
-
-
             return result;
-
         }
         /// <summary>
         /// Generates the View all Servlet for the Java  object for this <see cref="table"/> 
@@ -2241,16 +1897,12 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewAll);
             //gen header
             result += importStatements();
-
-
             result = result + "@WebServlet(\"/all-" + name + "s\")\n";
             result = result + "public class All" + name + "sServlet extends HttpServlet {";
             result += "@Override\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
-
             result += privLevelStatement();
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
-
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "\n";
             result = result + name.ToLower() + "s =" + name + "DAO.getAll" + name + "();\n";
@@ -2264,12 +1916,7 @@ namespace Data_Objects
             //gen_fileds
             //get_buttons
             //get_footer
-
-
-
-
             return result;
-
         }
         /// <summary>
         /// Generates the delete Servlet for the Java  object for this <see cref="table"/> 
@@ -2286,7 +1933,6 @@ namespace Data_Objects
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += "Map<String, String> results = new HashMap<>();\n";
             result += privLevelStatement();
-
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Delete " + name + "\");\n";
             result = result + "int " + name + "ID = Integer.valueOf(req.getParameter(\"" + name.ToLower() + "id\"));\n";
@@ -2316,7 +1962,6 @@ namespace Data_Objects
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/all-" + name + "s.jsp\").forward(req, resp);\n";
             result += "}\n";
             result += "}\n";
-
             return result;
         }
         /// <summary>
@@ -2333,13 +1978,11 @@ namespace Data_Objects
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
             result = result + "public class Edit" + name + "Servlet extends HttpServlet{\n";
-
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
-
                     result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getActive" + parts[0] + "();\n";
                     //grab a list of the parents, assign and create a static variable
                 }
@@ -2370,12 +2013,8 @@ namespace Data_Objects
                     result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
-
-
                 }
             }
-
-
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             result += " @Override\n";
@@ -2394,15 +2033,12 @@ namespace Data_Objects
                     result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
-
-
                 }
             }
             result = result + "//to get the old " + name + "\n";
             result += "HttpSession session = req.getSession();\n";
             result = result + name + " _old" + name + "= (" + name + ")session.getAttribute(\"" + name.ToLower() + "\");\n";
             result += "//to get the new event's info\n";
-
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -2413,7 +2049,6 @@ namespace Data_Objects
                 }
             }
             //toss it in a hashmap
-
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -2421,7 +2056,6 @@ namespace Data_Objects
                     result = result + "results.put(\"" + r.column_name + "\",_" + r.column_name + ");\n";
                 }
             }
-
             //generate the object
             result = result + name + " _new" + name + " = new " + name + "();\n";
             result += "int errors =0;\n";
@@ -2429,7 +2063,6 @@ namespace Data_Objects
             {
                 if (r.increment == 0)
                 {
-
                     string errorname = name.ToLower() + r.column_name + "error";
                     result += "try {\n";
                     if (r.data_type.ToLower().Equals("int"))
@@ -2448,7 +2081,6 @@ namespace Data_Objects
                     result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
                     result += "errors++;\n";
                     result += "}\n";
-
                 }
             }
             result = result + "_new" + name + ".setis_active(true);\n";
@@ -2472,12 +2104,7 @@ namespace Data_Objects
             result = result + "req.setAttribute(\"pageTitle\", \"Edit a " + name + " \");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n}\n";
-
-
-
             return result;
-
-
         }
         /// <summary>
         /// Generates the View Single/Edit JSP for the Java  object for this <see cref="table"/> 
@@ -2503,19 +2130,13 @@ namespace Data_Objects
                     int i = 0;
                     if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
                     {
-
-
                         result = result + "<!-- " + r.column_name + " -->\n";
                         result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
                         result = result + "<h2>" + r.column_name + "  :  \n";
-
                         result = result + " ${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}</h2>\n";
-
                         result += "</div>\n";
-
                         rowcount++;
                         continue;
-
                     }
                     if ((r.foreign_keys.Count < 1 || r.foreign_keys[i] == ""))
                     {
@@ -2535,7 +2156,6 @@ namespace Data_Objects
                         result += "</div>\n";
                         rowcount++;
                     }
-
                     else
                     {
                         string[] parts = r.foreign_keys[i].Split('.');
@@ -2552,7 +2172,6 @@ namespace Data_Objects
                         result += "</c:forEach>\n";
                         result += "</select>\n";
                         result += "";
-
                         result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                         result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
                         result += "</c:if>\n";
@@ -2560,10 +2179,7 @@ namespace Data_Objects
                         result += "</div>\n";
                         rowcount++;
                         i++;
-
-
                     }
-
                 }
             }
             //get_buttons
@@ -2576,13 +2192,8 @@ namespace Data_Objects
             result += "</div>\n";
             result += "</form>\n";
             result += "</div>\n";
-
             //get_footer
             result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
-
-
-
-
             return result;
         }
         /// <summary>
@@ -2597,7 +2208,6 @@ namespace Data_Objects
             result += "<thead>\n";
             result += "<tr>\n";
             result += "<th scope=\"col\">Table</th>\n";
-
             result += " <th scope=\"col\">Action</th>\n";
             result += "</tr>\n";
             result += "</thead>\n";
@@ -2605,23 +2215,13 @@ namespace Data_Objects
             foreach (table t in data_tables.all_tables)
             {
                 result = result + "<tr><td>View all " + t.name + "</td><td><a href=\"all-" + t.name + "s\"> View </a> </td></tr>\n";
-
-
             }
             result += "</tbody>\n";
             result += "</table>\n";
             result += "</div>\n";
             result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
-
-
-
-
-
-
             return result;
-
         }
-
         /// <summary>
         /// Generates the standard important statements for the Java Servlet. 
         /// Jonathan Beck
@@ -2639,13 +2239,11 @@ namespace Data_Objects
             result += "import jakarta.servlet.http.HttpServletRequest;\n";
             result += "import jakarta.servlet.http.HttpServletResponse;\n";
             result += "import jakarta.servlet.http.HttpSession;\n";
-
             result += "import java.io.IOException;\n";
             result += "import java.util.HashMap;\n";
             result += "import java.util.List;\n";
             result += "import java.util.Map;\n";
             return result;
-
         }
         /// <summary>
         /// Generates the standard access level control statements for the Java Servlet. 
@@ -2663,12 +2261,8 @@ namespace Data_Objects
             result += "return;\n";
             result += "}\n";
             result += "\n";
-
             return result;
-
-
         }
-
         /// <summary>
         /// Generates the retreive line for C# data access layers, using only a column name
         /// Jonathan Beck
@@ -2681,18 +2275,12 @@ namespace Data_Objects
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
             {
                 retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
-
             }
             else
             {
                 retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
-
             }
-
-
             return retreiveThing;
-
-
         }
         /// <summary>
         /// Generates the retreive line for C# data access layers, using  a column name and a table name
@@ -2707,21 +2295,13 @@ namespace Data_Objects
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
             {
                 retreiveThing = retreiveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
-
             }
             else
             {
                 retreiveThing = retreiveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
-
             }
-
-
             return retreiveThing;
-
-
-
         }
-
         /// <summary>
         /// Generates the rudamentary jQuery validation for this <see cref="table"/>.
         /// Jonathan Beck
@@ -2740,8 +2320,6 @@ namespace Data_Objects
             result += "";
             result += "";
             //to assign variables
-
-
             //to loop through each input field
             foreach (Column r in columns)
             {
@@ -2766,8 +2344,6 @@ namespace Data_Objects
                     //good input
                     result += "$(" + jsname + ").addClass(\"ui-state-active\");\n";
                     result += "$(" + jsname + ").removeClass(\"ui-state-error\");\n";
-
-
                     //bad input
                     result += "}\n else {\n";
                     result += "$(" + jsname + ").removeClass(\"ui-state-active\");\n";
@@ -2775,18 +2351,9 @@ namespace Data_Objects
                     result += "}\n}\n);\n";
                 }
             }
-
-
             // to end the js file
             result += "\n}\n";
             return result;
         }
-
-
     }
-
-
 }
-
-
-

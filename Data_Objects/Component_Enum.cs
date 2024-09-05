@@ -49,7 +49,6 @@
         CSharp_Accessor_Retreive_All_Two_Param,
         CSharp_Accessor_Update,
         CSharp_Accessor_Retreive_By_FK_Two_Param,
-
     }
     public enum XMLClassType
     {
@@ -82,7 +81,6 @@
         CSharp_Accessor_Update,
         CSharp_Accessor_Retreive_By_FK_Two_Param,
         CSharp_Accessor_Select_Distinct_For_Dropdown,
-
     }
     public enum JavaDoc_Method_Type
     {
@@ -93,6 +91,5 @@
         Java_DAO_Retreive_All_,
         Java_DAO_Retreive_By_PK,
         Java_DAO_Update
-
     }
 }

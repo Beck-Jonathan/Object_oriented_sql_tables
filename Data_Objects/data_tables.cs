@@ -1,7 +1,6 @@
 ﻿using appData2;
 using System.Collections.Generic;
 using System.Linq;
-
 namespace Data_Objects
 {
     public class data_tables
@@ -9,10 +8,8 @@ namespace Data_Objects
         //holds all data tables that were created
         public static List<table> all_tables = new List<table>();
         public static List<foreignKey> all_foreignKey = new List<foreignKey>();
-
         public static string analyzeRelationships()
         {
-
             string result = "";
             Dictionary<string, int> ForeignKeyCount = new Dictionary<string, int>();
             Dictionary<string, int> KeyedToCount = new Dictionary<string, int>();
@@ -23,7 +20,6 @@ namespace Data_Objects
             {
                 ForeignKeyCount[t.name.bracketStrip().Substring(tableNameOffset).ToLower()] = 0;
                 KeyedToCount[t.name.bracketStrip().Substring(tableNameOffset).ToLower()] = 0;
-
             }
             foreach (foreignKey t in all_foreignKey)
             {
@@ -42,7 +38,6 @@ namespace Data_Objects
                     KeyedToCount[foreign] = KeyedToCount[foreign] + 1;
                 }
                 else { TypoKeys[foreign] = 0; }
-
             }
             int foreignmax = 0;
             int keyedtomax = 0;
@@ -60,7 +55,6 @@ namespace Data_Objects
                     keyedtomax = KeyedToCount[key];
                 }
             }
-
             for (int i = 0; i <= foreignmax; i++)
             {
                 foreach (string key in ForeignKeyCount.Keys)
@@ -70,9 +64,7 @@ namespace Data_Objects
                         result = result + "The table " + key + " references " + i + " other tables\n";
                     }
                 }
-
             }
-
             for (int i = 0; i <= keyedtomax; i++)
             {
                 foreach (string key in KeyedToCount.Keys)
@@ -82,9 +74,7 @@ namespace Data_Objects
                         result = result + "The table " + key + " is keyed to by  " + i + " other tables\n";
                     }
                 }
-
             }
-
             result += "The following tables are not keyed either way\n";
             {
                 foreach (string key in KeyedToCount.Keys)
@@ -93,21 +83,14 @@ namespace Data_Objects
                     {
                         result = result + key + "\n";
                     }
-
                 }
-
             }
             result += "Possible typos in the following keys: \n";
             foreach (string key in TypoKeys.Keys)
             {
                 result = result + "The key of " + key + " is a possible typo";
-
             }
-
-
-
             return result;
-
         }
     }
 }

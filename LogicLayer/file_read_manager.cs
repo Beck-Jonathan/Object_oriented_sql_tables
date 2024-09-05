@@ -2,10 +2,8 @@
 using Data_Access_Interfaces;
 using System;
 using System.IO;
-
 namespace LogicLayer
 {
-
     public class file_read_manager : iFile_read_manager
     {
         iFile_Read reader;
@@ -17,7 +15,6 @@ namespace LogicLayer
         {
             this.reader = new file_read();
         }
-
         public void readdata()
         {
             try
@@ -26,10 +23,8 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to read file.", ex);
             }
-
         }
         public void saveLocaiton()
         {
@@ -39,10 +34,8 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to set save location.", ex);
             }
-
         }
         public string readlocaiton()
         {
@@ -52,10 +45,8 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to read location.", ex);
             }
-
         }
         public void clearLocation()
         {
@@ -65,11 +56,8 @@ namespace LogicLayer
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to clear location.", ex);
             }
-
         }
-
     }
 }

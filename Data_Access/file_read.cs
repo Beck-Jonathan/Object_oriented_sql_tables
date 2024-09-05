@@ -4,15 +4,12 @@ using Data_Objects;
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 namespace Data_Access
 {
     public class file_read : iFile_Read
     {
-
         static String readpath = settings.path;
         static List<foreignKey> keys = new List<foreignKey>();
-
         public void readdata()
         {
             try
@@ -21,31 +18,25 @@ namespace Data_Access
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
-
             int skip_count = 0;
             bool working = false;
             try
             {
                 DirectoryInfo copy = new DirectoryInfo("C:\\Table_Gen\\temp\\");
-                System.IO.Directory.CreateDirectory("C:\\Table_Gen\\temp\\");
+                _ = System.IO.Directory.CreateDirectory("C:\\Table_Gen\\temp\\");
                 foreach (FileInfo file in copy.GetFiles())
                 {
-
                     file.Delete();
                 }
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
-
             // Read the file selected by user and setup various varables
             StreamReader SqlBuddy = null;
-
             while (!working)
             {
                 try
@@ -54,7 +45,6 @@ namespace Data_Access
                 }
                 catch (Exception)
                 {
-
                     File.Copy(settings.path, "C:\\Table_Gen\\temp\\" + System.IO.Path.GetFileName(settings.path));
                     SqlBuddy = new StreamReader("C:\\Table_Gen\\temp\\" + System.IO.Path.GetFileName(settings.path));
                 }
@@ -69,23 +59,18 @@ namespace Data_Access
             int count = 0;
             try
             {
-                SqlBuddy.ReadLine();
+                _ = SqlBuddy.ReadLine();
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
-
             //skip first line since it's just heading data
             // read until the end
             try
             {
-
-
                 while ((ln = SqlBuddy.ReadLine()) != null)
                 {
-
                     string[] parts;
                     //split each line in the file into it's component parts
                     parts = ln.Split(separator);
@@ -97,27 +82,21 @@ namespace Data_Access
                         {
                             skip_count++;
                             continue;
-
                         }
                     }
                     catch
                     {
                     }
-
-
                     try
                     {
                         //parts[1] is blank for the first row of a table, so this catches the table name
                         if (parts[1].Length == 0 && count == 0)
                         {
-
                             tablename = parts[0];
                             description = parts[14];
                             count++;
                         }
-
                         //this means we are moving onto a new table, so it creates the old table, then clears the rows array
-
                         else if (parts[1].Length == 0 && count > 0)
                         {
                             table t;
@@ -129,7 +108,6 @@ namespace Data_Access
                             {
                                 t = new MySqlTable(tablename, rows);
                             }
-
                             header h = new header(tablename, parts[14]);
                             t.Header = h;
                             List<Column> rowsfortable = new List<Column>();
@@ -138,7 +116,6 @@ namespace Data_Access
                                 rowsfortable.Add(_row);
                             }
                             t.columns = rowsfortable;
-
                             rows.Clear();
                             tablename = parts[0];
                             description = parts[14];
@@ -154,7 +131,6 @@ namespace Data_Access
                     }
                     //if parts[1] is greater than zero, that means we are reading a row object which has a data type. 
                     //read all row objects and place them into an array of rows, to later be turned into a table
-
                     if (parts[1].Length > 0)
                     {
                         //remove any extra punctionation excel added and setup various variables
@@ -165,14 +141,13 @@ namespace Data_Access
                         char nullable = ' ';
                         char unique = ' ';
                         char primary_key = ' ';
-
                         //read each part of the row 
                         String data_type = parts[1].Replace("\"", "");
-                        Int32.TryParse(parts[2], out length);
+                        _ = Int32.TryParse(parts[2], out length);
                         String default_value = parts[3];
                         String identity = parts[4];
-                        Int32.TryParse(parts[5], out start);
-                        Int32.TryParse(parts[6], out increment);
+                        _ = Int32.TryParse(parts[5], out start);
+                        _ = Int32.TryParse(parts[6], out increment);
                         char[] chararray = parts[7].ToCharArray();
                         if (chararray.Length != 0)
                         {
@@ -185,10 +160,7 @@ namespace Data_Access
                             {
                                 nullable = 'n';
                             }
-
                         }
-
-
                         string index = parts[8];
                         char[] chararray2 = parts[9].ToCharArray();
                         if (chararray2.Length != 0)
@@ -200,11 +172,9 @@ namespace Data_Access
                         {
                             primary_key = chararray3[0];
                         }
-
                         String foreign_key = parts[11];
                         String integrity = parts[12];
                         String references = parts[13];
-
                         description = parts[14];
                         //create the row
                         Column _row = new Column(row_name, data_type, length, default_value, identity, start, increment,
@@ -233,10 +203,8 @@ namespace Data_Access
                             };
                             _key.lengthText = length_text;
                             data_tables.all_foreignKey.Add(_key);
-
                         }
                     }
-
                 }
                 //figure out how many tables were created
                 settings.table_count = data_tables.all_tables.Count;
@@ -245,10 +213,8 @@ namespace Data_Access
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
-
         }
         public void saveLocaiton()
         {
@@ -259,12 +225,8 @@ namespace Data_Access
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to write settings", ex);
             }
-
-
-
         }
         public string readlocaiton()
         {
@@ -275,17 +237,11 @@ namespace Data_Access
             }
             catch (Exception ex)
             {
-
                 throw new IOException("unable to read settings", ex);
             }
-
-
         }
-
         public void clearLocation()
         {
-
         }
     }
 }
-

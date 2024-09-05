@@ -1,6 +1,5 @@
 ﻿using appData2;
 using System;
-
 namespace Data_Objects
 {
     public class header
@@ -9,8 +8,6 @@ namespace Data_Objects
         public String table_name { get; set; }
         public String description { get; set; }
         public string full_header { get; private set; }
-
-
         public header(String table_name, String description)
         {
             full_header = "";
@@ -23,11 +20,9 @@ namespace Data_Objects
             {
                 full_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_table) +
                 "\n\n" +
-
                 "CREATE TABLE " + table_name + "(\n"
                 ;
             }
-
             else
             {
                 full_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_table) +
@@ -36,23 +31,16 @@ namespace Data_Objects
                 "CREATE TABLE " + table_name + "(\n"
                 ;
             }
-
             return full_header;
         }
         //creae the header for an audit table
         public string audit_header_gen()
         {
-            String audit_header = "";
-            audit_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_Audit_Table) +
-                "\n\n" +
-                "DROP TABLE IF EXISTS " + table_name + "_audit;\n\n" +
-                "CREATE TABLE " + table_name + "_audit(\n\n"
-                ;
-
-
+            string audit_header = commentBox.genCommentBox(table_name, Component_Enum.SQL_Audit_Table) +
+    "\n\n" +
+    "DROP TABLE IF EXISTS " + table_name + "_audit;\n\n" +
+    "CREATE TABLE " + table_name + "_audit(\n\n";
             return audit_header;
-
         }
-
     }
 }
