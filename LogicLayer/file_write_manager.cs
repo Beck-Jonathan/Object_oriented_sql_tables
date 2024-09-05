@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace LogicLayer
 {
-    public class file_write_manager
+    public class file_write_manager : iFile_write_manager
     {
         iFile_Write writer;
         public static string SeparatePath;

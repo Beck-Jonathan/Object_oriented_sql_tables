@@ -50,6 +50,8 @@
   <ItemGroup>
     <Compile Include="file_read_manager.cs" />
     <Compile Include="file_write_manager.cs" />
+    <Compile Include="iFile_read_manager.cs" />
+    <Compile Include="iFile_write_manager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -16,8 +16,8 @@ namespace Object_oriented_sql_tables
 {
     public partial class Form1 : Form
     {
-        public file_read_manager file_read;
-        public file_write_manager file_write;
+        public iFile_read_manager file_read;
+        public iFile_write_manager file_write;
         public static int page_size;
         public static List<char> these_settings = new List<char>();
         public Form1()

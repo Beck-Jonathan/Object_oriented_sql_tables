@@ -10,7 +10,7 @@ using System.Xml.Linq;
 namespace LogicLayer
 {
     
-    public class file_read_manager
+    public class file_read_manager : iFile_read_manager
     {
         iFile_Read reader;
         public file_read_manager(iFile_Read reader)
