@@ -23,16 +23,52 @@ namespace LogicLayer
         }
 
         public void readdata() {
-        reader.readdata();
+            try
+            {
+                reader.readdata();
+            }
+            catch (Exception ex )
+            {
+
+                throw ex;
+            }
+        
         }
         public void saveLocaiton() {
-            reader.saveLocaiton();
+            try
+            {
+                reader.saveLocaiton();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            
         }
-        public string readlocaiton() { 
-        return reader.readlocaiton();
+        public string readlocaiton() {
+            try
+            {
+                return reader.readlocaiton();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        
         }
         public void clearLocation() {
-            reader.clearLocation();
+            try
+            {
+                reader.clearLocation();
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            
         }
 
     }

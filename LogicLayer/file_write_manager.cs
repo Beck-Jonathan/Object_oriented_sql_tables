@@ -31,12 +31,30 @@ namespace LogicLayer
         }
 
         public void startUp(DirectoryInfo directoryInfo) {
-        writer.startUp(directoryInfo);
+            try
+            {
+                writer.startUp(directoryInfo);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        
             return;
         }
 
-        public void fileWrite(string output, string table, string type, string method) { 
-        writer.fileWrite(output, table, type, method);
+        public void fileWrite(string output, string table, string type, string method) {
+            try
+            {
+                writer.fileWrite(output, table, type, method);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        
             return;
         }
     }
