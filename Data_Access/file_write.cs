@@ -1,4 +1,5 @@
 ﻿using Data_Access_Interfaces;
+using System;
 using System.IO;
 
 namespace Data_Access
@@ -28,6 +29,10 @@ namespace Data_Access
         public static StreamWriter ServletBuddy = new StreamWriter(servletPath);
         public static string SeparatePath = "C:\\Table_Gen\\";
         public void startUp(DirectoryInfo directoryInfo) {
+            try
+            {
+
+            
             System.IO.Directory.CreateDirectory(SeparatePath);
 
             foreach (FileInfo file in directoryInfo.GetFiles())
@@ -43,16 +48,31 @@ namespace Data_Access
                     startUp(subfolder);
                 }
                 }
-            
+            }
+            catch (Exception ex)
+            {
+
+                throw new IOException("unable to create folders",ex);
+            }
+
         }
             
         public void fileWrite(string output, string table, string type,string method) {
-            table=table.Replace("?", "");
-            System.IO.Directory.CreateDirectory(SeparatePath + type + "\\");
-            StreamWriter writer = new StreamWriter(SeparatePath + type + "\\" + table+"_"+method+".txt",true);
-            writer.Write(output + "\n");
-            writer.Flush();
-            writer.Close();
+            try
+            {
+                table = table.Replace("?", "");
+                System.IO.Directory.CreateDirectory(SeparatePath + type + "\\");
+                StreamWriter writer = new StreamWriter(SeparatePath + type + "\\" + table + "_" + method + ".txt", true);
+                writer.Write(output + "\n");
+                writer.Flush();
+                writer.Close();
+            }
+            catch (Exception ex)
+            {
+
+                throw new IOException("unable to write file",ex);
+            }
+            
         
         
         }
