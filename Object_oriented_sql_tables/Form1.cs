@@ -212,7 +212,6 @@ namespace Object_oriented_sql_tables
                         MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
 
-
                     //file_write.sqlBuddy2.Write(s);
                 }
 
