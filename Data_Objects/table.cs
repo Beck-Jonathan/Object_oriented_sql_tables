@@ -1204,6 +1204,75 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object header.
+        public string genJavaiDAO() {
+            int count = 0;
+            string comma = "";
+            String result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
+            result += "public interface i"+name+"DAO{\n";
+
+            //add
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
+            result += "int add ("+name+" _"+name.ToLower()+ ") throws SQLException;\n";
+            //get by pk
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+            result += name+" get"+name+"ByPrimaryKey("+name+" _"+name.ToLower()+") throws SQLException;\n";
+            //get by fk
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+            result += "";
+            //update
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
+            result += "int update("+name+" old"+name+", "+name+" new"+name+ ") throws SQLException;\n";
+            //get all
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            result += "List<"+name+"> getAll"+name+ "() throws SQLException;\n";
+            // get active
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            result += "List<" + name + "> getActive" + name + "() throws SQLException;\n";
+            //delete
+            count = 0;
+            comma = "";
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
+            result += "int delete" + name + "(";
+            foreach (Column r in columns) {
+                if (count > 0) { 
+                    comma = ",";
+                }
+                else
+                {
+                    comma = "";
+                }
+                if (r.primary_key == 'Y' || r.primary_key == 'y') {
+                    result +=comma+" "+ r.data_type.toJavaDAODataType() +" "+ r.column_name;
+                    count++;
+                }
+            }
+            result += ") throws SQLException;\n";
+
+            //undelete
+            count = 0;
+            comma = "";
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
+            result += "int undelete" + name + "(";
+            foreach (Column r in columns)
+            {
+                if (count > 0)
+                {
+                    comma = ",";
+                }
+                else {
+                    comma = "";
+                }
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + " " + r.data_type.toJavaDAODataType() + " " + r.column_name;
+                    count++;
+                }
+            }
+            result += ") throws SQLException;\n";
+            result += "}\n";
+            return result;      
+        
+        }
         private string genJavaDAOHeader()
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
@@ -1217,7 +1286,8 @@ namespace Data_Objects
                 "import java.time.LocalDate;\n" +
                 "import static com.beck.javaiii_kirkwood.personal_project.idata.i"+name+"DAO;\n"+
             "import static com.beck.javaiii_kirkwood.personal_project.data.Database.getConnection;\n";
-            result = result + "public class " + name + "DAO implements i"+name+"DAO{\n\n";
+            result += commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
+            result +=  "public class " + name + "DAO implements i"+name+"DAO{\n\n";
             return result;
         }
         /// <summary>
@@ -1502,7 +1572,26 @@ namespace Data_Objects
         private string genJavaDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
-            result = result + "public int delete" + name + "(int " + name.ToLower() + "ID) {\n";
+            int count = 0;
+            string comma = "";
+            result += "int delete" + name + "(";
+            foreach (Column r in columns)
+            {
+                if (count > 0)
+                {
+                    comma = ",";
+                }
+                else
+                {
+                    comma = "";
+                }
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + " " + r.data_type.toJavaDAODataType() + " " + r.column_name;
+                    count++;
+                }
+            }
+            result += ") throws SQLException{\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";
@@ -1530,7 +1619,26 @@ namespace Data_Objects
         private string genJavaunDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
-            result = result + "public int undelete" + name + "(int " + name.ToLower() + "ID) {\n";
+            int count = 0;
+            string comma = "";
+            result += "int undelete" + name + "(";
+            foreach (Column r in columns)
+            {
+                if (count > 0)
+                {
+                    comma = ",";
+                }
+                else
+                {
+                    comma = "";
+                }
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + " " + r.data_type.toJavaDAODataType() + " " + r.column_name;
+                    count++;
+                }
+            }
+            result += ") throws SQLException{\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";

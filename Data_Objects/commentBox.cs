@@ -6,7 +6,31 @@ namespace Data_Objects
     {
         public static String GenXMLClassComment(table table, XMLClassType classtype)
         {
-            return "";
+            
+            String name = "* @ author Jonathan Beck\n";
+            String version = "* @ version 1.0\n";
+            String since = "* @ since 1.0\n";
+            switch (classtype)
+            {
+                case XMLClassType.CSharpIAccessor:
+                    break;
+                case XMLClassType.CSharpIManager:
+                    break;
+                case XMLClassType.CSharpManager:
+                    break;
+                case XMLClassType.CSharpAccessor:
+                    break;
+                case XMLClassType.CSharpDataObject:
+                    break;
+                case XMLClassType.JavaDAO:
+                    break;
+                case XMLClassType.JavaDataObject:
+                    break;
+                default:
+                    break;
+            }
+            
+            return "/**\n"+name+version+since+"*/\n";
         }
         public static String GenXMLMethodComment(table table, XML_Method_Type method)
         {

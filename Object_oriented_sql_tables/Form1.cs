@@ -585,6 +585,18 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+                if (true)
+                {    //change to these settings 32
+                    s = t.genJavaiDAO();
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "iDAO", "Interface");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
                 count++;
             }
             //file_write.sqlBuddy2.Flush();
