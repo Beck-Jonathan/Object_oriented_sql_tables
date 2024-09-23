@@ -1,11 +1,15 @@
-# MySQL table generator
-This takes a data dictionary and creates a MySQL script with the charactaristics and stored procedures you request.
+# Object Oriented Code Generator
+This takes a data dictionary and creates code in a variety of program languages.
+* MySQL (Table definitions and stored procedures)
+* T-Sql (Microsoft SQL Server) (Table definitions and stored procedures)
+* Java (Object Definitions, JSP View, Servlet Controllers, DAO objects for database calls) 
+* C# (Object Definitions, Logic Layer Interface and manager Data Access Layer Interface and Manager)
+* JavaScript
 ## Description
-More details needed here
+By looping through each table, column and column property, a large amount of code is generated.
 ## Getting Started
 ### Dependencies
-* I've only tested this on my windows 10 machine, my apologies
-* This generates mySQL, so you will need MySQL workbench and a server running to actually use these results
+* None
 ### Installing
 * Included in the V0.2 alpha release are 
     * An example data dictionary
@@ -16,28 +20,22 @@ More details needed here
 * Click select file
    * during the first run, it is suggested to use the derby_database.txt file that was included in the zip
     * During later runs, you can modify the derby_database.xlsx file, then "Save as" a tab separated txt file
-* Assign a name to your dtaabse
-* Click "read file" and a list of tables will be displayed
-* From the drop down, you can choose which table you wish to modify
-* You can modify the additions to each table, such as PK, FK, or various stored procedures
-* I've also included a sql file that has insert scripts of dummy data for these tables.
+* Assign a name to your database
+* Click run
 ## Help
 ## Authors
 Jonathan Beck
 BeckJonathanJ@gmail.com
 ## Version History
+* 0.3
+   * A years worth of updates, adding T-SQL, C#, Java, Javascript     
 * 0.2
     * Various bug fixes and optimizations
     * See [commit change]() or See [release history]()
 * 0.1
     * Initial Release
 ### Knwon issues / planned updates
-* If you wish to create a second script, you have to fully close the program (Fixed, program now closes itself, 9/13 1:30 pm)
-* The user experiance of which button is active when is misleading (fixed, pathing now logical, 9/13 1:40 pm)
-* The words "row" and "column" were swapped, and the program needs updating to address this
-* A "select all" , "selected default" "deselect all" button for options needs to be implemented
-* File pathing needs to be updated to work properly on other users computers (updated 9/13 2:15 pm)
-* The dummy insert script is currently not uploaded, my apologies
-* Comments need to be added to explain various components (updated 9/13, 1PM) 
-* Indentiy/sequence fields are not currently implemented
-* rudamentary joins need to be imploemented
+
+* Comment generation for SQL scripts needs improvements
+* A web front end
+* Database creation within app.
