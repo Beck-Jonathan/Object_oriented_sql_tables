@@ -1,6 +1,8 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Security.AccessControl;
 namespace Data_Objects
 {
     public class table
@@ -73,23 +75,23 @@ namespace Data_Objects
         /// <returns>A string that represents the data access layer  in c# </returns>
         public String gen_ThingAccessor()
         {
-            //nneds proper number and code choice
+           
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
-            //good
+            
             string header = genAccessorClassHeader();
-            //good
+            
             string addThing = genAccessorAdd();
-            //good
+            
             string selectThingbyPK = genAccessorRetreiveByKey();
-            //needs implemented
+            
             string selectallThing = genAccessorRetreiveAll();
-            //good
+            
             string selectbyFK = genAccessorRetreivefk();
-            //good
+            
             string updateThing = genAccessorUpdate();
-            //good
+          
             string deleteThing = genAccessorDelete();
-            //good
+            
             string undeleteThing = genAccessorUndelete();
             string distinctThing = genAccessorDistinct();
             string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + "}\n\n";
@@ -1213,8 +1215,9 @@ namespace Data_Objects
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
                 "import java.time.LocalDate;\n" +
-                "import static com.beck.javaiii_kirkwood.personal_project.data.Database.getConnection;\n";
-            result = result + "public class " + name + "DAO {\n\n";
+                "import static com.beck.javaiii_kirkwood.personal_project.idata.i"+name+"DAO;\n"+
+            "import static com.beck.javaiii_kirkwood.personal_project.data.Database.getConnection;\n";
+            result = result + "public class " + name + "DAO implements i"+name+"DAO{\n\n";
             return result;
         }
         /// <summary>
@@ -1237,7 +1240,7 @@ namespace Data_Objects
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_PK);
             string nullValue = "";
             string comma = "";
-            result = result + "public static " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
+            result = result + "public " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
             result = result + name + " result = null;\n";
             result += "try(Connection connection = getConnection()) {\n";
             result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_pk_" + name + "(?)}\")) {\n";
@@ -1298,7 +1301,7 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
-            result = result + "public static List<" + name + "> getAll" + name + "() {\n";
+            result = result + "public List<" + name + "> getAll" + name + "() {\n";
             result = result + "return getAll" + name + "(" + appData2.settings.page_size + ",0);";
             result += "}\n";
             result = result + "public static List<" + name + "> getAll" + name + "(int pagesize) {\n";
@@ -1350,7 +1353,7 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
-            result = result + "public static List<" + name + "> getActive" + name + "() {\n";
+            result = result + "public List<" + name + "> getActive" + name + "() {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result += "try (Connection connection = getConnection()) { \n";
             result += "if (connection != null) {\n";
@@ -1401,7 +1404,7 @@ namespace Data_Objects
                     string[] parts = s.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result = result + "public static List<" + name + "> get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + ") {\n";
+                    result = result + "public List<" + name + "> get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + ") {\n";
                     result = result + "return get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + "," + appData2.settings.page_size + ",0);";
                     result += "}\n";
                     result = result + "public static List<" + name + "> get" + name + "by" + fk_table + "(" + s.data_type.toJavaDataType() + " " + fk_name + "int pagesize) {\n";
@@ -1455,7 +1458,7 @@ namespace Data_Objects
         private string genJavaDAOUpdate()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
-            result = result + "\n public static int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException{\n";
+            result = result + "\n public int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException{\n";
             result += "int result = 0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection !=null){\n";
@@ -1499,7 +1502,7 @@ namespace Data_Objects
         private string genJavaDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
-            result = result + "public static int delete" + name + "(int " + name.ToLower() + "ID) {\n";
+            result = result + "public int delete" + name + "(int " + name.ToLower() + "ID) {\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";
@@ -1527,7 +1530,7 @@ namespace Data_Objects
         private string genJavaunDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
-            result = result + "public static int undelete" + name + "(int " + name.ToLower() + "ID) {\n";
+            result = result + "public int undelete" + name + "(int " + name.ToLower() + "ID) {\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";
@@ -1556,7 +1559,7 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
             string comma = "";
-            result = result + "public static int add(" + name + " _" + name.ToLower() + ") {\n";
+            result = result + "public int add(" + name + " _" + name.ToLower() + ") {\n";
             result += "int numRowsAffected=0;";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";
@@ -1609,7 +1612,7 @@ namespace Data_Objects
         public string genCreateServelet()
         {
             string result = "";
-            result += importStatements();
+            result += importStatements(name);
             //do get
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
@@ -1623,6 +1626,7 @@ namespace Data_Objects
                     //grab a list of the parents, assign and create a static variable
                 }
             }
+            result += initMethod();
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
@@ -1707,7 +1711,7 @@ namespace Data_Objects
             //add it to the databsae, maybe?
             result += "int result=0;\n";
             result += "if (errors==0){\n";
-            result = result + "try{\nresult=" + name + "DAO.add(" + name.ToLower() + ");\n}";
+            result = result + "try{\nresult=" + name.ToLower() + "DAO.add(" + name.ToLower() + ");\n}";
             result += "catch(Exception ex){\n";
             result += "results.put(\"dbStatus\",\"Database Error\");\n";
             result += "}\n";
@@ -1896,16 +1900,17 @@ namespace Data_Objects
             //this only creates the doGet method
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewAll);
             //gen header
-            result += importStatements();
-            result = result + "@WebServlet(\"/all-" + name + "s\")\n";
-            result = result + "public class All" + name + "sServlet extends HttpServlet {";
+            result += importStatements(name);
+            result +=  "@WebServlet(\"/all-" + name + "s\")\n";
+            result +=  "public class All" + name + "sServlet extends HttpServlet {";
+            result += initMethod();
             result += "@Override\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "\n";
-            result = result + name.ToLower() + "s =" + name + "DAO.getAll" + name + "();\n";
+            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "();\n";
             result += "\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
@@ -1926,9 +1931,10 @@ namespace Data_Objects
         public string genDeleteServlet()
         {
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
-            result += importStatements();
+            result += importStatements(name);
             result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")";
             result = result + "public class Delete" + name + "Servlet extends HttpServlet {\n";
+            result += initMethod();
             result += "@Override\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += "Map<String, String> results = new HashMap<>();\n";
@@ -1940,7 +1946,7 @@ namespace Data_Objects
             result += "int result = 0;\n";
             result += "if (mode==0){\n";
             result += "try{\n";
-            result = result + "result = " + name + "DAO.delete" + name + "(" + name + "ID);\n";
+            result = result + "result = " + name.ToLower() + "DAO.delete" + name + "(" + name + "ID);\n";
             result += "}\n";
             result += "catch(Exception ex){\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
@@ -1948,14 +1954,14 @@ namespace Data_Objects
             result += "}\n";
             result += "else {\n";
             result += "try{\n";
-            result = result + "result = " + name + "DAO.undelete" + name + "(" + name + "ID);\n";
+            result = result + "result = " + name.ToLower() + "DAO.undelete" + name + "(" + name + "ID);\n";
             result += "}\n";
             result += "catch(Exception ex){\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
             result += "}\n";
             result += "}\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
-            result = result + name.ToLower() + "s = " + name + "DAO.getAll" + name + "();\n";
+            result = result + name.ToLower() + "s = " + name.ToLower() + "DAO.getAll" + name + "();\n";
             result += "req.setAttribute(\"results\",results);\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "\");\n";
@@ -1973,7 +1979,7 @@ namespace Data_Objects
         {
             //do get
             string result = "";
-            result += importStatements();
+            result += importStatements(name);
             //do get
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
@@ -1987,6 +1993,7 @@ namespace Data_Objects
                     //grab a list of the parents, assign and create a static variable
                 }
             }
+            result += initMethod();
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
@@ -1995,7 +2002,7 @@ namespace Data_Objects
             result = result + name + " " + name.ToLower() + "= new " + name + "();\n";
             result = result + name.ToLower() + ".set" + name + "_ID(primaryKey);\n";
             result += "try{\n";
-            result = result + name.ToLower() + "=" + name + "DAO.get" + name + "ByPrimaryKey(" + name.ToLower() + ");\n";
+            result = result + name.ToLower() + "=" + name.ToLower() + "DAO.get" + name + "ByPrimaryKey(" + name.ToLower() + ");\n";
             result += "} catch (SQLException e) {\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
             result += "}\n";
@@ -2088,7 +2095,7 @@ namespace Data_Objects
             result += "int result=0;\n";
             result += "if (errors==0){\n";
             result += "try{\n";
-            result = result + "result=" + name + "DAO.update(_old" + name + ",_new" + name + ");\n";
+            result = result + "result=" + name.ToLower() + "DAO.update(_old" + name + ",_new" + name + ");\n";
             result += "}catch(Exception ex){\n";
             result += "results.put(\"dbStatus\",\"Database Error\");\n";
             result += "}\n";
@@ -2227,12 +2234,13 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for standard import statements.</returns>
-        private string importStatements()
+        private string importStatements(string objectname)
         {
             string result = "\n";
             result = result + "import com.beck.javaiii_kirkwood.personal_project.data." + name + "DAO;\n";
             result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n";
             result += "import com.beck.javaiii_kirkwood.personal_project.models.User;\n";
+            result += "import com.beck.javaiii_kirkwood.personal_project.iData.i"+ objectname + "DAO;\n";
             result += "import jakarta.servlet.ServletException;\n";
             result += "import jakarta.servlet.annotation.WebServlet;\n";
             result += "import jakarta.servlet.http.HttpServlet;\n";
@@ -2243,6 +2251,7 @@ namespace Data_Objects
             result += "import java.util.HashMap;\n";
             result += "import java.util.List;\n";
             result += "import java.util.Map;\n";
+            
             return result;
         }
         /// <summary>
@@ -2354,6 +2363,16 @@ namespace Data_Objects
             // to end the js file
             result += "\n}\n";
             return result;
+        }
+        private string initMethod() {
+            string result;
+            result = "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
+            result += "@Override\n";
+            result += "private void init() throws ServletException{\n";
+            result += name.ToLower() + "DAO = new " + name + "DAO();\n";
+            result += "}\n";
+            return result;
+
         }
     }
 }
