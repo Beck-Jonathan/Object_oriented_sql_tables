@@ -1124,7 +1124,9 @@ namespace Data_Objects
         /// <returns>A string that is  Java code for this object's constructor.
         private string genJavaContructor()
         {
+            //default
             string defaultConstructor = "\npublic " + name + "(){}\n";
+            //param
             string ParamConsctructor = "\npublic " + name + "(";
             string comma = "";
             foreach (Column r in columns)
@@ -1138,7 +1140,34 @@ namespace Data_Objects
                 ParamConsctructor = ParamConsctructor + "\nthis." + r.column_name + " = " + r.column_name + ";";
             }
             ParamConsctructor += "\n}\n";
-            string result = defaultConstructor + ParamConsctructor;
+
+
+            //param2
+            
+            string ParamConstructor2 = "\npublic " + name + "(";
+            comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    ParamConstructor2 = ParamConstructor2 + comma + r.data_type.toJavaDataType() + " " + r.column_name;
+                    comma = ", ";
+                }
+            }
+
+            ParamConstructor2 += ") {\n";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+                    ParamConstructor2 = ParamConstructor2 + "\nthis." + r.column_name + " = " + r.column_name + ";";
+                }
+            }
+            ParamConstructor2 += "\n}\n";
+
+
+            string result = defaultConstructor + ParamConsctructor+ ParamConstructor2;
             return result;
         }
         /// <summary>
@@ -1187,11 +1216,12 @@ namespace Data_Objects
         public string genJavaDAO()
         {
             string result = "";
-            result += genJavaDAOHeader();        //works
+            result += genJavaDAOHeader(settings.database_name);        //works
             result += genJavaDAOCreate();       //returns ""
             result += genJavaDAORetreiveByKey(); // works
             result += genJavaDAORetreiveAll(); // wokring on it now
             result += genJavaDAORetriveActive(); // working on it now
+            result += genJavaDAORetreiveDistinct();
             result += genJavaDAORetriveByFK();
             result += genJavaDAOUpdate(); //rturns ""
             result += genJavaDelete(); //returns ""
@@ -1217,8 +1247,16 @@ namespace Data_Objects
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
             result += name+" get"+name+"ByPrimaryKey("+name+" _"+name.ToLower()+") throws SQLException;\n";
             //get by fk
-            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
-            result += "";
+            foreach (Column r in columns) {
+                if (r.references != "") {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+                    result = result + "public List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toJavaDataType() + " " + fk_name + ") throws SQLException; \n";
+                }
+            }
+            
             //update
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
             result += "int update("+name+" old"+name+", "+name+" new"+name+ ") throws SQLException;\n";
@@ -1228,6 +1266,10 @@ namespace Data_Objects
             // get active
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             result += "List<" + name + "> getActive" + name + "() throws SQLException;\n";
+            //get for dropdown
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Get_Distinct);
+            result += "List<"+name+"> getDistinct" + name + "ForDropdown() throws SQLException;\n";
+
             //delete
             count = 0;
             comma = "";
@@ -1273,10 +1315,10 @@ namespace Data_Objects
             return result;      
         
         }
-        private string genJavaDAOHeader()
+        private string genJavaDAOHeader(String projectName)
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
-            result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n" +
+            result = result + "import com.beck.javaiii_kirkwood."+ projectName + ".models." + name + ";\n" +
                 "import java.sql.CallableStatement;\n" +
                 "import java.sql.Connection;\n" +
                 "import java.sql.ResultSet;\n" +
@@ -1284,8 +1326,8 @@ namespace Data_Objects
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
                 "import java.time.LocalDate;\n" +
-                "import static com.beck.javaiii_kirkwood.personal_project.idata.i"+name+"DAO;\n"+
-            "import static com.beck.javaiii_kirkwood.personal_project.data.Database.getConnection;\n";
+                "import static com.beck.javaiii_kirkwood."+ projectName + ".idata.i"+name+"DAO;\n"+
+            "import static com.beck.javaiii_kirkwood."+ projectName + ".data.Database.getConnection;\n";
             result += commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
             result +=  "public class " + name + "DAO implements i"+name+"DAO{\n\n";
             return result;
@@ -1371,6 +1413,7 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             string comma = "";
+            string nullValue = "";
             result = result + "public List<" + name + "> getAll" + name + "() {\n";
             result = result + "return getAll" + name + "(" + appData2.settings.page_size + ",0);";
             result += "}\n";
@@ -1388,7 +1431,7 @@ namespace Data_Objects
             result += "while (resultSet.next()) {";
             foreach (Column r in columns)
             {
-                string nullValue;
+                
                 if (r.data_type.toJavaDataType().Equals("Integer"))
                 {
                     nullValue = "0";
@@ -1398,6 +1441,26 @@ namespace Data_Objects
                 if (r.nullable == 'y' || r.nullable == 'Y')
                 {
                     result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
+                }
+            }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                result = result + r.data_type.toJavaDataType() + " " + t.name + "_" + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + t.name + "_" + r.column_name.bracketStrip() + "\");\n";
+                                if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
+                                {
+                                    result = result + "if(resultSet.wasNull()){\n" + t.name + "_" + r.column_name.bracketStrip() + "=" + nullValue + ";}\n";
+                                }
+                            }
+                        }
+                    }
                 }
             }
             result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
@@ -1413,6 +1476,54 @@ namespace Data_Objects
             result += "}\n";
             result += "return result;}\n";
             return result;
+        }
+        private string genJavaDAORetreiveDistinct() {
+            {
+                string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+                string comma = "";
+                
+                result = result + "public static List<" + name + "> selectDistinct" + name + "ForDropdown() {\n";
+                result = result + "List<" + name + "> result = new ArrayList<>();\n";
+                result += "try (Connection connection = getConnection()) { \n";
+                result += "if (connection != null) {\n";
+                result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_select_distinct_and_active_" + name + "_for_dropdown" + "()}\")) {\n";
+                    
+                result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
+                result += "while (resultSet.next()) {";
+                foreach (Column r in columns)
+                {
+                    if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                    {
+                        string nullValue;
+                        if (r.data_type.toJavaDataType().Equals("Integer"))
+                        {
+                            nullValue = "0";
+                        }
+                        else { nullValue = "\"\""; }
+                        result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
+                        if (r.nullable == 'y' || r.nullable == 'Y')
+                        {
+                            result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
+                        }
+                    }
+                }
+                result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
+                foreach (Column r in columns)
+                {
+                    if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                    { 
+                        result = result + comma + " " + r.column_name.bracketStrip();
+                    comma = ",";
+                }
+                }
+                result += ");";
+                result = result + "\n result.add(_" + name.ToLower() + ");\n}\n}\n}\n}\n";
+                result += "} catch (SQLException e) {\n";
+                result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
+                result += "}\n";
+                result += "return result;}\n";
+                return result;
+            }
         }
         /// <summary>
         /// Generates the retreive active for the Java DAO object for this <see cref="table"/> 
@@ -1467,6 +1578,7 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
             string comma = "";
+            string nullValue = "";
             foreach (Column s in columns)
             {
                 if (s.references != "")
@@ -1492,7 +1604,7 @@ namespace Data_Objects
                     result += "while (resultSet.next()) {";
                     foreach (Column r in columns)
                     {
-                        string nullValue;
+                        
                         if (r.data_type.toJavaDataType().Equals("Integer"))
                         {
                             nullValue = "0";
@@ -1502,6 +1614,26 @@ namespace Data_Objects
                         if (r.nullable == 'y' || r.nullable == 'Y')
                         {
                             result = result + "if(resultSet.wasNull()){\n" + r.column_name + "=" + nullValue + ";}\n";
+                        }
+                    }
+                    foreach (foreignKey fk in data_tables.all_foreignKey)
+                    {
+                        if (fk.mainTable.Equals(name))
+                        {
+                            foreach (table t in data_tables.all_tables)
+                            {
+                                if (t.name.Equals(fk.referenceTable))
+                                {
+                                    foreach (Column r in t.columns)
+                                    {
+                                        result = result + r.data_type.toJavaDataType() + " " + t.name + "_" + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + t.name + "_" + r.column_name.bracketStrip() + "\");\n";
+                                        if ((r.nullable == 'y' || r.nullable == 'Y') && r.data_type.toJavaDataType().Equals("String"))
+                                        {
+                                            result = result + "if(resultSet.wasNull()){\n" + t.name + "_" + r.column_name.bracketStrip() + "=" + nullValue + ";}\n";
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     result = result + " " + name + " _" + name.ToLower() + " = new " + name + "(";
@@ -1720,7 +1852,7 @@ namespace Data_Objects
         public string genCreateServelet()
         {
             string result = "";
-            result += importStatements(name);
+            result += importStatements(name, settings.database_name);
             //do get
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
@@ -1730,7 +1862,7 @@ namespace Data_Objects
                 if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
-                    result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getActive" + parts[0] + "();\n";
+                    result = result + "static List<"+parts[0]+"> all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //grab a list of the parents, assign and create a static variable
                 }
             }
@@ -1746,12 +1878,12 @@ namespace Data_Objects
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
+                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
-            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             //this only creates the doPost method
             result += "\n";
@@ -1765,7 +1897,7 @@ namespace Data_Objects
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
+                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
@@ -1835,7 +1967,7 @@ namespace Data_Objects
             //send it back
             result += "req.setAttribute(\"results\", results);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Create a " + name + " \");\n";
-            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Add" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "\n}\n}\n";
             //get_buttons
             //get_footer
@@ -1852,7 +1984,7 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewAll);
             //header comment
             //gen header
-            result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_top.jsp\"%>\n";
             //gen form
             result += "<div class = \"container\">\n";
             result += "<div class=\"row\">\n";
@@ -1913,8 +2045,7 @@ namespace Data_Objects
             result += "</div>\n";
             result += "</div>\n";
             result += "</main>\n";
-            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
-            //gen_header
+            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";            //gen_header
             //gen_fileds
             //get_buttons
             //get_footer
@@ -1928,7 +2059,7 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_Add);
             //header comment
             //gen header
-            result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_top.jsp\"%>\n";
             //gen form
             result += "<div class = \"container\">\n";
             result = result + "<form method=\"post\" action=\"${appURL}/add" + name + "\" id = \"add" + name + "\" >\n";
@@ -1995,7 +2126,7 @@ namespace Data_Objects
             result += "</form>\n";
             result += "</div>\n";
             //get_footer
-            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";
             return result;
         }
         /// <summary>
@@ -2008,7 +2139,7 @@ namespace Data_Objects
             //this only creates the doGet method
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewAll);
             //gen header
-            result += importStatements(name);
+            result += importStatements(name, settings.database_name);
             result +=  "@WebServlet(\"/all-" + name + "s\")\n";
             result +=  "public class All" + name + "sServlet extends HttpServlet {";
             result += initMethod();
@@ -2022,7 +2153,7 @@ namespace Data_Objects
             result += "\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
-            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/all-" + name + "s.jsp\").forward(req,resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/all-" + name + "s.jsp\").forward(req,resp);\n";
             result += "\n}\n}";
             //header comment
             //gen_header
@@ -2039,7 +2170,7 @@ namespace Data_Objects
         public string genDeleteServlet()
         {
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
-            result += importStatements(name);
+            result += importStatements(name, settings.database_name);
             result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")";
             result = result + "public class Delete" + name + "Servlet extends HttpServlet {\n";
             result += initMethod();
@@ -2073,7 +2204,7 @@ namespace Data_Objects
             result += "req.setAttribute(\"results\",results);\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "\");\n";
-            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/all-" + name + "s.jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/"+ settings.database_name + "/all-" + name + "s.jsp\").forward(req, resp);\n";
             result += "}\n";
             result += "}\n";
             return result;
@@ -2087,7 +2218,7 @@ namespace Data_Objects
         {
             //do get
             string result = "";
-            result += importStatements(name);
+            result += importStatements(name, settings.database_name);
             //do get
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
@@ -2097,7 +2228,7 @@ namespace Data_Objects
                 if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
-                    result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getActive" + parts[0] + "();\n";
+                    result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //grab a list of the parents, assign and create a static variable
                 }
             }
@@ -2125,12 +2256,12 @@ namespace Data_Objects
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
+                    result = result +" all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
-            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Edit" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             result += " @Override\n";
             result += "protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
@@ -2145,8 +2276,7 @@ namespace Data_Objects
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getAll" + parts[0] + "();\n";
-                    //set them to the req attribute
+                    result = result + " all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";                    //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
@@ -2217,7 +2347,7 @@ namespace Data_Objects
             result += "//standard\n";
             result += "req.setAttribute(\"results\", results);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Edit a " + name + " \");\n";
-            result = result + "req.getRequestDispatcher(\"WEB-INF/personal-project/Edit" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n}\n";
             return result;
         }
@@ -2233,7 +2363,7 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewEdit);
             //header comment
             //gen header
-            result += "<%@include file=\"/WEB-INF/personal-project/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_top.jsp\"%>\n";
             //gen form
             result += "<div class = \"container\">\n";
             result = result + "<form method=\"post\" action=\"${appURL}/edit" + name + "\" id = \"edit" + name + "\" >\n";
@@ -2308,7 +2438,7 @@ namespace Data_Objects
             result += "</form>\n";
             result += "</div>\n";
             //get_footer
-            result += "<%@include file=\"/WEB-INF/personal-project/personal_bottom.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";
             return result;
         }
         /// <summary>
@@ -2342,13 +2472,13 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for standard import statements.</returns>
-        private string importStatements(string objectname)
+        private string importStatements(string objectname, string projectName)
         {
             string result = "\n";
-            result = result + "import com.beck.javaiii_kirkwood.personal_project.data." + name + "DAO;\n";
-            result = result + "import com.beck.javaiii_kirkwood.personal_project.models." + name + ";\n";
-            result += "import com.beck.javaiii_kirkwood.personal_project.models.User;\n";
-            result += "import com.beck.javaiii_kirkwood.personal_project.iData.i"+ objectname + "DAO;\n";
+            result = result + "import com.beck.javaiii_kirkwood."+ projectName + ".data." + name + "DAO;\n";
+            result = result + "import com.beck.javaiii_kirkwood."+ projectName + ".models." + name + ";\n";
+            result += "import com.beck.javaiii_kirkwood."+ projectName + ".models.User;\n";
+            result += "import com.beck.javaiii_kirkwood."+ projectName + ".iData.i"+ objectname + "DAO;\n";
             result += "import jakarta.servlet.ServletException;\n";
             result += "import jakarta.servlet.annotation.WebServlet;\n";
             result += "import jakarta.servlet.http.HttpServlet;\n";
@@ -2371,9 +2501,11 @@ namespace Data_Objects
         {
             string result = "\n//To restrict this page based on privilege level\n";
             result += "int PRIVILEGE_NEEDED = 0;\n";
+            result += "List<String> ROLES_NEEDED = new ArrayList<>();\n";
+            result += "//add roles here\n";
             result += "HttpSession session = req.getSession();\n";
             result += "User user = (User)session.getAttribute(\"User\");\n";
-            result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED){\n";
+            result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
             result += "resp.sendError(HttpServletResponse.SC_FORBIDDEN);\n";
             result += "return;\n";
             result += "}\n";
@@ -2476,7 +2608,7 @@ namespace Data_Objects
             string result;
             result = "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
             result += "@Override\n";
-            result += "private void init() throws ServletException{\n";
+            result += "public void init() throws ServletException{\n";
             result += name.ToLower() + "DAO = new " + name + "DAO();\n";
             result += "}\n";
             return result;

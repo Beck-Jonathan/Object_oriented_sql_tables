@@ -209,6 +209,12 @@ namespace Data_Objects
                     Params += "\n* @param new" + table.name + " the updated version of the " + table.name;
                     returns = "\n* @return number of records updated";
                     break;
+                case JavaDoc_Method_Type.Java_DAO_Get_Distinct:
+                    summary = "\n* DAO Method to select distinct " + table.name + " for dropdowns";
+                    Params = "";
+                    
+                    returns = "\n* @return list of string";
+                    break;
                 default:
                     break;
             }

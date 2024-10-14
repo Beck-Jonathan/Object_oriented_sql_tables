@@ -90,6 +90,7 @@
         Java_DAO_Retreive_By_FK,
         Java_DAO_Retreive_All_,
         Java_DAO_Retreive_By_PK,
-        Java_DAO_Update
+        Java_DAO_Update,
+        Java_DAO_Get_Distinct
     }
 }
