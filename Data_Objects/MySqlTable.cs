@@ -524,18 +524,27 @@ namespace Data_Objects
         /// </summary>
         /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retreive by all SP for the table </returns>
         public String gen_retreive_by_all()
-        {
+        { int count = 0;
             String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_All);
             string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "(\n" +
                 "limit_param int ,\n " +
-                "offset_param int \n" +
-                ")" +
-                "\n";
+                "offset_param int \n";
+            foreach(Column t in columns) {
+                
+                if (t.foreign_key != "") {
+                    if (count == 0)
+                    {
+                        secondLine += ",";
+                    }
+                    secondLine += "\n" + t.column_name + "_param " + t.data_type + t.length_text + ",\n";
+                }
+            }
+            secondLine+= ")" + "\n";
             String function_text = firstLine + secondLine;
             function_text += "begin \n SELECT \n";
-            int count = 0;
+            count = 0;
             string comma = "";
             foreach (Column r in columns)
             {
@@ -569,6 +578,34 @@ namespace Data_Objects
                     function_text = function_text + "join " + fk.referenceTable + " on " + fk.mainTable + "." + fk.fieldName + " = " + fk.referenceTable + "." + fk.fieldName + "\n";
                 }
             }
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    if (count == 0) {
+                        comma = "WHERE\n(\n";
+                    }
+                    
+                    else {
+                        comma = "and\n(\n";
+                    }
+                    function_text += comma;
+                    if (r.data_type == "int")
+                    {
+                        function_text += "case when \n" + r.column_name + "_param =0 then 1=1\n";
+                    }
+                    else
+                    {
+                        function_text += "case when \n" + r.column_name + "_param =\'\' then 1=1\n";
+                    }
+                    
+                    function_text += "else " +name+"."+ r.column_name + "=" + r.column_name + "_param\n";
+                    function_text += "end\n)\n";
+                    count++;
+                }
+            }
+
             function_text += "\nORDER BY ";
             count = 0;
             comma = "";

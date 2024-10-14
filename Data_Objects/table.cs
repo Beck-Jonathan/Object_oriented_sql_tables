@@ -38,7 +38,15 @@ namespace Data_Objects
             string header = "public interface I" + name + "Accessor \n{\n";
             string addThing = "int add" + name + "(" + name + " _" + name + ");\n";
             string selectThingbyPK = name + " select" + name + "ByPrimaryKey(string " + name + "ID);\n";
-            string selectallThing = "List<" + name + "> selectAll" + name + "();\n";
+            string selectallThing = "List<" + name + "> selectAll" + name + "(";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    selectallThing += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+            selectallThing +=");\n";
             string updateThing = "int update" + name + "(";
             updateThing = updateThing + name + "_old" + name + " , " + name + " _new" + name;
             updateThing += ");\n";
@@ -113,7 +121,16 @@ namespace Data_Objects
             string getThingbyPK = name + " get" + name + "ByPrimaryKey(string " + name + "ID);\n";
             string getallThing = "List<" + name + "> getAll" + name + "();\n" +
                                    "List<" + name + "> getAll" + name + "(int offset);\n" +
-                                   "List<" + name + "> getAll" + name + "(int limit, int offset);\n";
+                                   "List<" + name + "> getAll" + name + "(int limit, int offset";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    getallThing += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+
+            getallThing +=");\n";
             List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
             string getfkThing = "";
             foreach (Column r in columns)
@@ -319,10 +336,26 @@ namespace Data_Objects
             retreiveAll = retreiveAll + "return get" + name + "ByAll(offset, " + appData2.settings.page_size + ");\n}\n";
             comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_Two_Param);
             comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
-            retreiveAll = retreiveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit){\n";
+            retreiveAll = retreiveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    retreiveAll += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+            retreiveAll +=  "){\n";
             retreiveAll = retreiveAll + "List<" + name + "> result =new List<" + name + ">();\n";
             retreiveAll += "try{\n";
-            retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit);\n";
+            retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    retreiveAll += ", " + r.column_name;
+                }
+            }
+            retreiveAll +=");\n";
             retreiveAll += "if (result.Count == 0){\n";
             retreiveAll = retreiveAll + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
             retreiveAll += "}\n";
@@ -674,13 +707,38 @@ namespace Data_Objects
         private string genAccessorRetreiveAll()
         {
             string retreiveAllThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
-            retreiveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset){\n";
+            retreiveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    retreiveAllThing += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+
+            retreiveAllThing +="){\n";
             retreiveAllThing += genSPHeaderC(name, "sp_retreive_by_all_" + name);
             //no paramaters to set or add
             retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
             retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key!="" )
+                {
+                    retreiveAllThing +=  "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                }
+            }
             retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
             retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
+            
+
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    retreiveAllThing +=  "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
+                }
+            }
             //excute the quuery
             retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
             retreiveAllThing += "//execute the command and capture result\n";
@@ -1262,7 +1320,15 @@ namespace Data_Objects
             result += "int update("+name+" old"+name+", "+name+" new"+name+ ") throws SQLException;\n";
             //get all
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
-            result += "List<"+name+"> getAll"+name+ "() throws SQLException;\n";
+            result += "List<" + name + "> getAll" + name + "(int offset, int limit";
+            foreach (Column r in columns) {
+                if (r.foreign_key != "") {
+                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
+            
+            
+            result+=") throws SQLException;\n";
             // get active
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             result += "List<" + name + "> getActive" + name + "() throws SQLException;\n";
@@ -1420,13 +1486,31 @@ namespace Data_Objects
             result = result + "public static List<" + name + "> getAll" + name + "(int pagesize) {\n";
             result = result + "return getAll" + name + "(pagesize" + ",0);";
             result += "}\n";
-            result = result + "public static List<" + name + "> getAll" + name + "(int limit, int offset) {\n";
+            result = result + "public static List<" + name + "> getAll" + name + "(int limit, int offset";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }          
+            
+            result+=") {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result += "try (Connection connection = getConnection()) { \n";
             result += "if (connection != null) {\n";
             result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "(?,?)}\")) {\n" +
                 "statement.setInt(1,limit)\n;" +
                 "statement.setInt(2,offset);\n";
+            int count = 3;
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + "," + r.column_name + ");\n";
+                    count++;
+                }
+            }
             result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
             result += "while (resultSet.next()) {";
             foreach (Column r in columns)
@@ -2149,7 +2233,16 @@ namespace Data_Objects
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "\n";
-            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "();\n";
+            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(20,0";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
+
+            result +=");\n";
             result += "\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
