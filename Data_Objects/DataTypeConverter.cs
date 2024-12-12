@@ -17,6 +17,7 @@ namespace Data_Objects
             string result = sqlDataType.Replace("[", "").Replace("]", "");
             if (result == "nvarchar") { result = "string"; }
             if (result == "bit") { result = "bool"; }
+            if (result == "tinyint") { result = "bool"; }
             if (result == "Int" || sqlDataType == "Integer") { result = "int"; }
             if (String.Compare(result, "datetime", true) == 0) { result = "DateTime"; }
             return result;

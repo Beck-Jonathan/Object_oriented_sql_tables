@@ -1,8 +1,12 @@
 ﻿using appData2;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
+using System.Security.Cryptography;
 namespace Data_Objects
 {
     public class table
@@ -2706,6 +2710,297 @@ namespace Data_Objects
             result += "}\n";
             return result;
 
+        }
+
+        public string sp_definitions() {
+            bool has_is_active = false;
+            foreach (Column r in columns)
+            {
+                if (r.column_name.ToLower().Equals("is_active"))
+                {
+                    has_is_active = true;
+                    break;
+                }
+            }
+            
+            string result = "";
+            result += sp_header(); //good
+            result += sp_insert(); //done
+            result += sp_retreive_by_key(); //done
+            result += sp_retreive_by_all(); //done
+            result += sp_retreive_by_fk();
+            result += sp_update();  //done
+            if (has_is_active)
+            {
+                result += sp_deactivate(); //done
+                result += sp_activate();//done
+            }
+            foreach (Column r in columns) {
+                if (r.data_type.toCSharpDataType().Equals("bool")&&!r.column_name.ToLower().Equals("is_active")) {
+                    result += sp_make_bool_true(r.column_name);
+                    result += sp_make_bool_false(r.column_name);
+                }
+            }
+            result += sp_delete();//done
+            result += sp_distinct(); //done
+            result += sp_count(); //done
+            return result;
+
+        }
+        private string sp_header() {
+            string Name = name +"\n";
+            string creator = "Initial Creator : Jonathan Beck\n";
+            string date=DateTime.Today.ToLongDateString()+"\n\n";
+
+            string result = Name + creator + date;
+            return result;
+        }
+        private string sp_insert()
+        {
+            string result = "";
+            string header = "\nsp_insert_"+name+":\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(3);
+
+            string returns = "\n\tReturns:\t@@"+name+"_ID\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        
+        private string sp_retreive_by_key()
+        {
+            string result = "";
+            string header = "\nsp_retreive_by_key_" + name + ":\n";
+            string table_used = sp_tables_used_gen(1);            
+            string parameters = sp_paramater_gen(0);            
+            string returns = sp_return_fields_gen();
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_retreive_by_all()
+        {
+            string result = "";
+            string header = "\nsp_retreive_by_all_" + name + ":\n";
+            string table_used = sp_tables_used_gen(1);
+            string parameters = sp_paramater_gen(2);
+            string returns = sp_return_fields_gen();
+            
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_retreive_by_fk()
+        {
+            string result = "";
+            string header = "";
+            string table_used = "";
+            string parameters = "";
+            string returns = "";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_update()
+        {
+            string result = "";
+            string header = "\nsp_update_"+name+":\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(1);
+            string returns = "\n\tReturns: \tint(@@rowsAffected)\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_deactivate()
+        {
+            string result = "";
+            string header = "\nsp_deactivate_"+name+":\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(0);
+            string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_activate()
+        {
+            string result = "";
+            string header = "\nsp_activate_" + name + ":\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(0);
+            string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        
+            private string sp_make_bool_true(string column_name)
+        {
+            string result = "";
+            string header = "\nsp_set_" + column_name + "_true:\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(0);
+            string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_make_bool_false(string column_name)
+        {
+            string result = "";
+            string header = "\nsp_set_" + column_name + "_false:\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(0);
+            string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+        private string sp_delete()
+        {
+            string result = "";
+            string header = "\nsp_delete_" + name + ":\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(0);
+            string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+
+        private string sp_distinct()
+        {
+            string result = "";
+            string header = "\nsp_select_distinct_and_active_"+name+"_for_dropdown:\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(4);
+            string returns = "\tReturns: \t"+name+"_ID\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+
+        private string sp_count()
+        {
+            string result = "";
+            string header = "\nsp_retreive_"+name+"_count:\n";
+            string table_used = sp_tables_used_gen(0);
+            string parameters = sp_paramater_gen(4);
+            string returns = "\tReturns:\tCOUNT("+name+")\n";
+            result = header + table_used + parameters + returns;
+            return result;
+
+        }
+
+        
+        private string sp_return_fields_gen() {
+            string comma = "";
+            string returns = "\n\tReturns:\t";
+            foreach (Column r in columns)
+            {
+                returns += comma + name + "." + r.column_name;
+                comma = ", ";
+            }
+            foreach (foreignKey fk in data_tables.all_foreignKey)
+            {
+                if (fk.mainTable.Equals(name))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(fk.referenceTable))
+                        {
+                            foreach (Column r in t.columns)
+                            {
+                                returns += comma + t.name + "." + r.column_name;
+                            }
+                        }
+                    }
+                }
+            }
+            returns += "\n";
+            return returns;
+        }
+
+        private string sp_tables_used_gen(int mode)
+        {
+            string result= "\tTables:\t\t" + name ;            
+            if (mode==1)  {              
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        result += ", " + parts[0];
+                    }
+                }
+            }
+           
+            return result;
+        }
+
+        private string sp_paramater_gen(int mode) {
+
+            string result= "";
+            //retreive pk
+            if (mode == 0) {
+                string comma = "";
+                 result = "\n\tParameters:\t";
+                foreach (Column r in columns)
+                {
+                    if (r.primary_key == 'y' || r.primary_key == 'Y')
+                    {
+                        result += comma + "@" + r.column_name;
+                        comma = ", ";
+                    }
+                }             
+            }
+            //update
+            if (mode == 1)
+            {
+                result= "\n\tParameters:\t";
+                string comma = "";
+                foreach (Column r in columns)
+                {
+                    result += comma + "@old" + r.column_name;
+                    comma = ", ";
+                    if (r.primary_key != 'y' && r.primary_key != 'Y')
+                    {
+                        result += comma + "@new" + r.column_name;
+                    }
+                }
+
+            }
+            //retreive by all
+            if (mode == 2) {
+                result="\n\tParameters:\t @limit_param, @offset_param";
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        result += ", @" + parts[1];
+                    }
+                }
+            }
+            //add
+            if (mode == 3) {
+                result="\n\tParameters:\t";
+
+                string comma = "";
+                foreach (Column r in columns)
+                {
+                    result += comma + "@" + r.column_name;
+                    comma = ", ";
+                }
+
+            }
+            if (mode == 4) {
+                result = "\n\tParameters:\tNONE\n";
+            }
+
+            return result;
         }
     }
 }
