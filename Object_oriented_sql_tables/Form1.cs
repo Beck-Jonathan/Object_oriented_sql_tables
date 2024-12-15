@@ -609,6 +609,19 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+
+                if (true)
+                {    //change to these settings 34
+                    s = t.createTests();
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "tests", "tests");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
                 count++;
             }
             //file_write.sqlBuddy2.Flush();

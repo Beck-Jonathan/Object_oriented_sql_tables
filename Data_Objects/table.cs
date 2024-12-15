@@ -1254,6 +1254,9 @@ namespace Data_Objects
                 }
                 if (r.data_type == "int")
                 {
+                    setter += "if ("+r.column_name+"<0||"+r.column_name+">10000){\n";
+                    setter += "throw new IllegalArgumentException(\""+r.column_name+" Can Not Be Negative\");\n";
+                    setter += "}\n";
                 }
                 setter = setter + "this." + r.column_name + " = " + r.column_name + ";\n}";
                 result = result + getter + "\n" + setter + "\n";
@@ -3002,5 +3005,212 @@ namespace Data_Objects
 
             return result;
         }
+
+        public string createTests() {
+            string result = "";
+            result += testInitialize(); //done
+            result += testDefaultConstructor();
+            result += testParameterizedConstructor();
+            foreach (Column r in columns) {
+                result += createTests(r);
+            }
+            return result;
+        }
+        private  string createTests(Column r) { 
+        string result = "";
+            
+            if (r.data_type.toCSharpDataType().Equals("string"))
+            {
+                result += testTooShort(r);  //done
+                result += testTooLong(r); //done
+                result += testStringSet(r); //done
+            }
+            if (r.data_type.toCSharpDataType().Equals("int"))
+            {
+                result += testTooSmall(r); //done
+                result += testTooBig(r); // done
+                result += testIntSet(r); //done
+            }
+            if (r.data_type.toCSharpDataType().Equals("bool"))
+            {
+                result += testBoolSetFalse(r); //done
+                result += testBoolSetTrue(r); //done
+            }
+            
+            
+            return result;
+
+        }
+        private string testInitialize()
+        {
+            string result = "";
+            result += "import org.junit.jupiter.api.AfterEach;\n";
+            result += "import org.junit.jupiter.api.Assertions;\n";
+            result += "import org.junit.jupiter.api.BeforeEach;\n";
+            result += "import org.junit.jupiter.api.Test;\n";
+            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+            result += "class "+name+"test {\n";
+            result += "private "+name+ " "+"_"+name.ToLower()+";\n";
+            result += "@BeforeEach\n";
+            result += "public void setup(){\n";
+            result += "_"+name.ToLower()+" = new "+name+"();\n";
+            result += "}\n";
+            result += "@AfterEach\n";
+            result += "public void teardown(){\n";
+            result += "_"+name.ToLower()+" = null;\n";
+            result += "}\n";
+
+            return result;
+
+        }
+
+        
+
+        private string testParameterizedConstructor()
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "DefaultParameterizedSetsAllVariables(){\n";
+
+            return result;
+
+        }
+
+        private string testDefaultConstructor()
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
+
+            return result;
+
+        }
+
+       
+        private string testTooShort(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooShort(){\n";
+            result += "String " + r.column_name + "= \"abc\";\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "("+r.column_name+");});\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string testTooLong(Column r)
+        {
+            Random rand = new Random();
+            char letter;
+            string result = "@Test\n";
+            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf+"+r.column_name+"TooLong(){\n";
+            result += "String " + r.column_name + " = \"";
+            for (int i = 0; i < r.length + 2; i++) {
+                int randValue;
+                while (true)
+                {
+                    randValue = rand.Next(65, 122);
+                    if (randValue < 91 || randValue > 96) {
+                        break;
+                    }
+                }
+
+                // Generating random character by converting 
+                // the random number into character. 
+                letter = Convert.ToChar(randValue);
+                result += letter;
+
+            }
+            result += "\"\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string testTooBig(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooBig(){\n";
+            result += "int " + r.column_name + " = 10001;\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string testTooSmall(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
+            result += "int " + r.column_name + " = -1;\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_"+name.ToLower()+".set"+r.column_name+"("+r.column_name+");});\n";
+            result += "}\n";
+            return result;
+        }
+        private string testIntSet(Column r)
+        {
+            Random random = new Random();
+            int numberToTest = random.Next(1, 10000);
+            string result = "@Test\n";
+            result += "public void test" + name + "Sets" + r.column_name + "(){\n";
+            result += "int " + r.column_name +" = "+ numberToTest + ";\n";
+            result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
+            result += "Assertions.assertEquals("+r.column_name+", _"+name.ToLower()+".get"+r.column_name+"());\n";
+            result += "}\n";
+
+            return result;
+
+        }
+        private string testStringSet(Column r)
+        {
+            Random rand = new Random();
+            char letter;
+            String dummy = "";
+            for (int i = 0; i < r.length + -2; i++)
+            {
+                int randValue;
+                while (true)
+                {
+                    randValue = rand.Next(65, 122);
+                    if (randValue < 91 || randValue > 96)
+                    {
+                        break;
+                    }
+                }
+
+                // Generating random character by converting 
+                // the random number into character. 
+                letter = Convert.ToChar(randValue);
+                dummy += letter;
+
+            }
+            string result = "@Test\n";
+            result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
+            result += "String " + r.column_name + " = \"" + dummy + "\";\n";
+            result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
+            result += "Assertions.assertEquals("+r.column_name+",_"+name.ToLower()+".get"+r.column_name+"());\n";
+            result += "}\n"; 
+            return result;
+
+        }
+        private string testBoolSetFalse(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "Sets" + r.column_name + "asFalse(){\n";
+            result += "boolean status = false;\n";
+            result += "_" + name.ToLower() + ".set" + r.column_name + "(status);\n";
+            result += "Assertions.assertEquals(status, _" + name.ToLower() + ".get" + r.column_name + "());\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string testBoolSetTrue(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "Sets" + r.column_name + "asTrue(){\n";
+            result += "boolean status = true;\n";
+            result += "_" + name.ToLower() + ".set" + r.column_name + "(status);\n";
+            result += "Assertions.assertEquals(status, _" + name.ToLower() + ".get" + r.column_name + "());\n";
+            result += "}\n";
+            return result;
+
+        }
+
     }
 }
