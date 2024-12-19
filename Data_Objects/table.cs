@@ -1,5 +1,7 @@
 ﻿using appData2;
 using System;
+using System.CodeDom.Compiler;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -7,10 +9,14 @@ using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
+using System.Web;
 namespace Data_Objects
 {
     public class table
     {
+        bool hasVM = false;
+        private Random rand = new Random();
         //various components of a table
         public String name { set; get; }
         public header Header { set; get; }
@@ -1154,6 +1160,15 @@ namespace Data_Objects
             result += genJavaFooter();
             return result;
         }
+        public string genJavaModelNM() {
+            string result = "";
+            result += genJavaVMHeader();  
+            result += genJavaVMInstanceVariables(); 
+            result += genJavaVMContructor(); 
+            result += genJavaVMSetterAndGetter();
+            result += genJavaFooter(); 
+            return result;
+        }
         /// <summary>
         /// Generates a the header for a rudamentary Java data object for this <see cref="table"/> 
         /// Jonathan Beck
@@ -1163,6 +1178,13 @@ namespace Data_Objects
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
             result = result + "\n public class " + name + " {\n";
+            return result;
+        }
+        
+        private string genJavaVMHeader()
+        {
+            string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
+            result = result + "\n public class " + name + "_VM extends "+name+" {\n";
             return result;
         }
         /// <summary>
@@ -1176,6 +1198,22 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 result = result + "private " + r.data_type.toJavaDataType() + " " + r.column_name + ";\n";
+            }
+            return result;
+        }
+        private string genJavaVMInstanceVariables()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+
+                    result += "private " + fk_table + " " + fk_table + ";\n";
+                }
             }
             return result;
         }
@@ -1193,13 +1231,13 @@ namespace Data_Objects
             string comma = "";
             foreach (Column r in columns)
             {
-                ParamConsctructor = ParamConsctructor + comma + r.data_type.toJavaDataType() + " " + r.column_name;
+                ParamConsctructor += comma + r.data_type.toJavaDataType() + " " + r.column_name;
                 comma = ", ";
             }
             ParamConsctructor += ") {\n";
             foreach (Column r in columns)
             {
-                ParamConsctructor = ParamConsctructor + "\nthis." + r.column_name + " = " + r.column_name + ";";
+                ParamConsctructor +=  "\nthis." + r.column_name + " = " + r.column_name + ";";
             }
             ParamConsctructor += "\n}\n";
 
@@ -1232,6 +1270,71 @@ namespace Data_Objects
             string result = defaultConstructor + ParamConsctructor+ ParamConstructor2;
             return result;
         }
+        private string genJavaVMContructor()
+        {
+            //default
+            string defaultConstructor = "\npublic " + name + "_VM(){}\n";
+            //param
+            string ParamConsctructor = "\npublic " + name + "_VM("+name+" "+name.ToLower()+"){\n";
+            string comma = "";
+            ParamConsctructor += "super(";
+
+
+            foreach (Column r in columns)
+            {
+                ParamConsctructor += comma+ name.ToLower()+".get"+ r.column_name + "()";
+                comma = ", ";
+            }
+            ParamConsctructor += ");\n}\n";
+
+
+            //param2
+
+            string ParamConsctructor2 = "\npublic " + name + "_VM(" + name + " " + name.ToLower() ;
+             comma = ",";
+
+            foreach (Column r in columns)
+            {
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+
+                    ParamConsctructor2 += comma + fk_table+" "+fk_table.ToLower();
+                }
+            }
+            comma = "";
+
+            ParamConsctructor2 += "){\n";
+            ParamConsctructor2 += "super(";
+            foreach (Column r in columns)
+            {
+                ParamConsctructor2 += comma + " " + name.ToLower() + ".get" + r.column_name + "()";
+                comma = ", ";
+            }
+            ParamConsctructor2 += ");\n";
+
+
+
+            foreach (Column r in columns)
+            {
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+
+                    ParamConsctructor2 += "this." + fk_table + " = " + fk_table.ToLower()+";\n";
+                }
+            }
+
+            ParamConsctructor2 += "\n}\n";
+
+
+            string result = defaultConstructor + ParamConsctructor + ParamConsctructor2;
+            return result;
+        }
         /// <summary>
         /// Generates the setters and getters for the  instance variables for Java data object for this <see cref="table"/> 
         /// Jonathan Beck
@@ -1260,6 +1363,27 @@ namespace Data_Objects
                 }
                 setter = setter + "this." + r.column_name + " = " + r.column_name + ";\n}";
                 result = result + getter + "\n" + setter + "\n";
+            }
+            return result;
+        }
+        private string genJavaVMSetterAndGetter()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+
+                    string getter = "public " + fk_table + " get" + fk_table + "() {\n return " + fk_table + ";\n}";
+                    string setter = "public void set" + fk_table + "(" + fk_table + " _" + fk_table.ToLower() + ") {\n";
+                    
+                    setter = setter + "this." + fk_table + " = _" + fk_table.ToLower() + ";\n}";
+                    result +=  getter + "\n" + setter + "\n";
+                }
             }
             return result;
         }
@@ -3011,9 +3135,13 @@ namespace Data_Objects
             result += testInitialize(); //done
             result += testDefaultConstructor();
             result += testParameterizedConstructor();
+
+            //result += testVMDefaultConstructor();
+            //result += testVMParameterizedConstructor();
             foreach (Column r in columns) {
                 result += createTests(r);
             }
+            result += "\n}\n";
             return result;
         }
         private  string createTests(Column r) { 
@@ -3049,7 +3177,7 @@ namespace Data_Objects
             result += "import org.junit.jupiter.api.BeforeEach;\n";
             result += "import org.junit.jupiter.api.Test;\n";
             result += "import static org.junit.jupiter.api.Assertions.*;\n";
-            result += "class "+name+"test {\n";
+            result += "class "+name+"Test {\n";
             result += "private "+name+ " "+"_"+name.ToLower()+";\n";
             result += "@BeforeEach\n";
             result += "public void setup(){\n";
@@ -3068,10 +3196,101 @@ namespace Data_Objects
 
         private string testParameterizedConstructor()
         {
+            
             string result = "@Test\n";
-            result += "public void test" + name + "DefaultParameterizedSetsAllVariables(){\n";
+            //generate random values for each
+            ArrayList array = new ArrayList(columns.Count+1);
+            
+            foreach (Column r in columns) {
+                
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        array.Add(generateRandomString(r, -2));
+                    Task.Delay(1);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        array.Add(true);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        array.Add(rand.Next(0, 10000));
+                    Task.Delay(1);
+                    }
+                    else
+                    {
+                        array.Add(null);
+                    }
+                Task.Delay(5);
 
+
+
+            }
+            
+
+
+            //method signature
+            result += "public void test" + name + "ParameterizedConstructorSetsAllVariables(){\n";
+            //constructor
+            result += name + " _" + name.ToLower() + "= new " + name + "(\n";
+            //assing a value to each variable
+            string comma = "";
+            int i = 0;
+            foreach (Column r in columns)
+            {
+                
+                
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += comma+"\""+array[i]+"\"";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += comma + array[i] ;
+                    }
+                    else
+                    {
+                        result += comma + "new "+r.data_type+"()\n";
+                    }
+                    comma = ",\n ";
+
+                
+                i++;
+            }
+            result += "\n);\n";
+            i = 0;
+            //test each variable
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "Assertions.assertEquals(\""+array[i]+"\",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "Assertions.assertTrue(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "Assertions.assertEquals(" + array[i] +",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else
+                {
+                    result += "Assertions.assertEquals(new "+r.data_type+"(),_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                i++;
+
+
+            }
+            result += "}\n";
             return result;
+
+
+            
 
         }
 
@@ -3079,7 +3298,27 @@ namespace Data_Objects
         {
             string result = "@Test\n";
             result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
+            result += name + " _" + name.ToLower() + "= new " + name+"();\n";
+            foreach (Column r in columns) {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "Assertions.assertNull(_"+name.ToLower()+".get"+r.column_name+"());\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "Assertions.assertFalse(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "Assertions.assertEquals(0,_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else {
+                    result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                
 
+            }
+            result += "}\n";
             return result;
 
         }
@@ -3089,7 +3328,10 @@ namespace Data_Objects
         {
             string result = "@Test\n";
             result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooShort(){\n";
-            result += "String " + r.column_name + "= \"abc\";\n";
+            result += "String " + r.column_name + " = \"";
+            String dummy = generateRandomString(r, 2-r.length);
+            result += dummy; ;
+            result += "\";\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "("+r.column_name+");});\n";
             result += "}\n";
             return result;
@@ -3097,28 +3339,13 @@ namespace Data_Objects
         }
         private string testTooLong(Column r)
         {
-            Random rand = new Random();
-            char letter;
+            
             string result = "@Test\n";
-            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf+"+r.column_name+"TooLong(){\n";
+            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooLong(){\n";
             result += "String " + r.column_name + " = \"";
-            for (int i = 0; i < r.length + 2; i++) {
-                int randValue;
-                while (true)
-                {
-                    randValue = rand.Next(65, 122);
-                    if (randValue < 91 || randValue > 96) {
-                        break;
-                    }
-                }
-
-                // Generating random character by converting 
-                // the random number into character. 
-                letter = Convert.ToChar(randValue);
-                result += letter;
-
-            }
-            result += "\"\n";
+            String dummy = generateRandomString(r, +2);
+            result += dummy;
+            result += "\";\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
             result += "}\n";
             return result;
@@ -3145,8 +3372,8 @@ namespace Data_Objects
         }
         private string testIntSet(Column r)
         {
-            Random random = new Random();
-            int numberToTest = random.Next(1, 10000);
+            
+            int numberToTest = rand.Next(1, 10000);
             string result = "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "(){\n";
             result += "int " + r.column_name +" = "+ numberToTest + ";\n";
@@ -3159,27 +3386,9 @@ namespace Data_Objects
         }
         private string testStringSet(Column r)
         {
-            Random rand = new Random();
-            char letter;
-            String dummy = "";
-            for (int i = 0; i < r.length + -2; i++)
-            {
-                int randValue;
-                while (true)
-                {
-                    randValue = rand.Next(65, 122);
-                    if (randValue < 91 || randValue > 96)
-                    {
-                        break;
-                    }
-                }
 
-                // Generating random character by converting 
-                // the random number into character. 
-                letter = Convert.ToChar(randValue);
-                dummy += letter;
-
-            }
+            String dummy = generateRandomString(r, -2);
+            
             string result = "@Test\n";
             result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
             result += "String " + r.column_name + " = \"" + dummy + "\";\n";
@@ -3211,6 +3420,635 @@ namespace Data_Objects
             return result;
 
         }
+
+        private string generateRandomString(Column r, int reletive_length) {
+            
+            char letter ;
+            String dummy = "";
+            for (int i = 0; i < r.length + reletive_length; i++)
+            {
+                int randValue;
+                while (true)
+                {
+                    randValue = rand.Next(65, 122);
+                    if (randValue < 91 || randValue > 96)
+                    {
+                        break;
+                    }
+                }
+
+                // Generating random character by converting 
+                // the random number into character. 
+                letter = Convert.ToChar(randValue);
+                dummy += letter;
+
+            }
+            dummy+="";
+            return dummy;
+        }
+
+        public string genDataAccessFakes() {
+            string result = "";
+            result += genJavaDAOFakeHeader(settings.database_name);   //done, needs javadoccomment
+            result += genJavaDAOFakeCreate();      //done, needs javadoccomment
+            result += genJavaDAOFakeRetreiveByKey(); // done, needs javadoccomment
+            result += genJavaDAOFakeRetreiveAll();  //done, needs javadoccomment
+            result += genJavaDAOFakeRetriveActive(); //done, needs javadoccomment
+            result += genJavaDAOFakeRetreiveDistinct(); //done, needs javadoccomment
+            result += genJavaDAOFakeRetriveByFK();//not done, needs javadoccomment
+            result += genJavaDAOFakeUpdate(); // done, needs javadoccomment
+            result += genJavaDAOFakeDelete(); // done, needs javadoccomment
+            result += genJavaDAOFakeUnDelete();// done, needs javadoccomment
+            result += genJavaDAOFakeDeactivate(); // done, needs javadoccomment
+            result += genJavaDAOFakeCount(); // done, needs javadoccomment
+            result += genJavaDAOFooter(); // done, needs javadoccomment
+
+            return result;
+
+        }
+
+        private string genJavaDAOFakeHeader(string databasename)
+        {
+            int x =0;
+            string result = "";
+            int numberOfFakes = rand.Next(4, 6);
+            hasVM = false;
+            foreach (Column r in columns)
+            {
+                if (!r.references.Equals(""))
+                {
+                    hasVM = true;
+                    break;
+                }
+
+            }
+
+
+            result += importStatements(name, databasename);
+            result += "\npublic class " + name + "_DAO_Fake implements i" + name + "DAO{\n";
+            if (hasVM)
+            {
+                result += "private static List<" + name + "_VM> " + name.ToLower() + "VMs;\n";
+            }
+            else
+            {
+                result += "private static List<" + name + "> " + name.ToLower() + "s;\n";
+            }
+            result += "static{\n";
+            if (hasVM)
+            {
+                result += name.ToLower() + "VMs = new ArrayList<>();\n";
+            }
+            else
+            {
+                result += name.ToLower() + "s = new ArrayList<>();\n";
+            }
+
+            //generate non keyed data
+            if (!hasVM)
+            {
+                for (int i = 0; i < numberOfFakes; i++)
+                {
+                    result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
+                    string comma = "";
+                    foreach (Column r in columns)
+                    {
+                        if (r.data_type.toCSharpDataType().Equals("string"))
+                        {
+                            string randomtext = "\"" + generateRandomString(r, 8 - r.length) + "\"";
+                            result += comma + randomtext;
+                        }
+                        else if (r.data_type.toCSharpDataType().Equals("bool"))
+                        {
+                            int flip = rand.Next(0, 2);
+                            if (flip == 0)
+                            {
+                                result += comma + "true";
+                            }
+                            else
+                            {
+                                result += comma + "false";
+                            }
+                        }
+                        else if (r.data_type.toCSharpDataType().Equals("int"))
+                        {
+                            result += comma + rand.Next(10, 70);
+                        }
+                        else
+                        {
+                            result += comma + "new " + r.data_type + "()";
+                        }
+                        comma = ", ";
+                    }
+                    result += ");\n";
+                    x++;
+                }
+            }
+            else
+                for (int l = 0; l < 3; l++)
+                {
+                    {
+                        for (int j = 0; j < columns.Count; j++)
+                        {
+                            if (columns[j].references != "")
+                            {
+                                if (columns[j].data_type.toCSharpDataType().Equals("string"))
+                                {
+                                    string randomtext = "\"" + generateRandomString(columns[j], 8 - columns[j].length) + "\"";
+                                    for (int i = 0; i < numberOfFakes; i++)
+                                    {
+                                        result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
+                                        string comma = "";
+                                        for (int k = 0; k < columns.Count; k++)
+                                        {
+                                            if (columns[k].data_type.toCSharpDataType().Equals("string"))
+                                            {
+                                                if (j == k)
+                                                {
+                                                    result += comma + randomtext;
+                                                }
+                                                else
+                                                {
+                                                    string newrandomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
+                                                    result += comma + newrandomtext;
+
+                                                }
+
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("bool"))
+                                            {
+                                                int flip = rand.Next(0, 2);
+                                                if (flip == 0)
+                                                {
+                                                    result += comma + "true";
+                                                }
+                                                else
+                                                {
+                                                    result += comma + "false";
+                                                }
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("int"))
+                                            {
+                                                result += comma + rand.Next(10, 70);
+                                            }
+                                            else
+                                            {
+                                                result += comma + "new " + columns[k].data_type + "()";
+                                            }
+                                            comma = ", ";
+                                        }
+                                        result += ");\n";
+                                        x++;
+                                    }
+                                }
+
+                                else if (columns[j].data_type.toCSharpDataType().Equals("int"))
+                                {
+                                    int randInt = rand.Next(10, 70);
+                                    for (int i = 0; i < numberOfFakes; i++)
+                                    {
+                                        result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
+                                        string comma = "";
+                                        for (int k = 0; k < columns.Count; k++)
+                                        {
+                                            if (columns[k].data_type.toCSharpDataType().Equals("string"))
+                                            {
+
+                                                string randomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
+                                                result += comma + randomtext;
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("bool"))
+                                            {
+                                                int flip = rand.Next(0, 2);
+                                                if (flip == 0)
+                                                {
+                                                    result += comma + "true";
+                                                }
+                                                else
+                                                {
+                                                    result += comma + "false";
+                                                }
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("int"))
+                                            {
+                                                if (k == j)
+                                                {
+                                                    result += comma + randInt;
+                                                }
+                                                else { result += comma + rand.Next(10, 70); }
+                                            }
+                                            else
+                                            {
+                                                result += comma + "new " + columns[k].data_type + "()";
+                                            }
+                                            comma = ", ";
+                                        }
+                                        result += ");\n";
+                                        x++;
+                                    }
+
+                                }
+                            }
+                        }
+                        
+                    }
+                }
+            numberOfFakes = x;
+            //logic for vm goes here
+            if (hasVM)
+                {
+                    for (int i = 0; i < numberOfFakes; i++)
+                    {
+                        result += name + "_VM " + name.ToLower() + "_VM" + i.ToString() + "= new " + name + "_VM(" + name + i.ToString() + ");\n";
+                    }
+                    for (int i = 0; i < numberOfFakes; i++)
+                    {
+                        result += name.ToLower() + "VMs.add(" + name.ToLower() + "_VM" + i.ToString() + ");\n";
+                    }
+                }
+
+
+                else
+                {
+                    for (int i = 0; i < numberOfFakes; i++)
+                    {
+                        result += name.ToLower() + "s.add(" + name.ToLower() + i.ToString() + ");\n";
+                    }
+                }
+                result += "}\n";
+
+            
+                return result;
+            }
+        
+        private string genJavaDAOFakeCreate()
+        {
+            string result = "";
+            result += "@Override\n";
+            result += "public int add(" + name + " _" + name.ToLower() + ") throws SQLException {\n";
+            if (hasVM)
+            {
+                result += "int size = " + name.ToLower() + "VMs.size();\n";
+            }
+            else
+            {
+                result += "int size = " + name.ToLower() + "s.size();\n";
+            }
+            if (hasVM)
+            {
+                result += name + "_VM " + name.ToLower() + "_VM = new " + name + "_VM(_" + name.ToLower() + ");\n"; 
+                result += name.ToLower() + "s.add(" + name.ToLower() + "_VM);\n";
+            }
+            else
+            {
+                result += name.ToLower() + "s.add(_" + name.ToLower() + ");\n";
+            }
+            result += "int newsize = " + name.ToLower() + "s.size();\n";
+            result += "return newsize-size;\n";
+            result += "}\n";
+
+            return result;
+        }
+        private string genJavaDAOFakeRetreiveByKey()
+        {
+            string result = "";
+            string type = "";
+            if (hasVM)
+            {
+                type = name + "_VM";
+            }
+            else {
+                type = name;
+            }
+            result += "@Override\n";
+
+            result += "public " + type + " get" + name + "ByPrimaryKey(" + type + " _" + name.ToLower() + ") throws SQLException{\n";
+            result += type + " result = null;\n";
+            result += "for (" + type + " " + name.ToLower() + " : " + name.ToLower() + "s) {\n";
+            result += "if (";
+            string andand = "";
+            foreach (Column r in columns) {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')) {
+                    result += andand + name.ToLower() + ".get" + r.column_name + "().equals(_" + name.ToLower() + ".get" + r.column_name + "())";
+                    andand = "&&";
+                }
+            }
+            result += "){\n";
+            result += "result = " + name.ToLower() + ";\n";
+            result += "break;\n}\n";
+            result += "}\n";
+            result += "if (result == null){\n";
+            result += "throw new SQLException(\"Album not found\");\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+                return result;
+        }
+        private string genJavaDAOFakeRetreiveAll()
+        {
+            string result = "";
+            result += "@Override\n";
+            if (hasVM)
+            {
+                result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset";
+                foreach (Column r in columns)
+                {
+                    if (r.references != "")
+                    {
+                        result += ", " + r.data_type.toJavaDataType() + " " + r.column_name;
+                    }
+                }
+
+                result += ") throws SQLException {\n";
+                result += "List<" + name  + "_VM> results = new ArrayList<>();\n";
+                result += "for (" + name  + "_VM " + name.ToLower() + " : " + name.ToLower() + "VMs){\n";
+                result += "if (";
+                string andand = "";
+                foreach (Column r in columns) {
+                    if (r.references != "") {
+                        result+=andand+"("+ name.ToLower() + ".get" + r.column_name + "()!=null||"+name.ToLower()+".get"+r.column_name+"().equals("+r.column_name + "))\n";
+                        andand = "&&";
+                    }
+                }
+
+                result +="){\n";
+                result += "results.add(" + name.ToLower() + ");\n";
+                result += "}\n}\n";
+                result += "return results;\n}\n";
+
+            }
+            else
+            {
+                result += "public List <" + name + "> getAll" + name + "(int limit, int offset) throws SQLException {\n";
+
+
+                result += "return " + name.ToLower() + "s;\n";
+                result += "}\n";
+            }
+            
+            return result;
+        }
+        private string genJavaDAOFakeRetriveActive()
+        {
+            string vmTag = "";
+            if (hasVM) { vmTag = "_VM"; }
+            string result = "@Override\n";
+
+            result += "public List<" + name + vmTag + "> getActive" + name + "() throws SQLException{\n";
+            result += "List<"+name + vmTag + "> results = new ArrayList<>();\n";
+            result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag + "s){\n";
+            result += "if (" + name.ToLower() + ".getIs_Active()){\n";
+            result += "results.add(" + name.ToLower() + ");\n";
+            result += "}\n}\n";
+            result += "return results;\n}\n";
+            return result;
+        }
+        private string genJavaDAOFakeRetreiveDistinct()
+        {
+            string vmTag = "";
+            if (hasVM) {
+                vmTag = "_VM";
+            }
+            string result = "@Override\n";
+            bool stringKey = false;
+            foreach (Column r in columns) {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')){
+                    if (r.data_type.toJavaDataType().Equals("String")) {
+                        stringKey = true;
+                    }
+                }
+            }
+            if (stringKey) {
+                result += "public List<String> getDistinct" + name + "ForDropdown() throws SQLException{\n";
+                result += "List<String> results = new ArrayList<>();\n";
+                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_","") + "s){\n";
+                result += "results.add(" + name.ToLower() + ".get" + columns[0].column_name + "());\n";
+                result += "}\n";
+                result += "return results;\n}\n";
+            }
+            else {
+                result += "public List<" + name + "> getDistinct" + name + "ForDropdown() throws SQLException{\n";
+                result += "List<"+name+"> results = new ArrayList<>();\n";
+                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_","") + "s){\n";
+                result += name + " _" + name.ToLower() + " = new " + name + "();\n";
+                result += "_" + name.ToLower() + ".set" + columns[0].column_name + "(" + name.ToLower() + ".get" + columns[0].column_name +"());\n";
+                result += "_" + name.ToLower() + ".set" + columns[1].column_name + "(" + name.ToLower() + ".get" + columns[1].column_name + "());\n";
+                result += "results.add(_" + name.ToLower() + ");\n";
+                result += "}\n";
+                result += "return results;\n}\n";
+            }
+            return result;
+        }
+        private string genJavaDAOFakeRetriveByFK()
+        {
+            string result = "";
+            foreach (Column r in columns) {
+                if (r.references != "") {
+                    string vmTag = "_VM";
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += "@Override\n";
+                    result += "public List<"+name+"_VM> get" + name + "by" + fk_table + "(" + r.data_type.toJavaDataType() + " " + fk_name + "){\n";
+                    result += "List<" + name + vmTag + "> results = new ArrayList<>();\n";
+                    result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_","") + "s){\n";
+                    result += "if (" + name.ToLower() + ".get"+r.column_name+"().equals("+fk_name+")){\n";
+                    result += "results.add(" + name.ToLower() + ");\n";
+                    result += "}\n}\n";
+                    result += "return results;\n}\n";
+                }
+            }
+
+            return result;
+        }
+        private string genJavaDAOFakeUpdate()
+        {
+            string VMTag = "";
+            if (hasVM) {
+                VMTag = "_VM";
+            }
+            string results = "@Override\n";
+            results += "public int update" +  "("+name+" old"+name+", "+name+" new"+name+") throws SQLException{\n";
+            
+
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() +VMTag.Replace("_","")+ "s.size();i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() +VMTag.Replace("_","") +"s.get(i).get" + r.column_name + "().equals(old"+name+".get"+r.column_name+"()"  + ")){\n";
+                    andand = "&&";
+                }
+            }
+            
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new SQLException();\n";
+            results += "}\n";
+            if (hasVM)
+            {
+                results += name + "_VM updated = new " + name + "_VM(new" + name + ");\n";
+                results += name.ToLower() + VMTag.Replace("_", "") + "s.set(location,updated);\n";
+            }
+            else
+            {
+                results += name.ToLower() + VMTag.Replace("_", "") + "s.set(location,new" + name + ");\n";
+            }
+            results += "return 1;\n}\n";
+            return results;
+        }
+        private string genJavaDAOFakeDelete()
+        {
+            string results = "@Override\n";
+            results += "public int delete" + name + "(";
+            string comma = "";
+            foreach (Column r in columns) {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y')) {
+                    results += comma + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
+            results += ") throws SQLException{\n";
+            if (hasVM)
+            {
+                results += "int size = " + name.ToLower() + "VMs.size();\n";
+            }
+            else
+            {
+                results += "int size = " + name.ToLower() + "s.size();\n";
+            }
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() + "VMs.size();i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns) {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y')) { 
+                results += andand + name.ToLower() + "VMs.get(i).get" + r.column_name + "().equals(" + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            results += "){\n";
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new SQLException();\n";
+            results += "}\n";
+            results += name.ToLower() + "VMs.remove(location);\n";
+            if (hasVM)
+            {
+                results += "int newsize = " + name.ToLower() + "VMs.size();\n";
+            }
+            else
+            {
+                results += "int newsize = " + name.ToLower() + "s.size();\n";
+            }
+            results += "return newsize-size;\n}\n";
+            return results;
+            
+        }
+        private string genJavaDAOFakeUnDelete()
+        {
+            string results = "@Override\n";
+            results += "public int undelete" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += comma + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
+            results += ") throws SQLException{\n";
+            
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() + "VMs.size();i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + "VMs.get(i).get" + r.column_name + "().equals(" + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            results += "&&"+name.ToLower()+"!VMs.get(i).getIs_Active()){\n";
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new SQLException();\n";
+            results += "}\n";
+            results += name.ToLower() + "VMs.get(location).setIs_Active(true);\n";
+            
+            results += "return 1;\n}\n";
+            return results;
+        }
+
+        private string genJavaDAOFakeDeactivate() {
+            string results = "@Override\n";
+            results += "public int deactivate" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += comma + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
+            results += ") throws SQLException{\n";
+
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() + "VMs.size();i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + "VMs.get(i).get" + r.column_name + "().equals(" + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            results += "&&" + name.ToLower() + "VMs.get(i).getIs_Active()){\n";
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new SQLException();\n";
+            results += "}\n";
+            results += name.ToLower() + "VMs.get(location).setIs_Active(false);\n";
+
+            results += "return 1;\n}\n";
+            return results;
+
+        }
+        private string genJavaDAOFakeCount() {
+            string result = "@Override\n";
+            result += "public int get" + name + "Count() throws SQLException{\n";
+            if (hasVM)
+            {
+                result += "return " + name.ToLower() + "VMs.size();\n";
+            }
+            else {
+                result += "return " + name.ToLower() + "VMs.size();\n";
+            }
+            result += "}\n";
+            return result;
+        
+        }
+
+
+
 
     }
 }

@@ -452,6 +452,20 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
+                    s = t.genJavaModelNM();
+                    if (t.foreign_keys.Count > 0)
+                    {
+                        try
+                        {
+                            file_write.fileWrite(s, t.name, "JavaModel", "ModelVM");
+                        }
+                        catch (Exception ex)
+                        {
+                            _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                        }
+                    }
+
+
                 }
                 if (true) //change this to these setings 20
                 {
@@ -621,6 +635,19 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
+                }
+                if (true) {
+                    //change to these setting 35
+                    s = t.genDataAccessFakes();
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "fakes", "fakes");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
                 }
                 count++;
             }
