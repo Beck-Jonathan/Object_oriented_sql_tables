@@ -67,6 +67,7 @@ namespace Object_oriented_sql_tables
         //generate table button
         private void btn_generateTable_Click(object sender, System.EventArgs e)
         {
+            string alloutput = "";
             int x = 0;
             page_size = (int)NUD_page_size.Value;
             appData2.settings.page_size = page_size;
@@ -87,6 +88,7 @@ namespace Object_oriented_sql_tables
             string analysis = data_tables.analyzeRelationships();
             file_write.fileWrite(analysis, "analysis", "analysis", "analysis");
             foreach (iTable t in data_tables.all_tables)
+
             {
                 t.name = t.name.Replace("[dbo].[", "");
                 t.name = t.name.Replace("]", "");
@@ -97,6 +99,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[0])
                 {
                     s = t.gen_columns();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
@@ -111,6 +114,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[1])
                 {
                     s = t.gen_primary_keys();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
@@ -125,6 +129,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_alternate_keys();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
@@ -139,6 +144,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[2])
                 {
                     s = t.gen_foreign_keys();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
@@ -153,6 +159,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_table_footer();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "table");
@@ -167,6 +174,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[3])
                 {
                     s = t.gen_audit_table();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "audit_table");
@@ -181,6 +189,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[4])
                 {
                     s = t.gen_update();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -195,6 +204,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[5])
                 {
                     s = t.gen_delete();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -205,6 +215,7 @@ namespace Object_oriented_sql_tables
                     }
                     //file_write.sqlBuddy2.Write(s);
                     s = t.gen_undelete();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -219,6 +230,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[6])
                 {
                     s = t.gen_retreive_by_key();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -233,6 +245,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_all();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -247,6 +260,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[7])
                 {
                     s = t.gen_retreive_by_active();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -261,6 +275,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_retreive_by_fkey();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -275,6 +290,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_select_distinct_for_dropdown();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -289,6 +305,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[8])
                 {
                     s = t.gen_insert();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
@@ -303,6 +320,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[9])
                 {
                     s = t.gen_insert_trigger();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Triggers");
@@ -316,6 +334,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[10])
                 {
                     s = t.gen_update_trigger();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Triggers");
@@ -329,6 +348,7 @@ namespace Object_oriented_sql_tables
                 if (these_settings[11])
                 {
                     s = t.gen_delete_trigger();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sql", "Triggers");
@@ -342,6 +362,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_sample_space();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, tbx_databasename.Text, "sql", "Sample");
@@ -358,6 +379,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_IThingAccessor();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "IAccessor");
@@ -371,6 +393,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_ThingAccessor();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "Accessor");
@@ -384,6 +407,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_IThingManager();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "IManager");
@@ -396,6 +420,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_ThingMananger();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "Manager");
@@ -408,6 +433,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     s = t.gen_DataObject();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "DataObject");
@@ -420,6 +446,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 17
                 {
                     s = t.genXAMLWindow();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "XAMLWindow");
@@ -432,6 +459,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 18
                 {
                     s = t.genWindowCSharp();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "CSharpWindowCode");
@@ -444,6 +472,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 19
                 {
                     s = t.genJavaModel();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaModel", "Model");
@@ -470,6 +499,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 20
                 {
                     s = t.genJavaDAO();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaModelDAO", "ModelDAO");
@@ -493,6 +523,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 23
                 {
                     s = t.genCreateJSP();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaJSP", "CreateJSP");
@@ -505,6 +536,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 24
                 {
                     s = t.genCreateServelet();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "CreateServlet");
@@ -517,6 +549,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 25
                 {
                     s = t.genviewAllJSP();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaJSP", "ViewAllJSP");
@@ -529,6 +562,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 26
                 {
                     s = t.genviewAllServlet();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewAllServlet");
@@ -541,6 +575,7 @@ namespace Object_oriented_sql_tables
                 if (true) //change this to these setings 27
                 {
                     s = t.genDeleteServlet();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "DeleteServlet");
@@ -554,6 +589,7 @@ namespace Object_oriented_sql_tables
                 {
                     x++;
                     s = t.genIndexJSP();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, "index", "JavaJSP", "Index");
@@ -566,6 +602,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {  //change this to these settings 29
                     s = t.genViewEditJSP();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaJSP", "ViewEditJSP");
@@ -578,6 +615,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {    //change to these settings 30
                     s = t.genViewEditServlet();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "ViewEditServlet");
@@ -590,6 +628,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {    //change to these settings 31
                     s = t.jQueryValidation();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "jQuery", "AddEditValidate");
@@ -602,6 +641,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {    //change to these settings 32
                     s = t.genJavaiDAO();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "iDAO", "Interface");
@@ -614,6 +654,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {    //change to these settings 33
                     s = t.sp_definitions();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "sp_definitions", "sp_def");
@@ -627,6 +668,7 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {    //change to these settings 34
                     s = t.createTests();
+                    alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "tests", "tests");
@@ -639,9 +681,76 @@ namespace Object_oriented_sql_tables
                 if (true) {
                     //change to these setting 35
                     s = t.genDataAccessFakes();
+                    
                     try
                     {
                         file_write.fileWrite(s, t.name, "fakes", "fakes");
+                        
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                    
+
+                }
+                if (true) {
+                    //change to these setting 36
+                    s = t.genJavaGetAllServletTests();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "Tests", "GetAll");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                }
+                
+                if (true)
+                {
+                    //change to these setting 37
+                    s = t.genJavaCreateServletTests();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "Tests", "Create");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                }
+                if (true)
+                {
+                    //change to these setting 38
+                    s = t.genJavaDeleteServletTests();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "Tests", "Delete");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                }
+                if (true)
+                {
+                    //change to these setting 39
+                    s = t.genJavaEditServletTests();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "Tests", "Edit");
+
                     }
                     catch (Exception ex)
                     {
@@ -657,6 +766,7 @@ namespace Object_oriented_sql_tables
             //file_write.BatchBuddy.Flush();
             //file_write.JSPBuddy.Flush();
             //file_write.ServletBuddy.Flush();
+            
             _ = MessageBox.Show("generation complete");
             this.Close();
         }

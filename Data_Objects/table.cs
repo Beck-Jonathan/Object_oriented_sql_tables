@@ -5,12 +5,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Runtime.CompilerServices;
 using System.Security.AccessControl;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Web;
+using System.Xml.XPath;
 namespace Data_Objects
 {
     public class table
@@ -18,6 +20,7 @@ namespace Data_Objects
         bool hasVM = false;
         private Random rand = new Random();
         //various components of a table
+        
         public String name { set; get; }
         public header Header { set; get; }
         public List<Column> columns { set; get; }
@@ -2072,15 +2075,8 @@ namespace Data_Objects
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
             result = result + "public class Add" + name + "Servlet extends HttpServlet{\n";
-            foreach (Column r in columns)
-            {
-                if (r.foreign_key != "")
-                {
-                    string[] parts = r.references.Split('.');
-                    result = result + "static List<"+parts[0]+"> all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
-                    //grab a list of the parents, assign and create a static variable
-                }
-            }
+            
+            
             result += initMethod();
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
@@ -2124,7 +2120,9 @@ namespace Data_Objects
                 {
                     string fieldname = "input" + name.ToLower() + r.column_name;
                     result = result + "String _" + r.column_name + " = req.getParameter(\"" + fieldname + "\");\n";
+                    result += "if (_" + r.column_name + "!=null) {\n";
                     result = result + "_" + r.column_name + "=_" + r.column_name + ".trim();\n";
+                    result += "}\n";
                 }
             }
             //toss it in a hashmap
@@ -2157,7 +2155,7 @@ namespace Data_Objects
                     {
                         result = result + name.ToLower() + ".set" + r.column_name + "(_" + r.column_name + ");\n";
                     }
-                    result += "} catch(IllegalArgumentException e) {";
+                    result += "} catch(Exception e) {";
                     result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
                     result += "errors++;\n";
                     result += "}\n";
@@ -2172,6 +2170,7 @@ namespace Data_Objects
             result += "}\n";
             result += "if (result>0){\n";
             result = result + "results.put(\"dbStatus\",\"" + name + " Added\");\n";
+            result += "req.setAttribute(\"results\",results);\n";
             result = result + "resp.sendRedirect(\"all-" + name + "s\");\n";
             result += "return;\n";
             result += "} else {\n";
@@ -2461,9 +2460,18 @@ namespace Data_Objects
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
             result += "String mode = req.getParameter(\"mode\");\n";
-            result = result + "int primaryKey = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "id\"))\n";
+            result += "int primaryKey = -1;\n";
+            result += "try{\n";
+            result = result + "primaryKey = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "id\"));\n";
+            result += "}catch (Exception e) {\n";
+            result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
+            result += "}";
             result = result + name + " " + name.ToLower() + "= new " + name + "();\n";
+            result += "try{\n";
             result = result + name.ToLower() + ".set" + name + "_ID(primaryKey);\n";
+            result += "} catch (Exception e){\n";
+            result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
+            result += "}\n";
             result += "try{\n";
             result = result + name.ToLower() + "=" + name.ToLower() + "DAO.get" + name + "ByPrimaryKey(" + name.ToLower() + ");\n";
             result += "} catch (SQLException e) {\n";
@@ -2473,7 +2481,7 @@ namespace Data_Objects
             result = result + "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
-            result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Edit " + name + "\");\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -2514,7 +2522,9 @@ namespace Data_Objects
                 {
                     string fieldname = "input" + name.ToLower() + r.column_name;
                     result = result + "String _" + r.column_name + " = req.getParameter(\"" + fieldname + "\");\n";
+                    result += "if (_" + r.column_name + "!=null){\n";
                     result = result + "_" + r.column_name + "=_" + r.column_name + ".trim();\n";
+                    result += "}\n";
                 }
             }
             //toss it in a hashmap
@@ -2546,7 +2556,7 @@ namespace Data_Objects
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(_" + r.column_name + ");\n";
                     }
-                    result += "} catch(IllegalArgumentException e) {";
+                    result += "} catch(Exception e) {";
                     result = result + "results.put(\"" + errorname + "\", e.getMessage());\n";
                     result += "errors++;\n";
                     result += "}\n";
@@ -2563,6 +2573,7 @@ namespace Data_Objects
             result += "}\n";
             result += "if (result>0){\n";
             result = result + "results.put(\"dbStatus\",\"" + name + " updated\");\n";
+            result += "req.setAttribute(\"results\",results);\n";
             result = result + "resp.sendRedirect(\"all-" + name + "s\");\n";
             result += "return;\n";
             result += "} else {\n";
@@ -2730,7 +2741,7 @@ namespace Data_Objects
             result += "HttpSession session = req.getSession();\n";
             result += "User user = (User)session.getAttribute(\"User\");\n";
             result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
-            result += "resp.sendError(HttpServletResponse.SC_FORBIDDEN);\n";
+            result += "resp.sendRedirect(\"/crrgLogin\");";
             result += "return;\n";
             result += "}\n";
             result += "\n";
@@ -2829,14 +2840,64 @@ namespace Data_Objects
             return result;
         }
         private string initMethod() {
-            string result;
-            result = "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
+            string result ="";
+            result += "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "" )
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += "private i"+ fk_table + "DAO "+ fk_table.ToLower() + "DAO;\n";
+                }
+
+            }
             result += "@Override\n";
-            result += "public void init() throws ServletException{\n";
-            result += name.ToLower() + "DAO = new " + name + "DAO();\n";
+            result += "public void init() throws ServletExecption{\n";
+            result += name.ToLower() + "DAO = new " + name + "_DAO();\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "" )
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += fk_table.ToLower() + "DAO = new " + fk_table + "_DAO();\n";
+                }
+
+            }
+            result += "}\n";
+            result += "public void init(";
+            result += "i" + name + "_DAO " + name.ToLower() + "DAO";
+            foreach (Column r in columns)
+            {
+                
+                if (r.foreign_key != "" )
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result +=  ",i" + fk_table + "_DAO " + fk_table.ToLower() + "DAO";
+                    
+                }
+
+            }
+            result += "){\n";
+            result += "this." + name.ToLower() + "DAO = " + name.ToLower() + "DAO;\n";
+            foreach (Column r in columns)
+            {
+                
+                if (r.foreign_key != "" )
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += "this." + fk_table.ToLower() + "DAO = " + fk_table.ToLower() + "DAO;\n";
+                }
+            }
             result += "}\n";
             return result;
-
         }
 
         public string sp_definitions() {
@@ -2963,7 +3024,7 @@ namespace Data_Objects
 
         }
         
-            private string sp_make_bool_true(string column_name)
+        private string sp_make_bool_true(string column_name)
         {
             string result = "";
             string header = "\nsp_set_" + column_name + "_true:\n";
@@ -3104,7 +3165,7 @@ namespace Data_Objects
                 result="\n\tParameters:\t @limit_param, @offset_param";
                 foreach (Column r in columns)
                 {
-                    if (r.foreign_key != "")
+                    if (r.foreign_key != ""&&!r.foreign_key.Equals("no")&r.references.Contains("."))
                     {
                         string[] parts = r.references.Split('.');
                         result += ", @" + parts[1];
@@ -3659,7 +3720,7 @@ namespace Data_Objects
                 {
                     for (int i = 0; i < numberOfFakes; i++)
                     {
-                        result += name + "_VM " + name.ToLower() + "_VM" + i.ToString() + "= new " + name + "_VM(" + name + i.ToString() + ");\n";
+                        result += name + "_VM " + name.ToLower() + "_VM" + i.ToString() + "= new " + name + "_VM(" + name.ToLower() + i.ToString() + ");\n";
                     }
                     for (int i = 0; i < numberOfFakes; i++)
                     {
@@ -3738,7 +3799,7 @@ namespace Data_Objects
             result += "break;\n}\n";
             result += "}\n";
             result += "if (result == null){\n";
-            result += "throw new SQLException(\"Album not found\");\n";
+            result += "throw new SQLException(\""+name+" not found\");\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
@@ -3979,7 +4040,7 @@ namespace Data_Objects
                     andand = "&&";
                 }
             }
-            results += "&&"+name.ToLower()+"!VMs.get(i).getIs_Active()){\n";
+            results += "&&!"+name.ToLower()+"VMs.get(i).getIs_Active()){\n";
             results += "location =i;\n";
             results += "break;\n";
             results += "}\n";
@@ -4046,9 +4107,563 @@ namespace Data_Objects
             return result;
         
         }
+        //done
+        public string genJavaGetAllServletTests() {
+            string result = "";
+            result += importStatementForTests();     //done
+            result += classNameAndStaticVariables(1); //done
+            result += initTests(1); //done
+            result += tearDownTests(); //done
+            result += testLoggedInGets200OnDoGet();//done
+            result += testLoggedInGets200OnDoPost();//done
+            result += TestLoggedOutGets302onDoGet();//done
+            result += TestLoggedOutGets302onDoPost();//done
+            result += TestGetAllGetsAll();//done
+            result += TestGetAllCanFilter(); //done
+            return result;
+        }
+              
+        //done
+        public string genJavaCreateServletTests()
+        {
+            string result = "";
+            result += importStatementForTests(); //done
+            result += classNameAndStaticVariables(2); //done
+            result += initTests(2); //done
+            result += tearDownTests(); //done
+            result += testLoggedInGets200OnDoGet(); //done
+            result += testLoggedInGets200OnDoPost(); //done
+            result += TestLoggedOutGets302onDoGet();//done 
+            result += TestLoggedOutGets302onDoPost();//done
+            result += TestAddHasErrorsForEachFieldAndKeepsOnSamePage(); //done
+            result += TestAddCanAddWithNoErrorsAndRedirects(); //done
+            return result;
+        }
+        //done
+        public string genJavaDeleteServletTests()
+        {
+            string result = "";
+            result += importStatementForTests(); //done
+            result += classNameAndStaticVariables(3);//done 
+            result += initTests(3);//done 
+            result += tearDownTests();//done
+            result += testLoggedInGets200OnDoGet();//done
+            result += testLoggedInGets200OnDoPost();//done
+            result += TestLoggedOutGets302onDoGet();//done
+            result += TestLoggedOutGets302onDoPost();//done
+            result += TestDeactivateCanDeactivate(); //done
+            result += TestDeactivateFailIfAlreadyFalse(); //done
+            result += TestactivateCanActivate(); // done
+            result += TestActivateFailIfAlreadyTrue(); //done
+            return result;
+        }
+        //done
+        public string genJavaEditServletTests()
+        {
+            string result = "";
+            result += importStatementForTests();//done 
+            result += classNameAndStaticVariables(4);//done 
+            result += initTests(4);//done
+            result += tearDownTests();//done
+            result += testLoggedInGets200OnDoGet();//done
+            result += testLoggedInGets200OnDoPost();//done
+            result += TestLoggedOutGets302onDoGet();//done
+            result += TestLoggedOutGets302onDoPost();//done
+            result += TestGetOneGetsOne(); //done
+            result += TestGetOneCanFail(); //done
+            result += TestUpdateCanAddWithNoErrorsAndRedirects();
+            result += TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage();
+            return result;
+        }
+        //done
+        private string initTests(int mode) {
+            string servletName = "";
+            if (mode == 1)
+            {
+                servletName = "All_" + name;
+            }
+
+            if (mode == 2)
+            {
+                servletName = "Add_" + name;
+            }
+            if (mode == 3)
+            {
+                servletName = "Delete_" + name;
+            }
+            if (mode == 4)
+            {
+                servletName = "Edit_" + name;
+            }
+            string result = "@BeforeEach\n";
+            result += "public void setup() throws ServletException{\n\n";
+            result += "servlet = new " + servletName + "();\n" ;
+            result += "servlet.init(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                result += "new " + name + "_DAO_Fake()";
+                if (r.foreign_key != "" )
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += ",new " + fk_table + "_DAO_Fake()";
+                    
+                }
+
+            }
+            result += ");\n";
+            result += "request =  new MockHttpServletRequest();\n";
+            result += "response = new MockHttpServletResponse();\n";
+            result += "session = new MockHttpSession();\n";
+            result += "rd = new MockRequestDispatcher(PAGE);\n";
+            result += "}\n\n";
+            return result;
+        }
+        //done
+        private string classNameAndStaticVariables(int mode) {
+            string result = "";
+            string servletName = "";
+            if (mode == 1) {
+                servletName = "All_" + name;
+            }
+            
+            if (mode == 2)
+            {
+                servletName = "Add_" + name;
+            }
+            if (mode == 3)
+            {
+                servletName = "Delete_" + name;
+            }
+            if (mode == 4)
+            {
+                servletName = "Edit_" + name;
+            }
+            result += "\npublic class "+servletName+"Test {\n";
+
+            result += "private static final String PAGE=\"WEB-INF/crrg/"+servletName+".jsp\";\n";
+            result += servletName+" servlet;\n";
+            result += "MockHttpServletRequest request;\n";
+            result += "MockHttpServletResponse response;\n";
+            result += "HttpSession session;\n";
+            result += "RequestDispatcher rd;\n";
+            
+            return result;
+        }
+        //done
+        private string importStatementForTests()
+        {
+            string result = "";
+            result += "import java.io.IOException;\n";
+            result += "import java.util.*;\n";
+            result += "import com.beck.beck_demos."+settings.database_name+".data_fakes."+name+"_DAO_Fake;\n";
+            result += "import com.beck.beck_demos." + settings.database_name + ".models." + name +";\n";
+            result += "import com.beck.beck_demos." + settings.database_name + ".models." + name + "_VM;\n";
+            result += "import com.beck.beck_demos." + settings.database_name + ".models.User;\n";
+            result += "import jakarta.servlet.RequestDispatcher;\n";
+            result += "import jakarta.servlet.ServletException;\n";
+            result += "import jakarta.servlet.http.*;\n";
+            result += "import org.junit.jupiter.api.AfterEach;\n";
+            result += "import org.junit.jupiter.api.BeforeEach;\n";
+            result += "import org.junit.jupiter.api.Test;\n";
+            result += "import org.springframework.mock.web.*;\n";
+            result += "import static org.junit.jupiter.api.Assertions.assertEquals;\n";
+            result += "import static org.junit.jupiter.api.Assertions.assertNotNull;\n";
+            
 
 
+            return result;
+        }
+        //done
+        private string tearDownTests()
+        {
+            string result = "@AfterEach\n";
+            result += "public void teardown(){\n";
+            result += "servlet=null;\n";
+            result += "request=null;\n";
+            result += "response=null;\n";
+            result += "session=null;\n";
+            result += "rd=null;\n";
+            result += "}\n";
+            
+            return result;
+        }
+        //done
+        private string testLoggedInGets200OnDoGet()
+        {
+            string result = "@Test\n";
+            result += "public void TestLoggedInUserGets200OnDoGet() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(200,status);\n";
+            result += "}\n";
+            return result;
+        }
+        //done
+        private string TestLoggedOutGets302onDoGet()
+        {
+            string result = "@Test\n";
+            result += "public void TestLoggedOutUserGets302OnDoGet() throws ServletException, IOException{\n";
+            
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(302,status);\n";
+            result += "}\n";
+            return result;
+        }
+        //done
+        private string testLoggedInGets200OnDoPost()
+        {
+            string result = "@Test\n";
+            result += "public void TestLoggedInUserGets200OnDoPost() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(200,status);\n";
+            result += "}\n";
+            return result;
+        }
+        //done
+        private string TestLoggedOutGets302onDoPost()
+        {
+            string result = "@Test\n";
+            result += "public void TestLoggedOutUserGets302OnDoPost() throws ServletException, IOException{\n";
+            
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(302,status);\n";
+            result += "}\n";
+            return result;
+        }
+        //done
+        private string TestGetAllGetsAll()
+        {
+            string result = "@Test\n";
+            result += "public void testLoggedInUserGetsAll"+name+ "s() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "sevlet.doGet(request,response);\n";
+            result += "List<"+name+"_VM> "+name.ToLower()+"s = (List<"+name+"_VM>) request.getAttribute(\""+name+"s\");\n" ;
+            result += "assertNotNull("+name.ToLower()+"s);\n";
+            result += "assertEquals(20,"+name.ToLower()+"s.size());\n";
+            result += "}\n";
+            
+            return result;
+        }
+
+        private string TestGetOneGetsOne()
+        {
+            string result = "";
+            foreach (Column r in columns)
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    {
+                        result += "@Test\n";
+                        result += "public void testGetOne" + name + "GetsOne" + r.column_name + "() throws ServletException, IOException{\n";
+                        result += SetUserOnTest("Jonathan");
+                        result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
+                        result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
+                        result += "request.setSession(session);\n";
+                        result += "servlet.doGet(request,response);\n";
+                        result += name +"_VM "+  name.ToLower() + " = ("+ name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
+                        result += "assertNotNull(" + name.ToLower() + ");\n";
+                        result += "assertEquals("+r.column_name+"," + name.ToLower() + ".get"+r.column_name+"());\n";
+                        result += "}\n";
+                    }
+                }
+            return result;
+        }
+
+        private string TestGetOneCanFail()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                int columnToNull = 1;
+                if (columns.Count == 1) { 
+                
+                columnToNull = 0; 
+                }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    {
+                        result += "@Test\n";
+                        result += "public void testGetOne" + name + "CanFail" + r.column_name + "() throws ServletException, IOException{\n";
+                        result += SetUserOnTest("Jonathan");
+                        result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
+                        result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
+                        result += "request.setSession(session);\n";
+                        result += "servlet.doGet(request,response);\n";
+                        result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
+                        result += "assertNull(" + name.ToLower() + ".get" + columns[columnToNull].column_name + "());\n";
+                        result += "}\n";
+                    }
+                }
+            }
+            return result;
+        }
+
+        private string TestGetAllCanFilter()
+        {
+            string result = "";
+            foreach (Column r in columns)
+                if (r.references != "")
+                {
+                    {
+                        result += "@Test\n";
+                        result += "public void testLoggedInUserCanFilter" + name + "sBy" + r.column_name + "() throws ServletException, IOException{\n";
+                        result += SetUserOnTest("Jonathan");
+                        result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
+                        result += "request.setAttribute(\"" + r.column_name + "\"," + r.column_name + ");\n";
+                        result += "request.setSession(session);\n";
+                        result += "sevlet.doGet(request,response);\n";
+                        result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
+                        result += "assertNotNull(" + name.ToLower() + "s);\n";
+                        result += "assertEquals(20," + name.ToLower() + "s.size());\n";
+                        result += "}\n";
+                    }
+                }
+            return result;
+        }
+
+        private string TestAddHasErrorsForEachFieldAndKeepsOnSamePage()
+        {
+            string result = "@Test\n";
+            result += "public void TestAddHasErrorsForEachFieldAndKeepsOnSamePage() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && !r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "String " + r.column_name + "Error = results.get(\"" + name.ToLower() + r.column_name + "error\");\n";
+                }
+            }
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0&&!r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "assertNotEquals(\"\"," + r.column_name + "Error);\n";
+                    result += "assertNotNull(" + r.column_name + "Error);\n";
+                }
+            }
+
+            result += "assertEquals(200,responseStatus);\n";
+            result += "}\n";
+            
+            return result;
+        }
+        private string TestAddCanAddWithNoErrorsAndRedirects()
+        {
+            string result = "@Test\n";
+            result += "public void TestAddCanAddWithNoErrorsAndRedirects() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            foreach (Column r in columns) {
+                if (r.increment == 0) {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                }
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String "+name+"_Added = results.get(\"dbStatus\");\n";
+            result += "assertEquals(302,responseStatus);\n";
+            result += "assertNotNull("+name+"_Added);\n";
+            result += "assertEquals(\"" + name + " Added\"," + name + "_Added);\n";
+            result += "assertNotEquals(\"\"," + name + "_Added);\n";
+            result += "}\n";
+            return result;
+        }
+
+        private string TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage()
+        {
+            string result = "@Test\n";
+            result += "public void TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && !r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "String " + r.column_name + "Error = results.get(\"" + name.ToLower() + r.column_name + "error\");\n";
+                }
+            }
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && !r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "assertNotEquals(\"\"," + r.column_name + "Error);\n";
+                    result += "assertNotNull(" + r.column_name + "Error);\n";
+                }
+            }
+
+            result += "assertEquals(200,responseStatus);\n";
+            result += "}\n";
+
+            return result;
+        }
+        private string TestUpdateCanAddWithNoErrorsAndRedirects()
+        {
+            string result = "@Test\n";
+            result += "public void TestUpdateCanAddWithNoErrorsAndRedirects() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "//to set the old " + name + "\n";
+            result += name + " " + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns) {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(\"test"+name+"\");\n";
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(43);\n";
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(true);\n";
+
+                }
 
 
+            }
+            
+            result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
+            result += "//create a new albums parameters\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                }
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String " + name + "_Updated = results.get(\"dbStatus\");\n";
+            result += "assertEquals(302,responseStatus);\n";
+            result += "assertNotNull(" + name + "_Updated);\n";
+            result += "assertEquals(\"" + name + " updated\"," + name + "_Updated);\n";
+            result += "assertNotEquals(\"\"," + name + "_Updated);\n";
+            result += "}\n";
+            return result;
+        }
+
+        private string TestDeactivateCanDeactivate()
+        {
+            string result = "@Test\n";
+            result += "public void TestDeactivateCanDeactivate() throws ServletException, IOException {\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "request.setParamater(\"" + name + "id\",null);\n";
+            result += "request.setParameter(\"mode\",\"0\");\n" ;
+            result += "servlet.doPost(requet,response);\n"; 
+            result += "int status = (int) request.getAttribute(\"result\");\n";
+            result += "assertEquals(1,status);\n";
+            result += "}\n";
+            
+            return result;
+        }
+
+        private string TestDeactivateFailIfAlreadyFalse()
+        {
+            string result = "@Test\n";
+            result += "public void TestDeactivateFailIfAlreadyFalse() throws ServletException, IOException {\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "request.setParamater(\"" + name + "id\",null);\n";
+            result += "request.setParameter(\"mode\",\"0\");\n";
+            result += "servlet.doPost(requet,response);\n";
+            result += "int status = (int) request.getAttribute(\"result\");\n";
+            result += "assertEquals(0,status);\n";
+            result += "}\n";
+
+            return result;
+        }
+
+        private string TestactivateCanActivate()
+        {
+            string result = "@Test\n";
+            result += "public void TestactivateCanActivate() throws ServletException, IOException {\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "request.setParamater(\"" + name + "id\",null);\n";
+            result += "request.setParameter(\"mode\",\"1\");\n";
+            result += "servlet.doPost(requet,response);\n";
+            result += "int status = (int) request.getAttribute(\"result\");\n";
+            result += "assertEquals(1,status);\n";
+            result += "}\n";
+
+            return result;
+        }
+
+        private string TestActivateFailIfAlreadyTrue()
+        {
+            string result = "@Test\n";
+            result += "public void TestActivateFailIfAlreadyTrue() throws ServletException, IOException {\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "request.setParamater(\"" + name + "id\",null);\n";
+            result += "request.setParameter(\"mode\",\"1\");\n";
+            result += "servlet.doPost(requet,response);\n";
+            result += "int status = (int) request.getAttribute(\"result\");\n";
+            result += "assertEquals(0,status);\n";
+            result += "}\n";
+
+            return result;
+        }
+
+        private string SetUserOnTest(string role) {
+            string result = "User user = new User();\n";
+            result += "user.setRole_ID(\"" + role +"\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+
+            return result;
+        
+        }
     }
 }
