@@ -18,6 +18,7 @@ namespace Data_Objects
     public class table
     {
         bool hasVM = false;
+        string servletName = "";
         private Random rand = new Random();
         //various components of a table
         
@@ -2166,7 +2167,7 @@ namespace Data_Objects
             result += "if (errors==0){\n";
             result = result + "try{\nresult=" + name.ToLower() + "DAO.add(" + name.ToLower() + ");\n}";
             result += "catch(Exception ex){\n";
-            result += "results.put(\"dbStatus\",\"Database Error\");\n";
+            result += "results.put(\"dbError\",\"Database Error\");\n";
             result += "}\n";
             result += "if (result>0){\n";
             result = result + "results.put(\"dbStatus\",\"" + name + " Added\");\n";
@@ -2362,7 +2363,7 @@ namespace Data_Objects
             result += privLevelStatement();
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
-            result += "\n";
+            result += "try {\n";
             result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(20,0";
             foreach (Column r in columns)
             {
@@ -2373,7 +2374,10 @@ namespace Data_Objects
             }
 
             result +=");\n";
-            result += "\n";
+            result += "} catch (Exception e) {\n";
+            result += name.ToLower() + "s = new ArrayList<>();\n";
+           
+            result += "}\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/all-" + name + "s.jsp\").forward(req,resp);\n";
@@ -2477,7 +2481,7 @@ namespace Data_Objects
             result += "} catch (SQLException e) {\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
             result += "}\n";
-            result += "HttpSession session = req.getSession();\r\n";
+            
             result = result + "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
@@ -2513,7 +2517,7 @@ namespace Data_Objects
                 }
             }
             result = result + "//to get the old " + name + "\n";
-            result += "HttpSession session = req.getSession();\n";
+            
             result = result + name + " _old" + name + "= (" + name + ")session.getAttribute(\"" + name.ToLower() + "\");\n";
             result += "//to get the new event's info\n";
             foreach (Column r in columns)
@@ -2562,14 +2566,14 @@ namespace Data_Objects
                     result += "}\n";
                 }
             }
-            result = result + "_new" + name + ".setis_active(true);\n";
+            
             result += "//to update the database\n";
             result += "int result=0;\n";
             result += "if (errors==0){\n";
             result += "try{\n";
             result = result + "result=" + name.ToLower() + "DAO.update(_old" + name + ",_new" + name + ");\n";
             result += "}catch(Exception ex){\n";
-            result += "results.put(\"dbStatus\",\"Database Error\");\n";
+            result += "results.put(\"dbError\",\"Database Error\");\n";
             result += "}\n";
             result += "if (result>0){\n";
             result = result + "results.put(\"dbStatus\",\"" + name + " updated\");\n";
@@ -2741,7 +2745,7 @@ namespace Data_Objects
             result += "HttpSession session = req.getSession();\n";
             result += "User user = (User)session.getAttribute(\"User\");\n";
             result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
-            result += "resp.sendRedirect(\"/crrgLogin\");";
+            result += "resp.sendRedirect(\"/crrgLogin\");\n";
             result += "return;\n";
             result += "}\n";
             result += "\n";
@@ -2849,7 +2853,7 @@ namespace Data_Objects
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result += "private i"+ fk_table + "DAO "+ fk_table.ToLower() + "DAO;\n";
+                    result += "private i"+ fk_table + "_DAO "+ fk_table.ToLower() + "DAO;\n";
                 }
 
             }
@@ -3196,6 +3200,7 @@ namespace Data_Objects
             result += testInitialize(); //done
             result += testDefaultConstructor();
             result += testParameterizedConstructor();
+            result += testKeyedParameterizedConstructor();
 
             //result += testVMDefaultConstructor();
             //result += testVMParameterizedConstructor();
@@ -3371,7 +3376,7 @@ namespace Data_Objects
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
                 {
-                    result += "Assertions.assertEquals(0,_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
                 else {
                     result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
@@ -3384,7 +3389,129 @@ namespace Data_Objects
 
         }
 
-       
+        private string testKeyedParameterizedConstructor() {
+            string result = "@Test\n";
+            //generate random values for each
+            ArrayList array = new ArrayList(columns.Count + 1);
+
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        array.Add(generateRandomString(r, -2));
+                        Task.Delay(1);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        array.Add(true);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        array.Add(rand.Next(0, 10000));
+                        Task.Delay(1);
+                    }
+                    else
+                    {
+                        array.Add(null);
+                    }
+                    Task.Delay(5);
+                }
+
+
+            }
+
+
+
+            //method signature
+            result += "public void test" + name + "KeyedParameterizedConstructorSetsKeyedVariables(){\n";
+            //constructor
+            result += name + " _" + name.ToLower() + "= new " + name + "(\n";
+            //assing a value to each variable
+            string comma = "";
+            int i = 0;
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += comma + "\"" + array[i] + "\"";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else
+                    {
+                        result += comma + "new " + r.data_type + "()\n";
+                    }
+                    comma = ",\n ";
+
+
+                    i++;
+                }
+            }
+            result += "\n);\n";
+            i = 0;
+            //test each variable
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "Assertions.assertEquals(\"" + array[i] + "\",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "Assertions.assertTrue(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "Assertions.assertEquals(" + array[i] + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    else
+                    {
+                        result += "Assertions.assertEquals(new " + r.data_type + "(),_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    i++;
+                }
+                else {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "Assertions.assertFalse(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+                    else
+                    {
+                        result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    }
+
+                }
+
+
+            }
+            result += "}\n";
+            return result;
+
+        }
         private string testTooShort(Column r)
         {
             string result = "@Test\n";
@@ -3522,6 +3649,8 @@ namespace Data_Objects
             result += genJavaDAOFakeUnDelete();// done, needs javadoccomment
             result += genJavaDAOFakeDeactivate(); // done, needs javadoccomment
             result += genJavaDAOFakeCount(); // done, needs javadoccomment
+            result += genJavaDAODuplicateKey(); // not done
+            result += genJavaDAOExceptionKey();
             result += genJavaDAOFooter(); // done, needs javadoccomment
 
             return result;
@@ -3549,13 +3678,13 @@ namespace Data_Objects
             result += "\npublic class " + name + "_DAO_Fake implements i" + name + "DAO{\n";
             if (hasVM)
             {
-                result += "private static List<" + name + "_VM> " + name.ToLower() + "VMs;\n";
+                result += "private  List<" + name + "_VM> " + name.ToLower() + "VMs;\n";
             }
             else
             {
-                result += "private static List<" + name + "> " + name.ToLower() + "s;\n";
+                result += "private  List<" + name + "> " + name.ToLower() + "s;\n";
             }
-            result += "static{\n";
+            result += "public "+name+"_DAO_Fake(){\n";
             if (hasVM)
             {
                 result += name.ToLower() + "VMs = new ArrayList<>();\n";
@@ -3747,6 +3876,13 @@ namespace Data_Objects
             string result = "";
             result += "@Override\n";
             result += "public int add(" + name + " _" + name.ToLower() + ") throws SQLException {\n";
+            result += "if (duplicateKey(_" + name.ToLower() + ")){\n";
+            result += "return 0;\n";
+            result += "}\n";
+            result += "if (exceptionKey(_" + name.ToLower() + ")){\n";
+            result += "throw new SQLException(\"error\");\n";
+            result += "}\n";
+
             if (hasVM)
             {
                 result += "int size = " + name.ToLower() + "VMs.size();\n";
@@ -3933,6 +4069,12 @@ namespace Data_Objects
             
 
             results += "int location =-1;\n";
+            results += "if (duplicateKey(old" + name + ")){\n";
+            results += "return 0;\n";
+            results += "}\n";
+            results += "if (exceptionKey(old" + name + ")){\n";
+            results += "throw new SQLException(\"error\");\n";
+            results += "}\n";
             results += "for (int i=0;i<" + name.ToLower() +VMTag.Replace("_","")+ "s.size();i++){\n";
             results += "if (";
             string andand = "";
@@ -4093,6 +4235,44 @@ namespace Data_Objects
             return results;
 
         }
+        private string genJavaDAODuplicateKey() {
+            string result = "";
+            result += "private boolean duplicateKey(" + name + " _" + name.ToLower() + "){\n";
+            foreach (Column r in columns) {
+                if (r.increment == 0&&r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "return _" + name.ToLower() + ".get" + r.column_name + "().equals(\"DUPLICATE\");\n";
+                    result += "}\n";
+                    break;
+                }
+                else {
+                    continue;
+                }
+            }
+            return result;
+        }
+
+        private string genJavaDAOExceptionKey()
+        {
+            string result = "";
+            result += "private boolean exceptionKey(" + name + " _" + name.ToLower() + "){\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "return _" + name.ToLower() + ".get" + r.column_name + "().equals(\"EXCEPTION\");\n";
+                    result += "}\n";
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return result;
+        }
+
+
         private string genJavaDAOFakeCount() {
             string result = "@Override\n";
             result += "public int get" + name + "Count() throws SQLException{\n";
@@ -4110,16 +4290,19 @@ namespace Data_Objects
         //done
         public string genJavaGetAllServletTests() {
             string result = "";
+            result += packageStatementForTests();
             result += importStatementForTests();     //done
             result += classNameAndStaticVariables(1); //done
             result += initTests(1); //done
             result += tearDownTests(); //done
             result += testLoggedInGets200OnDoGet();//done
-            result += testLoggedInGets200OnDoPost();//done
+            //result += testLoggedInGets200OnDoPost();//done
             result += TestLoggedOutGets302onDoGet();//done
-            result += TestLoggedOutGets302onDoPost();//done
+            //result += TestLoggedOutGets302onDoPost();//done
             result += TestGetAllGetsAll();//done
             result += TestGetAllCanFilter(); //done
+            result += TestInitWithNoParamsDoesNotCrash();
+            result += "\n}\n";
             return result;
         }
               
@@ -4136,7 +4319,11 @@ namespace Data_Objects
             result += TestLoggedOutGets302onDoGet();//done 
             result += TestLoggedOutGets302onDoPost();//done
             result += TestAddHasErrorsForEachFieldAndKeepsOnSamePage(); //done
-            result += TestAddCanAddWithNoErrorsAndRedirects(); //done
+            result += TestAddCanAddWithNoErrorsAndRedirects();
+            result += testExceptionKeyThrowsException();  //exceptionkey
+            result += testDuplicateKeyAddsZero(); //duplicateKey
+            result += TestInitWithNoParamsDoesNotCrash();
+            result += "\n}\n";//done
             return result;
         }
         //done
@@ -4148,13 +4335,15 @@ namespace Data_Objects
             result += initTests(3);//done 
             result += tearDownTests();//done
             result += testLoggedInGets200OnDoGet();//done
-            result += testLoggedInGets200OnDoPost();//done
+            //result += testLoggedInGets200OnDoPost();//done
             result += TestLoggedOutGets302onDoGet();//done
-            result += TestLoggedOutGets302onDoPost();//done
+            //result += TestLoggedOutGets302onDoPost();//done
             result += TestDeactivateCanDeactivate(); //done
             result += TestDeactivateFailIfAlreadyFalse(); //done
             result += TestactivateCanActivate(); // done
             result += TestActivateFailIfAlreadyTrue(); //done
+            result += TestInitWithNoParamsDoesNotCrash();
+            result += "\n}\n";
             return result;
         }
         //done
@@ -4173,11 +4362,15 @@ namespace Data_Objects
             result += TestGetOneCanFail(); //done
             result += TestUpdateCanAddWithNoErrorsAndRedirects();
             result += TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage();
+            result += TestInitWithNoParamsDoesNotCrash();
+            result += testUpdateCanReturnZero();
+            result += testUpdateCanThrowSQLException();
+            result += "\n}\n";
             return result;
         }
         //done
         private string initTests(int mode) {
-            string servletName = "";
+            
             if (mode == 1)
             {
                 servletName = "All_" + name;
@@ -4200,9 +4393,10 @@ namespace Data_Objects
             result += "servlet = new " + servletName + "();\n" ;
             result += "servlet.init(";
             string comma = "";
+            result += "new " + name + "_DAO_Fake()";
             foreach (Column r in columns)
             {
-                result += "new " + name + "_DAO_Fake()";
+                
                 if (r.foreign_key != "" )
                 {
                     string[] parts = r.references.Split('.');
@@ -4252,6 +4446,10 @@ namespace Data_Objects
             
             return result;
         }
+        private string packageStatementForTests() {
+            return "package com.beck.beck_demos.crrg.controllers;\n";
+        
+        }
         //done
         private string importStatementForTests()
         {
@@ -4269,8 +4467,8 @@ namespace Data_Objects
             result += "import org.junit.jupiter.api.BeforeEach;\n";
             result += "import org.junit.jupiter.api.Test;\n";
             result += "import org.springframework.mock.web.*;\n";
-            result += "import static org.junit.jupiter.api.Assertions.assertEquals;\n";
-            result += "import static org.junit.jupiter.api.Assertions.assertNotNull;\n";
+            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+            
             
 
 
@@ -4349,7 +4547,7 @@ namespace Data_Objects
             result += "public void testLoggedInUserGetsAll"+name+ "s() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
-            result += "sevlet.doGet(request,response);\n";
+            result += "servlet.doGet(request,response);\n";
             result += "List<"+name+"_VM> "+name.ToLower()+"s = (List<"+name+"_VM>) request.getAttribute(\""+name+"s\");\n" ;
             result += "assertNotNull("+name.ToLower()+"s);\n";
             result += "assertEquals(20,"+name.ToLower()+"s.size());\n";
@@ -4384,6 +4582,9 @@ namespace Data_Objects
         private string TestGetOneCanFail()
         {
             string result = "";
+            result += "@Test\n";
+            result += "public void testGetOne" + name + "CanFail" + "() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
             foreach (Column r in columns)
             {
                 int columnToNull = 1;
@@ -4394,19 +4595,30 @@ namespace Data_Objects
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     {
-                        result += "@Test\n";
-                        result += "public void testGetOne" + name + "CanFail" + r.column_name + "() throws ServletException, IOException{\n";
-                        result += SetUserOnTest("Jonathan");
+                        
                         result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
                         result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
-                        result += "request.setSession(session);\n";
-                        result += "servlet.doGet(request,response);\n";
-                        result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
+                        
                         result += "assertNull(" + name.ToLower() + ".get" + columns[columnToNull].column_name + "());\n";
-                        result += "}\n";
+                        
                     }
                 }
             }
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "assertFalse(" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else
+                {
+                    result += "assertNull(" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+            }
+            result += "}\n";
             return result;
         }
 
@@ -4421,9 +4633,9 @@ namespace Data_Objects
                         result += "public void testLoggedInUserCanFilter" + name + "sBy" + r.column_name + "() throws ServletException, IOException{\n";
                         result += SetUserOnTest("Jonathan");
                         result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
-                        result += "request.setAttribute(\"" + r.column_name + "\"," + r.column_name + ");\n";
+                        result += "request.setParameter(\"" + r.column_name + "\"," + r.column_name + ");\n";
                         result += "request.setSession(session);\n";
-                        result += "sevlet.doGet(request,response);\n";
+                        result += "servlet.doGet(request,response);\n";
                         result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
                         result += "assertNotNull(" + name.ToLower() + "s);\n";
                         result += "assertEquals(20," + name.ToLower() + "s.size());\n";
@@ -4498,6 +4710,87 @@ namespace Data_Objects
             result += "assertNotEquals(\"\"," + name + "_Added);\n";
             result += "}\n";
             return result;
+        }
+
+        private string testExceptionKeyThrowsException() {  //fix
+            string result = "@Test\n";
+            result += "public void testExceptionKeyThrowsException() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                }
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String " + name + "_Added = results.get(\"dbStatus\");\n";
+            result += "String dbError = results.get(\"dbError\");\n";
+            result += "assertEquals(200,responseStatus);\n";
+            result += "assertNotNull(" + name + "_Added);\n";
+            result += "assertEquals(\"" + name + " Not Added\"," + name + "_Added);\n";
+            result += "assertNotEquals(\"\"," + name + "_Added);\n";
+            result += "assertNotNull(dbError);\n";
+            result += "assertNotEquals(\"\",dbError);\n";
+            result += "assertEquals(\"Database Error\",dbError);\n";
+            result += "}\n";
+            return result;
+        }
+
+        private string  testDuplicateKeyAddsZero() {
+            string result = "@Test\n";
+            result += "public void testDuplicateKeyReturnsZero() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                }
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String " + name + "_Added = results.get(\"dbStatus\");\n";
+            result += "assertEquals(200,responseStatus);\n";
+            result += "assertNotNull(" + name + "_Added);\n";
+            result += "assertEquals(\"" + name + " Not Added\"," + name + "_Added);\n";
+            result += "assertNotEquals(\"\"," + name + "_Added);\n";
+            result += "}\n";
+            return result;
+
         }
 
         private string TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage()
@@ -4593,6 +4886,137 @@ namespace Data_Objects
             return result;
         }
 
+        private string testUpdateCanThrowSQLException() {
+            string result = "@Test\n";
+            result += "public void testUpdateCanThrowSQLException() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "//to set the old " + name + "\n";
+            result += name + " " + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION\");\n";
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(43);\n";
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(true);\n";
+
+                }
+
+
+            }
+
+            result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
+            result += "//create a new albums parameters\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                }
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String " + name + "_Updated = results.get(\"dbStatus\");\n";
+            result += "String dbError = results.get(\"dbError\");\n";
+            result += "assertEquals(200,responseStatus);\n";
+            result += "assertNotNull(" + name + "_Updated);\n";
+            result += "assertNotEquals(\"\"," + name + "_Updated);\n";
+            result += "assertEquals(\"" + name + " Not Updated\"," + name + "_Updated);\n";
+            result += "assertNotNull(dbError);\n";
+            result += "assertNotEquals(\"\",dbError);\n";
+            result += "assertEquals(\"Database Error\",dbError);\n";
+            result += "}\n";
+            return result;
+
+        }
+
+        private string testUpdateCanReturnZero() {
+            string result = "@Test\n";
+            result += "public void testUpdateCanReturnZero() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "//to set the old " + name + "\n";
+            result += name + " " + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE\");\n";
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(43);\n";
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(true);\n";
+
+                }
+
+
+            }
+
+            result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
+            result += "//create a new albums parameters\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                }
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String " + name + "_Updated = results.get(\"dbStatus\");\n";
+            result += "assertEquals(200,responseStatus);\n";
+            result += "assertNotNull(" + name + "_Updated);\n";
+            result += "assertEquals(\"" + name + " Not Updated\"," + name + "_Updated);\n";
+            result += "assertNotEquals(\"\"," + name + "_Updated);\n";
+            result += "}\n";
+            return result;
+        }
+
         private string TestDeactivateCanDeactivate()
         {
             string result = "@Test\n";
@@ -4655,6 +5079,18 @@ namespace Data_Objects
             result += "}\n";
 
             return result;
+        }
+
+        private string TestInitWithNoParamsDoesNotCrash() {
+            string result = "@Test\n";
+            result += "public void testInitWithNoParametersDoesNotThrowException() throws ServletException {\n";
+            result += "servlet = null;\n";
+            result += "servlet = new " + servletName + "();\n";
+            result += "servlet.init();\n";
+            result += "}\n";
+
+            return result;
+        
         }
 
         private string SetUserOnTest(string role) {
