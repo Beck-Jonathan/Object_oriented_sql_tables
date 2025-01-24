@@ -30,6 +30,7 @@ namespace Data_Objects
             if (result.ToLower().Equals("bool")) { result = "boolean"; }
             if (result.ToLower().Equals("int") || sqlDataType.ToLower().Equals("Integer")) { result = "Integer"; }
             if (result.ToLower().Equals("datetime")) { result = "Date"; }
+            if (result.ToLower().Equals("decimal")) { result = "Double"; }
             return result;
         }
         public static string toJavaDAODataType(this string sqlDataType)
@@ -40,6 +41,7 @@ namespace Data_Objects
             if (result.ToLower().Contains("bool")) { result = "Boolean"; }
             if (result.ToLower().Contains("int") || sqlDataType.ToLower().Equals("integer")) { result = "Int"; }
             if (result.ToLower().Contains("date")) { result = "LocalDate"; }
+            if (result.ToLower().Equals("decimal")) { result = "double"; }
             return result;
         }
         public static string bracketStrip(this string fieldName)
