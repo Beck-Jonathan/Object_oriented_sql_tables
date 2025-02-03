@@ -1352,7 +1352,11 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 string getter = "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
-                string setter = "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ") {\n";
+                string setter = "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
+                if (r.data_type.Equals("datetime")) {
+                    setter += "throws ParseException";
+                }
+                setter += " {\n";
                 if (r.data_type.Equals( "nvarchar"))
                 {
                     setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^A-Za-z0-9 - ]\",\"\");\n";
@@ -1372,6 +1376,20 @@ namespace Data_Objects
                     setter += "if (" + r.column_name + "<0||" + r.column_name + ">10000){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Negative\");\n";
                     setter += "}\n";
+                }
+                if (r.data_type.Equals("datetime")) {
+                    setter += "String minDate = \"01/01/1991\";\n";
+                    setter += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
+                    setter += "Date _minDate = df.parse(minDate);\n";
+                    setter += "String maxDate = \"12/31/2100\";\n";                    
+                    setter += "Date _maxDate = df.parse(maxDate);\n";
+                    setter += "if (" + r.column_name + ".compareTo(_minDate)<0){\n";
+                    setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Before 1991\");\n";
+                    setter += "}\n";
+                    setter += "if (" + r.column_name + ".compareTo(_maxDate))>0{\n";
+                    setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be after 2100\");\n";
+                    setter += "}\n";
+
                 }
                 setter = setter + "this." + r.column_name + " = " + r.column_name + ";\n}";
                 result = result + getter + "\n" + setter + "\n";
@@ -3244,6 +3262,7 @@ namespace Data_Objects
             foreach (Column r in columns) {
                 result += createTests(r);
             }
+            result += testCompareTo();
             result += "\n}\n";
             return result;
         }
@@ -3273,8 +3292,14 @@ namespace Data_Objects
                 result += testBoolSetFalse(r); //done
                 result += testBoolSetTrue(r); //done
             }
-            
-            
+            if (r.data_type.Equals("datetime"))
+            {
+                result += testDatetimeTooSmall(r); //done
+                result += testDatetimeTooBig(r); // done
+                result += testDatetimeSet(r); //done
+            }
+
+
             return result;
 
         }
@@ -3662,6 +3687,47 @@ namespace Data_Objects
             return result;
 
         }
+        private string testDatetimeTooBig(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig() throws ParseException{\n";
+            result += "String strDate = \"01/01/2190\";\n";
+            result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
+            result += "Date date = df.parse(strDate);\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(date);});\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string testDatetimeTooSmall(Column r)
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall() throws ParseException{\n";
+            result += "String strDate = \"03/03/1990\";\n";
+            result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
+            result += "Date date = df.parse(strDate);\n";
+            
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(date);});\n";
+            result += "}\n";
+            return result;
+        }
+        private string testDatetimeSet(Column r)
+        {
+
+            int numberToTest = rand.Next(1, 10000);
+            string result = "@Test\n";
+            result += "public void test" + name + "Sets" + r.column_name + "() throws ParseException{\n";
+            DateTime today = DateTime.Today;
+            result += "String strDate = \""+today.Day+"/"+today.Month+"/"+today.Year+"\";\n";
+            result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
+            result += "Date date = df.parse(strDate);\n";
+            result += "_" + name.ToLower() + ".set" + r.column_name + "(date);\n";
+            result += "Assertions.assertEquals(date, _" + name.ToLower() + ".get" + r.column_name + "());\n";
+            result += "}\n";
+
+            return result;
+
+        }
         private string testStringSet(Column r)
         {
 
@@ -3699,6 +3765,73 @@ namespace Data_Objects
 
         }
 
+        private string testCompareTo() {
+            string result = "";
+            bool hasDateTime = false;
+            foreach (Column r in columns)
+            {
+                if (r.data_type.Equals("datetime"))
+                {
+                    hasDateTime = true;
+                    break;
+                }
+            }
+            result += "@Test\n";
+            result += "public void testCompareToCanCompareForEachDateField()";
+            if (hasDateTime) {
+                result += "throws ParseException";
+            }
+            result+=" {\n";
+            
+            if (hasDateTime) {
+                result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
+            }
+            result += name + " smaller = new " + name + "();\n";
+            result += name + " bigger = new " + name + "();\n";
+            String smaller = "";
+            String bigger = "";
+            foreach (Column r in columns) {
+                
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    smaller = "\"aaaa\"";
+                    bigger = "\"bbbb\"";
+                }
+                if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    smaller = "10";
+                    bigger = "20";
+                }
+                if (r.data_type.Equals("decimal"))
+                {
+                    smaller = "10.23d";
+                    bigger = "14.12d";
+                }
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    smaller = "false";
+                    bigger = "true";
+                }
+                if (r.data_type.Equals("datetime"))
+                {
+                    smaller = "df.parse(\"01/01/2023\")";
+                    bigger = "df.parse(\"01/01/2024\")";
+                }
+                result += "//to compare a smaller and larger " + r.column_name + "\n";
+                result += "smaller.set" + r.column_name + "("+smaller+");\n";
+                result += "bigger.set" + r.column_name + "("+bigger+");\n";
+                result += "Assertions.assertTrue(smaller.compareTo(bigger)<0);\n";
+                result += "Assertions.assertTrue(bigger.compareTo(smaller)>0);\n";
+                result += "//to set the " + r.column_name + " as equal.\n";
+                result += "smaller.set" + r.column_name + "("+bigger+");\n";
+            }
+            result += "Assertions.assertTrue(bigger.compareTo(smaller)==0);\n";
+            result += "}\n";
+
+            return result;
+        
+        
+        }
         private string generateRandomString(Column r, int reletive_length) {
             
             char letter ;
