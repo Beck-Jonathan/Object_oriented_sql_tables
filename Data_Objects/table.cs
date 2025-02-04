@@ -3770,7 +3770,7 @@ namespace Data_Objects
             bool hasDateTime = false;
             foreach (Column r in columns)
             {
-                if (r.data_type.Equals("datetime"))
+                if (r.data_type.ToLower().Contains("date"))
                 {
                     hasDateTime = true;
                     break;
@@ -3812,7 +3812,7 @@ namespace Data_Objects
                     smaller = "false";
                     bigger = "true";
                 }
-                if (r.data_type.Equals("datetime"))
+                if (r.data_type.ToLower().Contains("date"))
                 {
                     smaller = "df.parse(\"01/01/2023\")";
                     bigger = "df.parse(\"01/01/2024\")";
