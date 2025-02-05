@@ -1,19 +1,8 @@
 ﻿using appData2;
 using System;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq.Expressions;
-using System.Net.NetworkInformation;
-using System.Runtime.CompilerServices;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
-using System.Web;
-using System.Xml.XPath;
 namespace Data_Objects
 {
     public class table
@@ -3319,7 +3308,7 @@ namespace Data_Objects
             return result;
         }
 
-        public string createTests() {
+        public string createModelTests() {
             string result = "";
             result += testInitialize(); //done
             result += testDefaultConstructor();
@@ -3329,13 +3318,41 @@ namespace Data_Objects
             //result += testVMDefaultConstructor();
             //result += testVMParameterizedConstructor();
             foreach (Column r in columns) {
-                result += createTests(r);
+                result += createColumnTests(r);
             }
             result += testCompareTo();
             result += "\n}\n";
             return result;
         }
-        private  string createTests(Column r) { 
+        public string createModelVMTests()
+        {
+            string result = "";
+            result += testVMInitialize(); //done
+            result += testVMDefaultConstructor();
+            //result += testVMParameterizedConstructors();
+
+            foreach (Column r in columns)
+            {
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += testObjectSet(fk_table);
+                }
+            }
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                      result += testListObjectSet(key.mainTable);
+                }
+            }
+            //result += testVMCompareTo();
+            result += "\n}\n";
+            return result;
+        }
+        private  string createColumnTests(Column r) { 
         string result = "";
             
             if (r.data_type.toCSharpDataType().Equals("string"))
@@ -3395,7 +3412,30 @@ namespace Data_Objects
 
         }
 
-        
+        private string testVMInitialize()
+        {
+            string result = "";
+            result += "import org.junit.jupiter.api.AfterEach;\n";
+            result += "import org.junit.jupiter.api.Assertions;\n";
+            result += "import org.junit.jupiter.api.BeforeEach;\n";
+            result += "import org.junit.jupiter.api.Test;\n";
+            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+            result += "class " + name + "_VMTest {\n";
+            result += "private " + name + "_VM " + "_" + name.ToLower() + "VM;\n";
+            result += "@BeforeEach\n";
+            result += "public void setup(){\n";
+            result += "_" + name.ToLower() + "VM = new " + name + "_VM();\n";
+            result += "}\n";
+            result += "@AfterEach\n";
+            result += "public void teardown(){\n";
+            result += "_" + name.ToLower() + "VM = null;\n";
+            result += "}\n";
+
+            return result;
+
+        }
+
+
 
         private string testParameterizedConstructor()
         {
@@ -3534,6 +3574,56 @@ namespace Data_Objects
                 }
                 
 
+            }
+            result += "}\n";
+            return result;
+
+        }
+        private string testVMDefaultConstructor()
+        {
+            string result = "@Test\n";
+            result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
+            result += name + "_VM _" + name.ToLower() + "VM= new " + name + "_VM();\n";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "Assertions.assertNull(_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "Assertions.assertFalse(_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "Assertions.assertNull(_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                }
+                else
+                {
+                    result += "Assertions.assertNull(_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                }
+
+
+            }
+            foreach (Column r in columns)
+            {
+
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += "Assertions.assertNull(_" + name.ToLower() + "VM.get" + fk_table + "());\n";
+                }
+            }
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    string child_table = key.mainTable;
+
+                    result += "Assertions.assertNull(_" + name.ToLower() + "VM.get" + child_table + "s());\n";
+                }
             }
             result += "}\n";
             return result;
@@ -3834,6 +3924,29 @@ namespace Data_Objects
 
         }
 
+        private string testObjectSet(string objectname) {
+
+                string result = "@Test\n";
+                result += "public void testSet" + objectname + "Sets" + objectname + "(){\n";
+                result += objectname +" _"+ objectname.ToLower() + " = new "+objectname+"();\n";
+                result += "_" + name.ToLower() + "VM.set" + objectname + "(_" + objectname.ToLower() + ");\n";
+                result += "Assertions.assertEquals(_" + objectname.ToLower() + ",_" + name.ToLower() + "VM.get" + objectname + "());\n";
+                result += "}\n";
+                return result;
+
+        }
+        private string testListObjectSet(string objectname)
+        {
+
+            string result = "@Test\n";
+            result += "public void testSet" + objectname + "sSets" + objectname + "s(){\n";
+            result += "List<"+objectname + "> _" + objectname.ToLower() + "s = new ArrayList<" + objectname + ">();\n";
+            result += "_" + name.ToLower() + "VM.set" + objectname + "s(_" + objectname.ToLower() + "s);\n";
+            result += "Assertions.assertEquals(_" + objectname.ToLower() + "s,_" + name.ToLower() + "VM.get" + objectname + "s());\n";
+            result += "}\n";
+            return result;
+
+        }
         private string testCompareTo() {
             string result = "";
             bool hasDateTime = false;
