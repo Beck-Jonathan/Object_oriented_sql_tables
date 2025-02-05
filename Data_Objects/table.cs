@@ -1221,6 +1221,18 @@ namespace Data_Objects
                     result += "private " + fk_table + " " + fk_table + ";\n";
                 }
             }
+
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    string child_table = key.mainTable;
+
+                    result += "private List<" + child_table + "> " + child_table + "s;\n";
+                }
+            }
+
+
             return result;
         }
         /// <summary>
@@ -1294,7 +1306,7 @@ namespace Data_Objects
             ParamConsctructor += ");\n}\n";
 
 
-            //param2
+            //param2 having vm hold it's parents
 
             string ParamConsctructor2 = "\npublic " + name + "_VM(" + name + " " + name.ToLower() ;
              comma = ",";
@@ -1338,7 +1350,47 @@ namespace Data_Objects
             ParamConsctructor2 += "\n}\n";
 
 
-            string result = defaultConstructor + ParamConsctructor + ParamConsctructor2;
+            //param3, having vm hold it's children
+
+            string ParamConsctructor3 = "\npublic " + name + "_VM(" + name + " " + name.ToLower();
+            comma = ",";
+
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    string child_table = key.mainTable;
+                    
+
+                    ParamConsctructor3 += comma  +"List<"+child_table + "> " + child_table.ToLower()+"s";
+                }
+            }
+            comma = "";
+
+            ParamConsctructor3 += "){\n";
+            ParamConsctructor3 += "super(";
+            foreach (Column r in columns)
+            {
+                ParamConsctructor3 += comma + " " + name.ToLower() + ".get" + r.column_name + "()";
+                comma = ", ";
+            }
+            ParamConsctructor3 += ");\n";
+
+
+
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {                    
+                    string child_table = key.mainTable;
+                    ParamConsctructor3 += "this." + child_table + "s = " + child_table.ToLower() + "s;\n";
+                }
+            }
+
+            ParamConsctructor3 += "\n}\n";
+
+
+            string result = defaultConstructor + ParamConsctructor + ParamConsctructor2+ParamConsctructor3;
             return result;
         }
         /// <summary>
@@ -1415,6 +1467,23 @@ namespace Data_Objects
                     result +=  getter + "\n" + setter + "\n";
                 }
             }
+
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    string child_table = key.mainTable;
+
+                    string getter = "public List<" + child_table + "> get" + child_table + "s() {\n return " + child_table + "s;\n}";
+                    string setter = "public void set" + child_table + "s(List<" + child_table + "> _" + child_table.ToLower() + "s) {\n";
+
+                    setter = setter + "this." + child_table + "s = _" + child_table.ToLower() + "s;\n}";
+                    result += getter + "\n" + setter + "\n";
+
+
+                }
+            }
+
             return result;
         }
         /// <summary>
