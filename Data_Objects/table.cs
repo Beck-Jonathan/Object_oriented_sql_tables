@@ -3329,7 +3329,7 @@ namespace Data_Objects
             string result = "";
             result += testVMInitialize(); //done
             result += testVMDefaultConstructor();
-            //result += testVMParameterizedConstructors();
+            result += testVMParameterizedConstructors();
 
             foreach (Column r in columns)
             {
@@ -3465,6 +3465,15 @@ namespace Data_Objects
                     array.Add(toAdd);
                     Task.Delay(1);
                 }
+                else if (r.data_type.ToLower().Contains("date"))
+                {
+                    int year = rand.Next(2015, 2027);
+                    int month = rand.Next(1, 11);
+                    int day = rand.Next(1, 28);
+                    DateTime toAdd = new DateTime(year, month, day);
+                    array.Add(toAdd);
+                    Task.Delay(1);
+                }
                 else
                 {
                     array.Add(null);
@@ -3504,6 +3513,10 @@ namespace Data_Objects
                 {
                     result += comma + array[i];
                 }
+                else if (r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += comma + array[i];
+                }
                 else
                 {
                     result += comma + "new " + r.data_type + "()\n";
@@ -3531,6 +3544,10 @@ namespace Data_Objects
                     result += "Assertions.assertEquals(" + array[i] +",_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
                 else if (r.data_type.Equals("decimal"))
+                {
+                    result += "Assertions.assertEquals(" + array[i] + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                }
+                else if (r.data_type.ToLower().Contains("decimal"))
                 {
                     result += "Assertions.assertEquals(" + array[i] + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
@@ -3751,6 +3768,292 @@ namespace Data_Objects
             }
             result += "}\n";
             return result;
+
+        }
+        private string testVMParameterizedConstructors()
+        {
+            string result = "";
+            bool hasParent = false;
+            bool hasChild = false;
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
+                    hasParent = true;
+
+                }
+            }
+            foreach (foreignKey key in data_tables.all_foreignKey) {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    hasChild = true;
+                }
+            }
+
+            for (int j = 0; j < 3; j++)
+            {
+
+                //testing can set as super
+
+                //generate random values for each
+                ArrayList array = new ArrayList(columns.Count + 1);
+                bool hasdate = false;
+
+                foreach (Column r in columns)
+                {
+                    if (r.column_name.ToLower().Contains("date"))
+                    {
+                        hasdate = true;
+                        break;
+                    }
+                }
+
+                foreach (Column r in columns)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        array.Add(generateRandomString(r, -2));
+                        Task.Delay(1);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        array.Add(true);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        array.Add(rand.Next(0, 10000));
+                        Task.Delay(1);
+                    }
+                    else if (r.data_type.Equals("decimal"))
+                    {
+                        double toAdd = rand.Next(0, 10000) / 100.0;
+                        array.Add(toAdd);
+                        Task.Delay(1);
+                    }
+                    else if (r.data_type.ToLower().Contains("date"))
+                    {
+                        int year = rand.Next(2015, 2027);
+                        int month = rand.Next(1, 11);
+                        int day = rand.Next(1, 28);
+                        int hour = rand.Next(1, 23);
+                        int minute = rand.Next(1, 55);
+                        int second = rand.Next(2, 45);
+                        DateTime toAdd = new DateTime(year, month, day, hour, minute, second);
+                        array.Add(toAdd);
+                        Task.Delay(1);
+                    }
+                    else
+                    {
+                        array.Add(null);
+                    }
+                    Task.Delay(5);
+                }
+                //method signature
+                result +="\n@Test\n";
+                switch (j)
+                {
+
+                    case 0:
+                        result += "public void testSuper" + name + "ParameterizedVMConstructorSetsAllVariables()";
+                        break;
+                    case 1:
+                        if (hasParent)
+                        {
+                            result += "public void testSuper" + name + "ParameterizedVMConstructorSetsAllVariablesAndParent()";
+                        }
+                        break;
+                    case 2:
+                        if (hasChild)
+                        {
+                            result += "public void testSuper" + name + "ParameterizedVMConstructorSetsAllVariablesAndChildren()";
+                        }
+                        break;
+
+                }
+                if (hasdate)
+                {
+                    result += " throws ParseException ";
+                }
+                result += "{\n";
+                if (hasdate)
+                {
+                    DateTime today = DateTime.Today;
+                    result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
+                    result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
+                    result += "Date date = df.parse(strDate);\n";
+                }
+                //constructor
+                result += name + " _" + name.ToLower() + "= new " + name + "(\n";
+                //assing a value to each variable
+                string comma = "";
+                int i = 0;
+                foreach (Column r in columns)
+                {
+
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += comma + "\"" + array[i] + "\"";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.Equals("decimal"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.ToLower().Contains("date"))
+                    {
+                        result += comma + "df.parse(\"" + array[i] + "\")";
+                    }
+                    else
+                    {
+                        result += comma + "new " + r.data_type + "()";
+                    }
+                    comma = ",\n ";
+
+
+                    i++;
+                }
+                result += "\n);\n";
+                switch (j) {
+                    case 0:
+                        result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower() + ");\n";
+                        break;
+                    case 1:
+                        foreach (Column r in columns)
+                        {
+                            if (r.references != "")
+                            {
+                                string vmTag = "_VM";
+                                string[] parts = r.references.Split('.');
+                                string fk_table = parts[0];
+                                string fk_name = parts[1];
+                                result += fk_table + " _"+ fk_table.ToLower()+" = new " + fk_table + "();\n";
+                            }
+                        }
+                        result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower();
+                        foreach (Column r in columns)
+                        {
+                            if (r.references != "")
+                            {
+                                string vmTag = "_VM";
+                                string[] parts = r.references.Split('.');
+                                string fk_table = parts[0];
+                                string fk_name = parts[1];
+                                result += ", _" + fk_table.ToLower();
+                            }
+                        }
+                        result += ");\n";
+                        break;
+                    case 2:
+                        foreach (foreignKey key in data_tables.all_foreignKey)
+                        {
+
+                            if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                            {
+
+                                string fk_table = key.mainTable;
+
+                                result += "List<" + fk_table + "> _" + fk_table.ToLower() + "s = new ArrayList<>();\n"; 
+                            }
+                        }
+                        result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower();
+                        foreach (foreignKey key in data_tables.all_foreignKey)
+                        {
+                            
+                            if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                            {
+                                
+                                string fk_table = key.mainTable;
+
+                                result += ", " + fk_table.ToLower() + "s";
+                            }
+                        }
+                        result += ");\n";
+                        break;
+                }
+                i = 0;
+                //test each variable
+                foreach (Column r in columns)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "Assertions.assertEquals(\"" + array[i] + "\",_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "Assertions.assertTrue(_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "Assertions.assertEquals(" + array[i] + ",_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.Equals("decimal"))
+                    {
+                        result += "Assertions.assertEquals(" + array[i] + ",_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                    }
+                    else if (r.data_type.ToLower().Contains("date"))
+                    {
+                        result += "Assertions.assertEquals(df.parse(\"" + array[i] + "\"),_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                    }
+
+                    else
+                    {
+                        result += "Assertions.assertEquals(new " + r.data_type + "(),_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
+                    }
+                    i++;
+                }
+                switch (j)
+                {
+                    case 0: break;
+                    case 1:
+                        foreach (Column k in columns)
+                        {
+                            if (k.references != "")
+                            {
+                                string vmTag = "_VM";
+                                string[] parts = k.references.Split('.');
+                                string fk_table = parts[0];
+                                string fk_name = parts[1];
+                                result += "Assertions.assertEquals(_"+fk_table.ToLower()+" ,_" + name.ToLower() + "VM.get" + fk_table + "());\n";
+
+                            }
+                        }
+                        break;
+                    case 2:
+                        foreach (foreignKey key in data_tables.all_foreignKey)
+                        {
+                            if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                            {
+
+                                string fk_table = key.mainTable;
+
+                                result += "Assertions.assertEquals(_" + fk_table.ToLower() + "s,_" + name.ToLower() + "VM.get" + fk_table + "s());\n";
+
+                            }
+                        }
+                        break;
+                }
+
+                result += "}\n";
+               
+
+
+                
+                
+            }
+        
+
+
+
+                return result;
+            
 
         }
         private string testTooShort(Column r)
