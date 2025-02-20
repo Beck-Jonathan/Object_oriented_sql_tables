@@ -220,8 +220,8 @@ namespace Data_Access
         {
             try
             {
-                file_write.SettingsBuddy.Write(settings.path);
-                file_write.SettingsBuddy.Flush();
+                //file_write.SettingsBuddy.Write(settings.path);
+                //file_write.SettingsBuddy.Flush();
             }
             catch (Exception ex)
             {
@@ -232,8 +232,8 @@ namespace Data_Access
         {
             try
             {
-                StreamReader streamReader = new StreamReader(file_write.SettingsPath);
-                return streamReader.ReadLine();
+                //StreamReader streamReader = new StreamReader(file_write.SettingsPath);
+                return "";
             }
             catch (Exception ex)
             {
