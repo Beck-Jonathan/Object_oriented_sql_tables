@@ -24,6 +24,8 @@ namespace Object_oriented_sql_tables
             InitializeComponent();
             tbx_databasename.Text = "WFTDA_debug";
             settings.database_name = tbx_databasename.Text;
+            tbx_owner_name.Text = "Owner";
+            settings.owner_name = tbx_owner_name.Text;
             initialize_settings();
             for (int i = 0; i < 9; i++)
             {
@@ -574,6 +576,19 @@ namespace Object_oriented_sql_tables
                 }
                 if (true) //change this to these setings 27
                 {
+                    s = t.genViewEditWithLineItemsJSP();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaJSP", "ViewAllWithLineItemsJSP");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true) //change this to these setings 27
+                {
                     s = t.genDeleteServlet();
                     alloutput += s + "\n";
                     try
@@ -851,6 +866,11 @@ namespace Object_oriented_sql_tables
         }
         private void numericUpDown1_ValueChanged(object sender, EventArgs e)
         {
+        }
+
+        private void tbx_owner_name_TextChanged(object sender, EventArgs e)
+        {
+            settings.owner_name = tbx_owner_name.Text;
         }
     }
 }

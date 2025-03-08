@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 namespace Data_Objects
 {
@@ -1632,7 +1633,7 @@ namespace Data_Objects
         private string genJavaDAOHeader(String projectName)
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
-            result = result + "import com.beck.javaiii_kirkwood."+ projectName + ".models." + name + ";\n" +
+            result = result + "import com."+settings.owner_name+"."+ projectName + ".models." + name + ";\n" +
                 "import java.sql.CallableStatement;\n" +
                 "import java.sql.Connection;\n" +
                 "import java.sql.ResultSet;\n" +
@@ -1640,8 +1641,8 @@ namespace Data_Objects
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
                 "import java.time.LocalDate;\n" +
-                "import static com.beck.javaiii_kirkwood."+ projectName + ".idata.i"+name+"DAO;\n"+
-            "import static com.beck.javaiii_kirkwood."+ projectName + ".data.Database.getConnection;\n";
+                "import static com."+settings.owner_name+"."+ projectName + ".idata.i"+name+"DAO;\n"+
+            "import static com."+settings.owner_name+"."+ projectName + ".data.Database.getConnection;\n";
             result += commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
             result +=  "public class " + name + "DAO implements i"+name+"DAO{\n\n";
             return result;
@@ -2132,7 +2133,7 @@ namespace Data_Objects
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
             string comma = "";
             result = result + "public int add(" + name + " _" + name.ToLower() + ") {\n";
-            result += "int numRowsAffected=0;";
+            result += "int numRowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";
             result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_insert_" + name + "(";
@@ -2317,9 +2318,9 @@ namespace Data_Objects
             result += "<div class = \"container\">\n";
             result += "<div class=\"row\">\n";
             result += "<div class=\"col-12\">\n";
-            result = result + "<h1>All Roller " + name + "s</h1>\n";
-            result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
-            result = result + "Add " + name + "   <a href=\"add" + name + "\">Add</a>\n";
+            result = result + "<h1>All "+settings.database_name+" " + name.Replace("_"," ") + "s</h1>\n";
+            result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_"," ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+            result = result + "Add " + name.Replace("_"," ") + "   <a href=\"add" + name + "\">Add</a>\n";
             result = result + "<c:if test=\"${" + name + "s.size() > 0}\">\n";
             result += "<div class=\"table-responsive\">";
             result += "<table class=\"table table-bordered\">\n";
@@ -2793,6 +2794,213 @@ namespace Data_Objects
             result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";
             return result;
         }
+        public string genViewEditWithLineItemsJSP() {
+            int rowcount = 0;
+            //comment box
+            string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewEdit);
+            //header comment
+            //gen header
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_top.jsp\"%>\n";
+            //gen form for main item
+            result += "<div class = \"container\">\n";
+            result = result + "<form method=\"post\" action=\"${appURL}/edit" + name + "\" id = \"edit" + name + "\" >\n";
+            //gen a button for each line item
+            foreach (Column r in columns)
+            {
+                if (!r.column_name.ToLower().Contains("active"))
+                {
+                    int i = 0;
+                    if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                    {
+                        result = result + "<!-- " + r.column_name + " -->\n";
+                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                        result = result + "<h2>" + r.column_name + "  :  \n";
+                        result = result + " ${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}</h2>\n";
+                        result += "</div>\n";
+                        rowcount++;
+                        continue;
+                    }
+                    if ((r.foreign_keys.Count < 1 || r.foreign_keys[i] == ""))
+                    {
+                        string inputType = "text";
+                        if (r.data_type == "datetime") { inputType = "date"; }
+                        string fieldname = "input" + name.ToLower() + r.column_name;
+                        string errorname = name.ToLower() + r.column_name + "error";
+                        result = result + "<!-- " + r.column_name + " -->\n";
+                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                        result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                        result += "<div class=\"input-group input-group-lg\">\n";
+                        result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" <c:if test=\"${mode eq 'view'}\"> disabled </c:if>  id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}\">\n";
+                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                        result += "</c:if>\n";
+                        result += "</div>\n";
+                        result += "</div>\n";
+                        rowcount++;
+                    }
+                    else
+                    {
+                        string[] parts = r.foreign_keys[i].Split('.');
+                        string fieldname = "input" + name.ToLower() + r.column_name;
+                        string errorname = name.ToLower() + r.column_name + "error";
+                        result = result + "<!-- " + r.column_name + " -->\n";
+                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                        result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                        result += "<div class=\"input-group input-group-lg\">\n";
+                        result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\"  <c:if test=\"${mode eq 'view'}\"> disabled </c:if>  id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}\">\n";
+                        result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
+                        result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\"" +
+                        "<c:if test=\"${" + name.ToLower() + "." + parts[1].firstCharLower() + " eq " + parts[0] + "." + parts[1].firstCharLower() + "}\"> selected </c:if>>${" + parts[0] + ".name}   </option>\n";
+                        result += "</c:forEach>\n";
+                        result += "</select>\n";
+                        result += "";
+                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                        result += "</c:if>\n";
+                        result += "</div>\n";
+                        result += "</div>\n";
+                        rowcount++;
+                        i++;
+                    }
+                }
+            }
+            //get_buttons
+            result += "<div class=\"align-items-center mt-0\">\n";
+            result += "<div class=\"d-grid\">";
+            result = result + "<button class=\"btn btn-orange mb-0\" type=\"submit\">Edit " + name + " </button></div>\n";
+            result += "<c:if test=\"${not empty results.dbStatus}\"\n>";
+            result += "<p>${results.dbStatus}</p>\n";
+            result += "</c:if>\n";
+            result += "</div>\n";
+            result += "</form>\n";
+            result += "</div>\n";
+            //to gen line items
+            foreach (foreignKey key in data_tables.all_foreignKey) {
+                if (key.referenceTable.ToLower().Equals(name.ToLower())) {
+                    result += "<div class = \"container\">\n";
+                    result += "<div class=\"row\">\n";
+                    result += "<div class=\"col-12\">\n";
+                    result = result + "<h1>All " + settings.database_name + " " + name.Replace("_", " ") +" " +key.mainTable.Replace("_"," ") + "s</h1>\n";
+                    result = result + "<p>There ${" + name +"."+key.mainTable+ "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name +"."+key.mainTable+ "s.size()} " + name.Replace("_", " ") + "${" + name +"."+key.mainTable+ "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+                    result = 
+                    result = result + "<c:if test=\"${" + name +"."+key.mainTable+ "s.size() > 0}\">\n";
+                    result += "<div class=\"table-responsive\">";
+                    result += "<table class=\"table table-bordered\">\n";
+                    result += "<thead>\n";
+                    result += "<tr>\n";
+                    foreach (table t in data_tables.all_tables) { 
+                    if (t.name.ToLower().Equals(key.mainTable.ToLower())){
+                            foreach (Column r in t.columns)
+                            {
+                                result = result + "<th scope=\"col\">" + r.column_name + "</th>\n";
+                            }
+                            result += "<th scope=\"col\">Edit</th>\n";
+                            result += "<th scope=\"col\">Delete</th>\n";
+                            result += "</tr>\n";
+                            result += "</thead>\n";
+                            result += "<tbody>\n";
+                            result = result + "<c:forEach items=\"${" + name+"."+key.mainTable + "s}\" var=\"" + key.mainTable.ToLower() + "\">\n";
+                            result += "<tr>\n";
+                            result += "<form method=\"post\" action=\"${appURL}/delete"+t.name+"\">";
+                            foreach (Column r in t.columns)
+                            {
+                                
+                                //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
+                                if (!r.data_type.ToLower().Equals("bit"))
+                                {  
+                                    result = result + "<td>${fn:escapeXml(" + key.mainTable.ToLower() + "." + r.column_name.firstCharLower() + ")}</td>\n";  
+                                }
+                                else
+                                {
+                                    result = result + "<td><input type=\"checkbox\" disabled <c:if test=\"${" + key.mainTable.ToLower() + ".is_active}\">checked</c:if>></td>\n";
+                                }
+                            }
+                            result = result + "<td><a href = \"edit" + key.mainTable.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=edit\" > Edit </a></td>\n";
+                            result = result + "<td><button class=\"btn btn-orange mb-0\" type=\"submit\">Delete  </button> </td>\n";
+
+
+                            result += "</tr>\n";
+                            result += "</c:forEach>\n";
+                            //the adding row
+                            result += "<tr>\n";
+                            result = result + "<form method=\"post\" action=\"${appURL}/add" + t.name + "\" id = \"add" + name + "\" >\n";
+                            //gen a button for each line item
+                            foreach (Column r in t.columns)
+                            {
+                                result += "<td>";
+                                
+                                    int i = 0;
+                                    if (r.increment == 0)
+                                    {
+                                        if (r.foreign_keys.Count < 1 || r.foreign_keys[i] == "")
+                                        {
+                                            string inputType = "text";
+                                            if (r.data_type == "datetime") { inputType = "date"; }
+                                            string fieldname = "input" + name.ToLower() + r.column_name;
+                                            string errorname = name.ToLower() + r.column_name + "error";
+                                            result = result + "<!-- " + r.column_name + " -->\n";
+                                            
+                                            result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
+                                            result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                            result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                            result += "</c:if>\n";
+                                            
+                                            rowcount++;
+                                        }
+                                        else
+                                        {
+                                            string[] parts = r.foreign_keys[i].Split('.');
+                                            string fieldname = "input" + name.ToLower() + r.column_name;
+                                            string errorname = name.ToLower() + r.column_name + "error";
+                                            result = result + "<!-- " + r.column_name + " -->\n";
+                                            
+                                            result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
+                                            result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
+                                            result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\">${" + parts[0] + ".name}   </option>\n";
+                                            result += "</c:forEach>\n";
+                                            result += "</select>\n";
+                                            result += "";
+                                            result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                            result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                            result += "</c:if>\n";
+                                            
+                                            rowcount++;
+                                            i++;
+                                        
+                                    }
+                                    result += "</td>\n";
+                                }
+
+                            }
+                            //get_buttons
+                            
+                            result = result + "<td><button class=\"btn btn-orange mb-0\" type=\"submit\">Create " + t.name + "  </button></td>\n";
+                            result += "</form>\n";
+                            result += "</tr>\n";
+
+                            result += "</tbody>\n";
+                            result += "</table>\n";
+                            result += "</div>\n";
+                            result += "</c:if>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
+                        }
+                    }
+                    
+                }
+            }
+            
+            result += "</main>\n";
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";            //gen_header
+            //gen_fileds
+            //get_buttons
+            //get_footer
+            return result;
+
+            
+
+        }
         /// <summary>
         /// Generates the index JSP with links to each tables view all JSP for this <see cref="database"/> 
         /// Jonathan Beck
@@ -2827,10 +3035,10 @@ namespace Data_Objects
         private string importStatements(string objectname, string projectName)
         {
             string result = "\n";
-            result = result + "import com.beck.javaiii_kirkwood."+ projectName + ".data." + name + "DAO;\n";
-            result = result + "import com.beck.javaiii_kirkwood."+ projectName + ".models." + name + ";\n";
-            result += "import com.beck.javaiii_kirkwood."+ projectName + ".models.User;\n";
-            result += "import com.beck.javaiii_kirkwood."+ projectName + ".iData.i"+ objectname + "DAO;\n";
+            result = result + "import com."+settings.owner_name+"."+ projectName + ".data." + name + "DAO;\n";
+            result = result + "import com."+settings.owner_name+"."+ projectName + ".models." + name + ";\n";
+            result += "import com."+settings.owner_name+"."+ projectName + ".models.User;\n";
+            result += "import com."+settings.owner_name+"."+ projectName + ".iData.i"+ objectname + "DAO;\n";
             result += "import jakarta.servlet.ServletException;\n";
             result += "import jakarta.servlet.annotation.WebServlet;\n";
             result += "import jakarta.servlet.http.HttpServlet;\n";
@@ -5197,7 +5405,7 @@ namespace Data_Objects
             return result;
         }
         private string packageStatementForTests() {
-            return "package com.beck.beck_demos."+settings.database_name+".controllers;\n";
+            return "package com."+settings.owner_name+"."+settings.database_name+".controllers;\n";
         
         }
         //done
@@ -5206,10 +5414,10 @@ namespace Data_Objects
             string result = "";
             result += "import java.io.IOException;\n";
             result += "import java.util.*;\n";
-            result += "import com.beck.beck_demos."+settings.database_name+".data_fakes."+name+"_DAO_Fake;\n";
-            result += "import com.beck.beck_demos." + settings.database_name + ".models." + name +";\n";
-            result += "import com.beck.beck_demos." + settings.database_name + ".models." + name + "_VM;\n";
-            result += "import com.beck.beck_demos." + settings.database_name + ".models.User;\n";
+            result += "import com."+settings.owner_name+"."+settings.database_name+".data_fakes."+name+"_DAO_Fake;\n";
+            result += "import com."+settings.owner_name+"." + settings.database_name + ".models." + name +";\n";
+            result += "import com."+settings.owner_name+"." + settings.database_name + ".models." + name + "_VM;\n";
+            result += "import com."+settings.owner_name+"." + settings.database_name + ".models.User;\n";
             result += "import jakarta.servlet.RequestDispatcher;\n";
             result += "import jakarta.servlet.ServletException;\n";
             result += "import jakarta.servlet.http.*;\n";

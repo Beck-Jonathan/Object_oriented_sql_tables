@@ -25,7 +25,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.label1 = new System.Windows.Forms.Label();
             this.btn_selectfile = new System.Windows.Forms.Button();
             this.btn_generateTable = new System.Windows.Forms.Button();
             this.tbx_databasename = new System.Windows.Forms.TextBox();
@@ -35,24 +34,16 @@
             this.cbxTSql = new System.Windows.Forms.CheckBox();
             this.btn_cSharp = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.label3 = new System.Windows.Forms.Label();
+            this.lbl_db_name = new System.Windows.Forms.Label();
             this.NUD_page_size = new System.Windows.Forms.NumericUpDown();
+            this.lbl_owner = new System.Windows.Forms.Label();
+            this.tbx_owner_name = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.NUD_page_size)).BeginInit();
             this.SuspendLayout();
             // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(88, 41);
-            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "label1";
-            // 
             // btn_selectfile
             // 
-            this.btn_selectfile.Location = new System.Drawing.Point(67, 83);
+            this.btn_selectfile.Location = new System.Drawing.Point(67, 23);
             this.btn_selectfile.Margin = new System.Windows.Forms.Padding(2);
             this.btn_selectfile.Name = "btn_selectfile";
             this.btn_selectfile.Size = new System.Drawing.Size(56, 19);
@@ -74,16 +65,16 @@
             // 
             // tbx_databasename
             // 
-            this.tbx_databasename.Location = new System.Drawing.Point(67, 120);
+            this.tbx_databasename.Location = new System.Drawing.Point(91, 55);
             this.tbx_databasename.Margin = new System.Windows.Forms.Padding(2);
             this.tbx_databasename.Name = "tbx_databasename";
-            this.tbx_databasename.Size = new System.Drawing.Size(76, 20);
+            this.tbx_databasename.Size = new System.Drawing.Size(164, 20);
             this.tbx_databasename.TabIndex = 3;
             this.tbx_databasename.TextChanged += new System.EventHandler(this.tbx_databasename_TextChanged);
             // 
             // btn_read_table
             // 
-            this.btn_read_table.Location = new System.Drawing.Point(168, 83);
+            this.btn_read_table.Location = new System.Drawing.Point(280, 309);
             this.btn_read_table.Margin = new System.Windows.Forms.Padding(2);
             this.btn_read_table.Name = "btn_read_table";
             this.btn_read_table.Size = new System.Drawing.Size(56, 19);
@@ -97,7 +88,7 @@
             this.cbx_table_names.AllowDrop = true;
             this.cbx_table_names.Enabled = false;
             this.cbx_table_names.FormattingEnabled = true;
-            this.cbx_table_names.Location = new System.Drawing.Point(156, 171);
+            this.cbx_table_names.Location = new System.Drawing.Point(181, 196);
             this.cbx_table_names.Margin = new System.Windows.Forms.Padding(2);
             this.cbx_table_names.Name = "cbx_table_names";
             this.cbx_table_names.Size = new System.Drawing.Size(92, 21);
@@ -137,7 +128,7 @@
             // cbxTSql
             // 
             this.cbxTSql.AutoSize = true;
-            this.cbxTSql.Location = new System.Drawing.Point(91, 246);
+            this.cbxTSql.Location = new System.Drawing.Point(91, 278);
             this.cbxTSql.Name = "cbxTSql";
             this.cbxTSql.Size = new System.Drawing.Size(153, 17);
             this.cbxTSql.TabIndex = 7;
@@ -147,7 +138,7 @@
             // 
             // btn_cSharp
             // 
-            this.btn_cSharp.Location = new System.Drawing.Point(168, 135);
+            this.btn_cSharp.Location = new System.Drawing.Point(168, 168);
             this.btn_cSharp.Name = "btn_cSharp";
             this.btn_cSharp.Size = new System.Drawing.Size(116, 23);
             this.btn_cSharp.TabIndex = 8;
@@ -158,25 +149,25 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(13, 178);
+            this.label2.Location = new System.Drawing.Point(11, 223);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(55, 13);
             this.label2.TabIndex = 10;
             this.label2.Text = "Page Size";
             // 
-            // label3
+            // lbl_db_name
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(13, 109);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(53, 13);
-            this.label3.TabIndex = 11;
-            this.label3.Text = "DB Name";
+            this.lbl_db_name.AutoSize = true;
+            this.lbl_db_name.Location = new System.Drawing.Point(9, 58);
+            this.lbl_db_name.Name = "lbl_db_name";
+            this.lbl_db_name.Size = new System.Drawing.Size(53, 13);
+            this.lbl_db_name.TabIndex = 11;
+            this.lbl_db_name.Text = "DB Name";
             // 
             // NUD_page_size
             // 
             this.NUD_page_size.AllowDrop = true;
-            this.NUD_page_size.Location = new System.Drawing.Point(37, 206);
+            this.NUD_page_size.Location = new System.Drawing.Point(37, 239);
             this.NUD_page_size.Minimum = new decimal(new int[] {
             5,
             0,
@@ -192,13 +183,32 @@
             0});
             this.NUD_page_size.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
+            // lbl_owner
+            // 
+            this.lbl_owner.AutoSize = true;
+            this.lbl_owner.Location = new System.Drawing.Point(12, 89);
+            this.lbl_owner.Name = "lbl_owner";
+            this.lbl_owner.Size = new System.Drawing.Size(38, 13);
+            this.lbl_owner.TabIndex = 13;
+            this.lbl_owner.Text = "Owner";
+            // 
+            // tbx_owner_name
+            // 
+            this.tbx_owner_name.Location = new System.Drawing.Point(78, 89);
+            this.tbx_owner_name.Name = "tbx_owner_name";
+            this.tbx_owner_name.Size = new System.Drawing.Size(177, 20);
+            this.tbx_owner_name.TabIndex = 14;
+            this.tbx_owner_name.TextChanged += new System.EventHandler(this.tbx_owner_name_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(600, 366);
+            this.Controls.Add(this.tbx_owner_name);
+            this.Controls.Add(this.lbl_owner);
             this.Controls.Add(this.NUD_page_size);
-            this.Controls.Add(this.label3);
+            this.Controls.Add(this.lbl_db_name);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btn_cSharp);
             this.Controls.Add(this.cbxTSql);
@@ -208,16 +218,15 @@
             this.Controls.Add(this.tbx_databasename);
             this.Controls.Add(this.btn_generateTable);
             this.Controls.Add(this.btn_selectfile);
-            this.Controls.Add(this.label1);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.NUD_page_size)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
         #endregion
-        private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btn_selectfile;
         private System.Windows.Forms.Button btn_generateTable;
         private System.Windows.Forms.TextBox tbx_databasename;
@@ -227,7 +236,9 @@
         private System.Windows.Forms.CheckBox cbxTSql;
         private System.Windows.Forms.Button btn_cSharp;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lbl_db_name;
         private System.Windows.Forms.NumericUpDown NUD_page_size;
+        private System.Windows.Forms.Label lbl_owner;
+        private System.Windows.Forms.TextBox tbx_owner_name;
     }
 }
