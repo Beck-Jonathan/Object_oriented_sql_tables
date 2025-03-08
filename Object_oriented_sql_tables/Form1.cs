@@ -786,6 +786,23 @@ namespace Object_oriented_sql_tables
                     }
 
                 }
+                if (true)
+                {
+                    //change to these setting 40
+                    s = t.genJavascriptObject();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaScript", "Objects");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                }
+
                 count++;
             }
             //file_write.sqlBuddy2.Flush();

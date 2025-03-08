@@ -6127,5 +6127,48 @@ namespace Data_Objects
             return result;
         
         }
+
+        public string genJavascriptObject() {
+            string result = "";
+            result += genJavascriptConstructor();
+            result += genJavascriptsetterAndGetter();
+            result += "};\n";
+            result += "\n";
+            return result;
+        }
+        
+        private string genJavascriptConstructor()
+        {
+            string result = "";
+            result += "function " + name + "(";
+            string comma = "";
+            foreach (Column r in columns) {
+                result += comma + "_"+r.column_name;
+                comma = ",";
+            }
+            result += ") {\n";
+            foreach (Column r in columns) {
+                result += "this." + r.column_name + " = _" + r.column_name+",\n";
+            }
+            return result;
+        }
+
+        private string genJavascriptsetterAndGetter() 
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                //setter
+                result += name+"prototype.set " + r.column_name + "=function (_"+r.column_name+"){\n";
+                result += "this." + r.column_name + "= _" + r.column_name + ";\n";
+                result += "},\n";
+                //getter
+                result += name + "." + "prototype" + ".get" + r.column_name + "= function() {\n";
+                result += "return this."+r.column_name+";\n";
+                result += "}\n";
+
+            }
+            return result;
+        }
     }
 }
