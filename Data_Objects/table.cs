@@ -6132,7 +6132,7 @@ namespace Data_Objects
             string result = "";
             result += genJavascriptConstructor();
             result += genJavascriptsetterAndGetter();
-            
+            result += "\n}";
             result += "\n";
             return result;
         }
@@ -6149,10 +6149,10 @@ namespace Data_Objects
             result += ") {\n";
             comma = "";
             foreach (Column r in columns) {
-                result += comma+"this." + r.column_name + " = _" + r.column_name;
-                comma = ",\n";
+                result += comma+"this." + r.column_name + " = _" + r.column_name+";";
+                comma = "\n";
             }
-            result += "\n}\n";
+            result += "\n";
             return result;
         }
 
@@ -6162,11 +6162,11 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 //setter
-                result += name+".prototype.set" + r.column_name + "=function (_"+r.column_name+"){\n";
+                result += "this.set" + r.column_name + "= function (_"+r.column_name+"){\n";
                 result += "this." + r.column_name + "= _" + r.column_name + ";\n";
-                result += "},\n";
+                result += "}\n";
                 //getter
-                result += name + ".prototype" + ".get" + r.column_name + "= function() {\n";
+                result += "this.get" + r.column_name + "= function() {\n";
                 result += "return this."+r.column_name+";\n";
                 result += "}\n";
 
