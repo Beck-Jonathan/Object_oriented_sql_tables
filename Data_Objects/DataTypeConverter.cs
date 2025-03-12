@@ -64,5 +64,43 @@ namespace Data_Objects
         {
             return Char.ToLower(value[0]) + value.Substring(1);
         }
+
+        public static string toDjangoDataType(this string value,int length) {
+            string result = value;
+            value = value.ToLower();
+            switch (value)
+            {
+                case "int":
+                    result = "IntegerField(";
+                    break;
+                case "Date":
+                    result = "DateField(";
+                    break;
+                case "DateTime":
+                    result = "DatetimeField(";
+                    break;
+                case "bit":
+                    result = "BooleanField(";
+                    break;
+                case "nvarchar":
+                    result = "CharField(max_length="+length;
+                    break;
+                case "varchar":
+                    result = "CharField(max_length="+length;
+                    break;
+                case "Decimal":
+                    result = "DecimalField(";
+                    break;
+                case "Time":
+                    result = "TimeField(";
+                    break;
+                default :
+                    result = value+"Field(";
+                    break;
+            }
+
+            return result;
+        
+        }
     }
 }

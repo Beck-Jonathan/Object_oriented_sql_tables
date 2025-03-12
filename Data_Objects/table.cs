@@ -6173,5 +6173,224 @@ namespace Data_Objects
             }
             return result;
         }
+        public string genPythonObject()
+        {
+            string result = "";
+            result += genPythonModel();
+            result += genPythonConstructor();
+            result += genPythonsetterAndGetter();
+            result += "\n";
+            result += "\n";
+            return result;
+        }
+
+        public string genPythonCommmands() { 
+        string result = "";
+            
+            result += genPythonCreate();
+            result += genPythonGetAll();
+            result += genPythonGetByPK();
+            result += genPythonDelete();
+            result += genPythonUpdate();
+        return result;
+        }
+        private string genPythonConstructor()
+        {
+            string result = "";
+            result += name.ToLower() + " = " + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                result +=comma+ r.column_name+"='"+genFakeData(r)+"'";
+                comma = ",";
+
+            }
+            result += ")\n";
+            return result;
+        }
+
+        private string genPythonModel() {
+
+            string result = "";
+            result = "class " + name + "(models.Model):\n";
+            
+
+            foreach (Column r in columns) {
+                if (r.increment != 0)
+                {
+                    result += "\t" + r.column_name + " =  models.AutoField(primary_key=True)\n";
+                    continue;
+                }
+                if (r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += "\t" + r.column_name + " =  models.ForeignKey(" + fk_table + ", on_delete=models.CASCADE)\n";
+                    continue;
+                }
+                if (r.column_name.ToLower().Contains("email"))
+                {
+                    result += "\t" + r.column_name + " =  models.EmailField()\n";
+                    continue;
+                }
+                string primary_key = "";
+                string default_value = "";
+                string unique = "";
+                string nullable = "";
+                string comma = "";
+                if (r.length != 0) {
+                    comma = ",";
+                }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')) {
+
+                    primary_key = comma+"primary_key=True"; 
+                    comma=",";
+                }
+                if (r.default_value != "") {
+                    default_value = comma + "default=" + r.default_value;
+                    comma = ",";
+                }
+                if (r.unique == 'y' || r.unique == 'Y') {
+                    unique = comma + "unique=True";
+                    comma = ",";
+                }
+                if (r.nullable == 'y' || r.nullable == 'Y')
+                {
+                    nullable = comma + "null=True";
+                    comma = ",";
+                }              
+                
+                 
+                
+                 result += "\t" + r.column_name + "=models." + r.data_type.toDjangoDataType(r.length) +primary_key+ default_value+unique+nullable+")\n";
+                
+            }
+            return result;
+        }
+
+        private string genPythonsetterAndGetter()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                //setter
+                result += "";
+                //getter
+                result += "";
+
+            }
+            return result;
+        }
+
+        private string genPythonCreate() {
+            string result = genPythonConstructor();
+            result += name.ToLower() + ".save()\n";
+            return result;
+        
+        }
+        private string genPythonGetAll()
+        {
+            string result = name+".objects.values()\n";
+            return result;
+
+        }
+        private string genPythonGetByPK()
+        {
+            string result = "";
+            string comma = "";
+            result += name + ".objects.filter(";
+            foreach (Column r in columns) { 
+            if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + r.column_name + "='xxx'";
+                    comma = ",";
+                }
+            }
+            result += ").values()\n";
+            return result;
+
+        }
+        private string genPythonDelete()
+        {
+            string result = "";
+            string comma = "";
+            result += name + ".objects.filter(";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + r.column_name + "='xxx'";
+                    comma = ",";
+                }
+            }
+            result += ").delete()\n";
+            return result;
+
+        }
+        private string genPythonUpdate()
+        {
+            string result = "";
+            string comma = "";
+            result += name + ".objects.filter(";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + r.column_name + "='xxx'";
+                    comma = ",";
+                }
+            }
+            result += ").update(";
+            comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key != 'Y' && r.primary_key != 'y')
+                {
+                    result += comma + r.column_name + "='xxx'";
+                    comma = ",";
+                }
+            }
+            result += ")\n";
+            return result;
+
+        }
+        private string genFakeData(Column r) {
+            string result = "";
+
+            if (r.data_type.toCSharpDataType().Equals("string"))
+            {
+                result = "\"" + generateRandomString(r, 8 - r.length) + "\"";
+                
+            }
+            else if (r.data_type.toCSharpDataType().Equals("bool"))
+            {
+                int flip = rand.Next(0, 2);
+                if (flip == 0)
+                {
+                    result = "True";
+                }
+                else
+                {
+                    result = "False";
+                }
+            }
+            else if (r.data_type.toCSharpDataType().Equals("int"))
+            {
+                result = rand.Next(10, 70).ToString();
+            }
+            else if (r.data_type.Equals("decimal"))
+            {
+                double toAdd = rand.Next(1000, 7000) / 100d;
+                result = toAdd.ToString();
+            }
+            else
+            {
+                result += "";
+            }
+            return result;
+        }
+        
+        
     }
 }
