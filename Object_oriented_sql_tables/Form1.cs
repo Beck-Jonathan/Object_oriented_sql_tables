@@ -495,8 +495,6 @@ namespace Object_oriented_sql_tables
                             _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                         }
                     }
-
-
                 }
                 if (true) //change this to these setings 20
                 {
@@ -699,30 +697,30 @@ namespace Object_oriented_sql_tables
                     alloutput += s + "\n";
                     try
                     {
-                        file_write.fileWrite(s, t.name+"VM", "tests", "tests");
+                        file_write.fileWrite(s, t.name + "VM", "tests", "tests");
                     }
                     catch (Exception ex)
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
-                if (true) {
+                if (true)
+                {
                     //change to these setting 35
                     s = t.genDataAccessFakes();
-                    
+
                     try
                     {
                         file_write.fileWrite(s, t.name, "fakes", "fakes");
-                        
+
                     }
                     catch (Exception ex)
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-                    
-
                 }
-                if (true) {
+                if (true)
+                {
                     //change to these setting 36
                     s = t.genJavaGetAllServletTests();
 
@@ -735,9 +733,8 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
-                
+
                 if (true)
                 {
                     //change to these setting 37
@@ -752,7 +749,6 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
                 if (true)
                 {
@@ -768,7 +764,6 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
                 if (true)
                 {
@@ -784,7 +779,6 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
                 if (true)
                 {
@@ -800,7 +794,6 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
                 if (true)
                 {
@@ -816,7 +809,6 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
                 if (true)
                 {
@@ -832,7 +824,6 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-
                 }
 
                 count++;
@@ -843,7 +834,7 @@ namespace Object_oriented_sql_tables
             //file_write.BatchBuddy.Flush();
             //file_write.JSPBuddy.Flush();
             //file_write.ServletBuddy.Flush();
-            
+
             _ = MessageBox.Show("generation complete");
             this.Close();
         }

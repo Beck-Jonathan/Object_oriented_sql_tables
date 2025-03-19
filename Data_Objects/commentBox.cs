@@ -6,7 +6,7 @@ namespace Data_Objects
     {
         public static String GenXMLClassComment(table table, XMLClassType classtype)
         {
-            
+
             String name = "* @ author Jonathan Beck\n";
             String version = "* @ version 1.0\n";
             String since = "* @ since 1.0\n";
@@ -29,8 +29,8 @@ namespace Data_Objects
                 default:
                     break;
             }
-            
-            return "/**\n"+name+version+since+"*/\n";
+
+            return "/**\n" + name + version + since + "*/\n";
         }
         public static String GenXMLMethodComment(table table, XML_Method_Type method)
         {
@@ -212,7 +212,7 @@ namespace Data_Objects
                 case JavaDoc_Method_Type.Java_DAO_Get_Distinct:
                     summary = "\n* DAO Method to select distinct " + table.name + " for dropdowns";
                     Params = "";
-                    
+
                     returns = "\n* @return list of string";
                     break;
                 default:

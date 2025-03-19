@@ -2,19 +2,34 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 namespace Data_Objects
 {
     public class table
     {
+        /// <summary>
+        /// A variable that determines if this object is a candidate for a View Model.
+        /// Gets set to true if this table is Foreign Key'ed to a parent table
+        /// </summary>
         bool hasVM = false;
         string servletName = "";
+        /// <summary>
+        /// Typical spacing for python indents
+        /// </summary>
+        string fourSpaces = "    ";
+        /// <summary>
+        /// a random generator used to create the fake data in <see cref="genFakeData(Column)"/>
+        /// </summary>
         private Random rand = new Random();
-        //various components of a table
-        
+        /// <summary>
+        /// the name of the table
+        /// </summary>
+
         public String name { set; get; }
         public header Header { set; get; }
+        /// <summary>
+        /// 
+        /// </summary>
         public List<Column> columns { set; get; }
         public List<String> primary_keys { set; get; }
         public List<String> foreign_keys { set; get; }
@@ -51,7 +66,7 @@ namespace Data_Objects
                     selectallThing += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
                 }
             }
-            selectallThing +=");\n";
+            selectallThing += ");\n";
             string updateThing = "int update" + name + "(";
             updateThing = updateThing + name + "_old" + name + " , " + name + " _new" + name;
             updateThing += ");\n";
@@ -88,23 +103,23 @@ namespace Data_Objects
         /// <returns>A string that represents the data access layer  in c# </returns>
         public String gen_ThingAccessor()
         {
-           
+
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
-            
+
             string header = genAccessorClassHeader();
-            
+
             string addThing = genAccessorAdd();
-            
+
             string selectThingbyPK = genAccessorRetreiveByKey();
-            
+
             string selectallThing = genAccessorRetreiveAll();
-            
+
             string selectbyFK = genAccessorRetreivefk();
-            
+
             string updateThing = genAccessorUpdate();
-          
+
             string deleteThing = genAccessorDelete();
-            
+
             string undeleteThing = genAccessorUndelete();
             string distinctThing = genAccessorDistinct();
             string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + "}\n\n";
@@ -135,7 +150,7 @@ namespace Data_Objects
                 }
             }
 
-            getallThing +=");\n";
+            getallThing += ");\n";
             List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
             string getfkThing = "";
             foreach (Column r in columns)
@@ -349,7 +364,7 @@ namespace Data_Objects
                     retreiveAll += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
                 }
             }
-            retreiveAll +=  "){\n";
+            retreiveAll += "){\n";
             retreiveAll = retreiveAll + "List<" + name + "> result =new List<" + name + ">();\n";
             retreiveAll += "try{\n";
             retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit";
@@ -360,7 +375,7 @@ namespace Data_Objects
                     retreiveAll += ", " + r.column_name;
                 }
             }
-            retreiveAll +=");\n";
+            retreiveAll += ");\n";
             retreiveAll += "if (result.Count == 0){\n";
             retreiveAll = retreiveAll + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
             retreiveAll += "}\n";
@@ -721,27 +736,26 @@ namespace Data_Objects
                 }
             }
 
-            retreiveAllThing +="){\n";
+            retreiveAllThing += "){\n";
             retreiveAllThing += genSPHeaderC(name, "sp_retreive_by_all_" + name);
             //no paramaters to set or add
             retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
             retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
             foreach (Column r in columns)
             {
-                if (r.foreign_key!="" )
+                if (r.foreign_key != "")
                 {
-                    retreiveAllThing +=  "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                    retreiveAllThing += "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
                 }
             }
             retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
             retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
-            
 
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retreiveAllThing +=  "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
+                    retreiveAllThing += "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
                 }
             }
             //excute the quuery
@@ -1156,13 +1170,14 @@ namespace Data_Objects
             result += genJavaFooter();
             return result;
         }
-        public string genJavaModelNM() {
+        public string genJavaModelNM()
+        {
             string result = "";
-            result += genJavaVMHeader();  
-            result += genJavaVMInstanceVariables(); 
-            result += genJavaVMContructor(); 
+            result += genJavaVMHeader();
+            result += genJavaVMInstanceVariables();
+            result += genJavaVMContructor();
             result += genJavaVMSetterAndGetter();
-            result += genJavaFooter(); 
+            result += genJavaFooter();
             return result;
         }
         /// <summary>
@@ -1173,14 +1188,14 @@ namespace Data_Objects
         private string genJavaHeader()
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
-            result = result + "\n public class " + name + " implements Comparable<"+name+"> {\n";
+            result = result + "\n public class " + name + " implements Comparable<" + name + "> {\n";
             return result;
         }
-        
+
         private string genJavaVMHeader()
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
-            result = result + "\n public class " + name + "_VM extends "+name+" {\n";
+            result = result + "\n public class " + name + "_VM extends " + name + " {\n";
             return result;
         }
         /// <summary>
@@ -1222,7 +1237,6 @@ namespace Data_Objects
                 }
             }
 
-
             return result;
         }
         /// <summary>
@@ -1245,13 +1259,12 @@ namespace Data_Objects
             ParamConsctructor += ") {\n";
             foreach (Column r in columns)
             {
-                ParamConsctructor +=  "\nthis." + r.column_name + " = " + r.column_name + ";";
+                ParamConsctructor += "\nthis." + r.column_name + " = " + r.column_name + ";";
             }
             ParamConsctructor += "\n}\n";
 
-
             //param2
-            
+
             string ParamConstructor2 = "\npublic " + name + "(";
             comma = "";
             foreach (Column r in columns)
@@ -1274,8 +1287,7 @@ namespace Data_Objects
             }
             ParamConstructor2 += "\n}\n";
 
-
-            string result = defaultConstructor + ParamConsctructor+ ParamConstructor2;
+            string result = defaultConstructor + ParamConsctructor + ParamConstructor2;
             return result;
         }
         private string genJavaVMContructor()
@@ -1283,23 +1295,21 @@ namespace Data_Objects
             //default
             string defaultConstructor = "\npublic " + name + "_VM(){}\n";
             //param
-            string ParamConsctructor = "\npublic " + name + "_VM("+name+" "+name.ToLower()+"){\n";
+            string ParamConsctructor = "\npublic " + name + "_VM(" + name + " " + name.ToLower() + "){\n";
             string comma = "";
             ParamConsctructor += "super(";
 
-
             foreach (Column r in columns)
             {
-                ParamConsctructor += comma+ name.ToLower()+".get"+ r.column_name + "()";
+                ParamConsctructor += comma + name.ToLower() + ".get" + r.column_name + "()";
                 comma = ", ";
             }
             ParamConsctructor += ");\n}\n";
 
-
             //param2 having vm hold it's parents
 
-            string ParamConsctructor2 = "\npublic " + name + "_VM(" + name + " " + name.ToLower() ;
-             comma = ",";
+            string ParamConsctructor2 = "\npublic " + name + "_VM(" + name + " " + name.ToLower();
+            comma = ",";
 
             foreach (Column r in columns)
             {
@@ -1309,7 +1319,7 @@ namespace Data_Objects
                     string fk_table = parts[0];
                     string fk_name = parts[1];
 
-                    ParamConsctructor2 += comma + fk_table+" "+fk_table.ToLower();
+                    ParamConsctructor2 += comma + fk_table + " " + fk_table.ToLower();
                 }
             }
             comma = "";
@@ -1323,8 +1333,6 @@ namespace Data_Objects
             }
             ParamConsctructor2 += ");\n";
 
-
-
             foreach (Column r in columns)
             {
                 if (r.references != null && r.references != "")
@@ -1333,12 +1341,11 @@ namespace Data_Objects
                     string fk_table = parts[0];
                     string fk_name = parts[1];
 
-                    ParamConsctructor2 += "this." + fk_table + " = " + fk_table.ToLower()+";\n";
+                    ParamConsctructor2 += "this." + fk_table + " = " + fk_table.ToLower() + ";\n";
                 }
             }
 
             ParamConsctructor2 += "\n}\n";
-
 
             //param3, having vm hold it's children
 
@@ -1350,9 +1357,8 @@ namespace Data_Objects
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
                     string child_table = key.mainTable;
-                    
 
-                    ParamConsctructor3 += comma  +"List<"+child_table + "> " + child_table.ToLower()+"s";
+                    ParamConsctructor3 += comma + "List<" + child_table + "> " + child_table.ToLower() + "s";
                 }
             }
             comma = "";
@@ -1366,12 +1372,10 @@ namespace Data_Objects
             }
             ParamConsctructor3 += ");\n";
 
-
-
             foreach (foreignKey key in data_tables.all_foreignKey)
             {
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
-                {                    
+                {
                     string child_table = key.mainTable;
                     ParamConsctructor3 += "this." + child_table + "s = " + child_table.ToLower() + "s;\n";
                 }
@@ -1379,8 +1383,7 @@ namespace Data_Objects
 
             ParamConsctructor3 += "\n}\n";
 
-
-            string result = defaultConstructor + ParamConsctructor + ParamConsctructor2+ParamConsctructor3;
+            string result = defaultConstructor + ParamConsctructor + ParamConsctructor2 + ParamConsctructor3;
             return result;
         }
         /// <summary>
@@ -1395,11 +1398,12 @@ namespace Data_Objects
             {
                 string getter = "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
                 string setter = "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
-                if (r.data_type.Equals("datetime")) {
+                if (r.data_type.Equals("datetime"))
+                {
                     setter += "throws ParseException";
                 }
                 setter += " {\n";
-                if (r.data_type.Equals( "nvarchar"))
+                if (r.data_type.Equals("nvarchar"))
                 {
                     setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^A-Za-z0-9 - ]\",\"\");\n";
                     setter = setter + "if(" + r.column_name + ".length()<4){\n";
@@ -1407,23 +1411,24 @@ namespace Data_Objects
                     setter = setter + "if(" + r.column_name + ".length()>" + r.length + "){\n";
                     setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too long.\");\n}\n";
                 }
-                if (r.data_type.Equals( "int"))
-                {
-                    setter += "if ("+r.column_name+"<0||"+r.column_name+">10000){\n";
-                    setter += "throw new IllegalArgumentException(\""+r.column_name+" Can Not Be Negative\");\n";
-                    setter += "}\n";
-                }
-                if (r.data_type.Equals( "decimal"))
+                if (r.data_type.Equals("int"))
                 {
                     setter += "if (" + r.column_name + "<0||" + r.column_name + ">10000){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Negative\");\n";
                     setter += "}\n";
                 }
-                if (r.data_type.Equals("datetime")) {
+                if (r.data_type.Equals("decimal"))
+                {
+                    setter += "if (" + r.column_name + "<0||" + r.column_name + ">10000){\n";
+                    setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Negative\");\n";
+                    setter += "}\n";
+                }
+                if (r.data_type.Equals("datetime"))
+                {
                     setter += "String minDate = \"01/01/1991\";\n";
                     setter += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
                     setter += "Date _minDate = df.parse(minDate);\n";
-                    setter += "String maxDate = \"12/31/2100\";\n";                    
+                    setter += "String maxDate = \"12/31/2100\";\n";
                     setter += "Date _maxDate = df.parse(maxDate);\n";
                     setter += "if (" + r.column_name + ".compareTo(_minDate)<0){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Before 1991\");\n";
@@ -1443,7 +1448,7 @@ namespace Data_Objects
             string result = "";
             foreach (Column r in columns)
             {
-                
+
                 if (r.references != null && r.references != "")
                 {
                     string[] parts = r.references.Split('.');
@@ -1452,9 +1457,9 @@ namespace Data_Objects
 
                     string getter = "public " + fk_table + " get" + fk_table + "() {\n return " + fk_table + ";\n}";
                     string setter = "public void set" + fk_table + "(" + fk_table + " _" + fk_table.ToLower() + ") {\n";
-                    
+
                     setter = setter + "this." + fk_table + " = _" + fk_table.ToLower() + ";\n}";
-                    result +=  getter + "\n" + setter + "\n";
+                    result += getter + "\n" + setter + "\n";
                 }
             }
 
@@ -1470,7 +1475,6 @@ namespace Data_Objects
                     setter = setter + "this." + child_table + "s = _" + child_table.ToLower() + "s;\n}";
                     result += getter + "\n" + setter + "\n";
 
-
                 }
             }
 
@@ -1481,7 +1485,8 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's footer.
-        private string genJavaComparable() {
+        private string genJavaComparable()
+        {
             string result = "";
             result += "@Override\n";
             result += "public int compareTo(@NotNull " + name + " o) {\n";
@@ -1496,7 +1501,8 @@ namespace Data_Objects
                     result += "return 1;\n";
                     result += "}\n";
                 }
-                else {
+                else
+                {
                     result += "if (!this." + r.column_name + "&&o." + r.column_name + "){\n";
                     result += "return -1;\n";
                     result += "}\n";
@@ -1505,10 +1511,10 @@ namespace Data_Objects
                     result += "}\n";
                 }
             }
-            
+
             result += "return 0;\n";
             result += "}\n";
-            return result;        
+            return result;
         }
         private string genJavaFooter()
         {
@@ -1541,21 +1547,22 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object header.
-        public string genJavaiDAO() {
-            int count = 0;
-            string comma = "";
+        public string genJavaiDAO()
+        {
             String result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
-            result += "public interface i"+name+"DAO{\n";
+            result += "public interface i" + name + "DAO{\n";
 
             //add
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
-            result += "int add ("+name+" _"+name.ToLower()+ ") throws SQLException;\n";
+            result += "int add (" + name + " _" + name.ToLower() + ") throws SQLException;\n";
             //get by pk
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
-            result += name+" get"+name+"ByPrimaryKey("+name+" _"+name.ToLower()+") throws SQLException;\n";
+            result += name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException;\n";
             //get by fk
-            foreach (Column r in columns) {
-                if (r.references != "") {
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
@@ -1563,43 +1570,47 @@ namespace Data_Objects
                     result = result + "public List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toJavaDataType() + " " + fk_name + ") throws SQLException; \n";
                 }
             }
-            
+
             //update
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
-            result += "int update("+name+" old"+name+", "+name+" new"+name+ ") throws SQLException;\n";
+            result += "int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException;\n";
             //get all
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             result += "List<" + name + "> getAll" + name + "(int offset, int limit";
-            foreach (Column r in columns) {
-                if (r.foreign_key != "") {
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
                     result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
                 }
             }
-            
-            
-            result+=") throws SQLException;\n";
+
+            result += ") throws SQLException;\n";
             // get active
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
             result += "List<" + name + "> getActive" + name + "() throws SQLException;\n";
             //get for dropdown
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Get_Distinct);
-            result += "List<"+name+"> getDistinct" + name + "ForDropdown() throws SQLException;\n";
+            result += "List<" + name + "> getDistinct" + name + "ForDropdown() throws SQLException;\n";
 
             //delete
-            count = 0;
-            comma = "";
+            int count = 0;
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
             result += "int delete" + name + "(";
-            foreach (Column r in columns) {
-                if (count > 0) { 
+            string comma;
+            foreach (Column r in columns)
+            {
+                if (count > 0)
+                {
                     comma = ",";
                 }
                 else
                 {
                     comma = "";
                 }
-                if (r.primary_key == 'Y' || r.primary_key == 'y') {
-                    result +=comma+" "+ r.data_type.toJavaDAODataType() +" "+ r.column_name;
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
+                {
+                    result += comma + " " + r.data_type.toJavaDAODataType() + " " + r.column_name;
                     count++;
                 }
             }
@@ -1607,7 +1618,6 @@ namespace Data_Objects
 
             //undelete
             count = 0;
-            comma = "";
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
             result += "int undelete" + name + "(";
             foreach (Column r in columns)
@@ -1616,7 +1626,8 @@ namespace Data_Objects
                 {
                     comma = ",";
                 }
-                else {
+                else
+                {
                     comma = "";
                 }
                 if (r.primary_key == 'Y' || r.primary_key == 'y')
@@ -1627,13 +1638,13 @@ namespace Data_Objects
             }
             result += ") throws SQLException;\n";
             result += "}\n";
-            return result;      
-        
+            return result;
+
         }
         private string genJavaDAOHeader(String projectName)
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
-            result = result + "import com."+settings.owner_name+"."+ projectName + ".models." + name + ";\n" +
+            result = result + "import com." + settings.owner_name + "." + projectName + ".models." + name + ";\n" +
                 "import java.sql.CallableStatement;\n" +
                 "import java.sql.Connection;\n" +
                 "import java.sql.ResultSet;\n" +
@@ -1641,10 +1652,10 @@ namespace Data_Objects
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;\n" +
                 "import java.time.LocalDate;\n" +
-                "import static com."+settings.owner_name+"."+ projectName + ".idata.i"+name+"DAO;\n"+
-            "import static com."+settings.owner_name+"."+ projectName + ".data.Database.getConnection;\n";
+                "import static com." + settings.owner_name + "." + projectName + ".idata.i" + name + "DAO;\n" +
+            "import static com." + settings.owner_name + "." + projectName + ".data.Database.getConnection;\n";
             result += commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
-            result +=  "public class " + name + "DAO implements i"+name+"DAO{\n\n";
+            result += "public class " + name + "DAO implements i" + name + "DAO{\n\n";
             return result;
         }
         /// <summary>
@@ -1742,9 +1753,9 @@ namespace Data_Objects
                 {
                     result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
                 }
-            }          
-            
-            result+=") {\n";
+            }
+
+            result += ") {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result += "try (Connection connection = getConnection()) { \n";
             result += "if (connection != null) {\n";
@@ -1764,7 +1775,7 @@ namespace Data_Objects
             result += "while (resultSet.next()) {";
             foreach (Column r in columns)
             {
-                
+
                 if (r.data_type.toJavaDataType().Equals("Integer"))
                 {
                     nullValue = "0";
@@ -1810,17 +1821,18 @@ namespace Data_Objects
             result += "return result;}\n";
             return result;
         }
-        private string genJavaDAORetreiveDistinct() {
+        private string genJavaDAORetreiveDistinct()
+        {
             {
                 string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
                 string comma = "";
-                
+
                 result = result + "public static List<" + name + "> selectDistinct" + name + "ForDropdown() {\n";
                 result = result + "List<" + name + "> result = new ArrayList<>();\n";
                 result += "try (Connection connection = getConnection()) { \n";
                 result += "if (connection != null) {\n";
                 result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_select_distinct_and_active_" + name + "_for_dropdown" + "()}\")) {\n";
-                    
+
                 result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
                 result += "while (resultSet.next()) {";
                 foreach (Column r in columns)
@@ -1844,10 +1856,10 @@ namespace Data_Objects
                 foreach (Column r in columns)
                 {
                     if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
-                    { 
+                    {
                         result = result + comma + " " + r.column_name.bracketStrip();
-                    comma = ",";
-                }
+                        comma = ",";
+                    }
                 }
                 result += ");";
                 result = result + "\n result.add(_" + name.ToLower() + ");\n}\n}\n}\n}\n";
@@ -1937,7 +1949,7 @@ namespace Data_Objects
                     result += "while (resultSet.next()) {";
                     foreach (Column r in columns)
                     {
-                        
+
                         if (r.data_type.toJavaDataType().Equals("Integer"))
                         {
                             nullValue = "0";
@@ -2038,10 +2050,10 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
             int count = 0;
-            string comma = "";
             result += "int delete" + name + "(";
             foreach (Column r in columns)
             {
+                string comma;
                 if (count > 0)
                 {
                     comma = ",";
@@ -2085,10 +2097,10 @@ namespace Data_Objects
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
             int count = 0;
-            string comma = "";
             result += "int undelete" + name + "(";
             foreach (Column r in columns)
             {
+                string comma;
                 if (count > 0)
                 {
                     comma = ",";
@@ -2190,8 +2202,7 @@ namespace Data_Objects
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
             result = result + "public class Add" + name + "Servlet extends HttpServlet{\n";
-            
-            
+
             result += initMethod();
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
@@ -2209,7 +2220,7 @@ namespace Data_Objects
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
-            result = result + "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/Add" + name + ".jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             //this only creates the doPost method
             result += "\n";
@@ -2313,14 +2324,14 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewAll);
             //header comment
             //gen header
-            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_top.jsp\"%>\n";
             //gen form
             result += "<div class = \"container\">\n";
             result += "<div class=\"row\">\n";
             result += "<div class=\"col-12\">\n";
-            result = result + "<h1>All "+settings.database_name+" " + name.Replace("_"," ") + "s</h1>\n";
-            result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_"," ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
-            result = result + "Add " + name.Replace("_"," ") + "   <a href=\"add" + name + "\">Add</a>\n";
+            result = result + "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + "s</h1>\n";
+            result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_", " ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+            result = result + "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
             result = result + "<c:if test=\"${" + name + "s.size() > 0}\">\n";
             result += "<div class=\"table-responsive\">";
             result += "<table class=\"table table-bordered\">\n";
@@ -2374,7 +2385,7 @@ namespace Data_Objects
             result += "</div>\n";
             result += "</div>\n";
             result += "</main>\n";
-            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";            //gen_header
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";            //gen_header
             //gen_fileds
             //get_buttons
             //get_footer
@@ -2388,7 +2399,7 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_Add);
             //header comment
             //gen header
-            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_top.jsp\"%>\n";
             //gen form
             result += "<div class = \"container\">\n";
             result = result + "<form method=\"post\" action=\"${appURL}/add" + name + "\" id = \"add" + name + "\" >\n";
@@ -2455,7 +2466,7 @@ namespace Data_Objects
             result += "</form>\n";
             result += "</div>\n";
             //get_footer
-            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";
             return result;
         }
         /// <summary>
@@ -2469,8 +2480,8 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewAll);
             //gen header
             result += importStatements(name, settings.database_name);
-            result +=  "@WebServlet(\"/all-" + name + "s\")\n";
-            result +=  "public class All" + name + "sServlet extends HttpServlet {";
+            result += "@WebServlet(\"/all-" + name + "s\")\n";
+            result += "public class All" + name + "sServlet extends HttpServlet {";
             result += initMethod();
             result += "@Override\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
@@ -2487,10 +2498,10 @@ namespace Data_Objects
                 }
             }
 
-            result +=");\n";
+            result += ");\n";
             result += "} catch (Exception e) {\n";
             result += name.ToLower() + "s = new ArrayList<>();\n";
-           
+
             result += "}\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
@@ -2545,7 +2556,7 @@ namespace Data_Objects
             result += "req.setAttribute(\"results\",results);\n";
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "\");\n";
-            result = result + "req.getRequestDispatcher(\"WEB-INF/"+ settings.database_name + "/all-" + name + "s.jsp\").forward(req, resp);\n";
+            result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/all-" + name + "s.jsp\").forward(req, resp);\n";
             result += "}\n";
             result += "}\n";
             return result;
@@ -2595,7 +2606,7 @@ namespace Data_Objects
             result += "} catch (SQLException e) {\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
             result += "}\n";
-            
+
             result = result + "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
@@ -2606,7 +2617,7 @@ namespace Data_Objects
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result +" all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                    result = result + " all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
@@ -2631,7 +2642,7 @@ namespace Data_Objects
                 }
             }
             result = result + "//to get the old " + name + "\n";
-            
+
             result = result + name + " _old" + name + "= (" + name + ")session.getAttribute(\"" + name.ToLower() + "\");\n";
             result += "//to get the new event's info\n";
             foreach (Column r in columns)
@@ -2680,7 +2691,7 @@ namespace Data_Objects
                     result += "}\n";
                 }
             }
-            
+
             result += "//to update the database\n";
             result += "int result=0;\n";
             result += "if (errors==0){\n";
@@ -2716,7 +2727,7 @@ namespace Data_Objects
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewEdit);
             //header comment
             //gen header
-            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_top.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_top.jsp\"%>\n";
             //gen form
             result += "<div class = \"container\">\n";
             result = result + "<form method=\"post\" action=\"${appURL}/edit" + name + "\" id = \"edit" + name + "\" >\n";
@@ -2791,10 +2802,11 @@ namespace Data_Objects
             result += "</form>\n";
             result += "</div>\n";
             //get_footer
-            result += "<%@include file=\"/WEB-INF/"+settings.database_name+"/personal_bottom.jsp\"%>\n";
+            result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";
             return result;
         }
-        public string genViewEditWithLineItemsJSP() {
+        public string genViewEditWithLineItemsJSP()
+        {
             int rowcount = 0;
             //comment box
             string result = commentBox.genCommentBox(name, Component_Enum.Java_JSP_ViewEdit);
@@ -2875,21 +2887,25 @@ namespace Data_Objects
             result += "</form>\n";
             result += "</div>\n";
             //to gen line items
-            foreach (foreignKey key in data_tables.all_foreignKey) {
-                if (key.referenceTable.ToLower().Equals(name.ToLower())) {
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
                     result += "<div class = \"container\">\n";
                     result += "<div class=\"row\">\n";
                     result += "<div class=\"col-12\">\n";
-                    result = result + "<h1>All " + settings.database_name + " " + name.Replace("_", " ") +" " +key.mainTable.Replace("_"," ") + "s</h1>\n";
-                    result = result + "<p>There ${" + name +"."+key.mainTable+ "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name +"."+key.mainTable+ "s.size()} " + name.Replace("_", " ") + "${" + name +"."+key.mainTable+ "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
-                    result = 
-                    result = result + "<c:if test=\"${" + name +"."+key.mainTable+ "s.size() > 0}\">\n";
+                    result = result + "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + " " + key.mainTable.Replace("_", " ") + "s</h1>\n";
+                    result = result + "<p>There ${" + name + "." + key.mainTable + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "." + key.mainTable + "s.size()} " + name.Replace("_", " ") + "${" + name + "." + key.mainTable + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+                    result =
+                    result = result + "<c:if test=\"${" + name + "." + key.mainTable + "s.size() > 0}\">\n";
                     result += "<div class=\"table-responsive\">";
                     result += "<table class=\"table table-bordered\">\n";
                     result += "<thead>\n";
                     result += "<tr>\n";
-                    foreach (table t in data_tables.all_tables) { 
-                    if (t.name.ToLower().Equals(key.mainTable.ToLower())){
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.ToLower().Equals(key.mainTable.ToLower()))
+                        {
                             foreach (Column r in t.columns)
                             {
                                 result = result + "<th scope=\"col\">" + r.column_name + "</th>\n";
@@ -2899,16 +2915,16 @@ namespace Data_Objects
                             result += "</tr>\n";
                             result += "</thead>\n";
                             result += "<tbody>\n";
-                            result = result + "<c:forEach items=\"${" + name+"."+key.mainTable + "s}\" var=\"" + key.mainTable.ToLower() + "\">\n";
+                            result = result + "<c:forEach items=\"${" + name + "." + key.mainTable + "s}\" var=\"" + key.mainTable.ToLower() + "\">\n";
                             result += "<tr>\n";
-                            result += "<form method=\"post\" action=\"${appURL}/delete"+t.name+"\">";
+                            result += "<form method=\"post\" action=\"${appURL}/delete" + t.name + "\">";
                             foreach (Column r in t.columns)
                             {
-                                
+
                                 //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
                                 if (!r.data_type.ToLower().Equals("bit"))
-                                {  
-                                    result = result + "<td>${fn:escapeXml(" + key.mainTable.ToLower() + "." + r.column_name.firstCharLower() + ")}</td>\n";  
+                                {
+                                    result = result + "<td>${fn:escapeXml(" + key.mainTable.ToLower() + "." + r.column_name.firstCharLower() + ")}</td>\n";
                                 }
                                 else
                                 {
@@ -2917,7 +2933,6 @@ namespace Data_Objects
                             }
                             result = result + "<td><a href = \"edit" + key.mainTable.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=edit\" > Edit </a></td>\n";
                             result = result + "<td><button class=\"btn btn-orange mb-0\" type=\"submit\">Delete  </button> </td>\n";
-
 
                             result += "</tr>\n";
                             result += "</c:forEach>\n";
@@ -2928,52 +2943,51 @@ namespace Data_Objects
                             foreach (Column r in t.columns)
                             {
                                 result += "<td>";
-                                
-                                    int i = 0;
-                                    if (r.increment == 0)
+
+                                int i = 0;
+                                if (r.increment == 0)
+                                {
+                                    if (r.foreign_keys.Count < 1 || r.foreign_keys[i] == "")
                                     {
-                                        if (r.foreign_keys.Count < 1 || r.foreign_keys[i] == "")
-                                        {
-                                            string inputType = "text";
-                                            if (r.data_type == "datetime") { inputType = "date"; }
-                                            string fieldname = "input" + name.ToLower() + r.column_name;
-                                            string errorname = name.ToLower() + r.column_name + "error";
-                                            result = result + "<!-- " + r.column_name + " -->\n";
-                                            
-                                            result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
-                                            result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
-                                            result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                                            result += "</c:if>\n";
-                                            
-                                            rowcount++;
-                                        }
-                                        else
-                                        {
-                                            string[] parts = r.foreign_keys[i].Split('.');
-                                            string fieldname = "input" + name.ToLower() + r.column_name;
-                                            string errorname = name.ToLower() + r.column_name + "error";
-                                            result = result + "<!-- " + r.column_name + " -->\n";
-                                            
-                                            result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
-                                            result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
-                                            result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\">${" + parts[0] + ".name}   </option>\n";
-                                            result += "</c:forEach>\n";
-                                            result += "</select>\n";
-                                            result += "";
-                                            result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
-                                            result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                                            result += "</c:if>\n";
-                                            
-                                            rowcount++;
-                                            i++;
-                                        
+                                        string inputType = "text";
+                                        if (r.data_type == "datetime") { inputType = "date"; }
+                                        string fieldname = "input" + name.ToLower() + r.column_name;
+                                        string errorname = name.ToLower() + r.column_name + "error";
+                                        result = result + "<!-- " + r.column_name + " -->\n";
+
+                                        result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
+                                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                        result += "</c:if>\n";
+
+                                        rowcount++;
+                                    }
+                                    else
+                                    {
+                                        string[] parts = r.foreign_keys[i].Split('.');
+                                        string fieldname = "input" + name.ToLower() + r.column_name;
+                                        string errorname = name.ToLower() + r.column_name + "error";
+                                        result = result + "<!-- " + r.column_name + " -->\n";
+
+                                        result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
+                                        result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
+                                        result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\">${" + parts[0] + ".name}   </option>\n";
+                                        result += "</c:forEach>\n";
+                                        result += "</select>\n";
+                                        result += "";
+                                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                        result += "</c:if>\n";
+
+                                        rowcount++;
+                                        i++;
+
                                     }
                                     result += "</td>\n";
                                 }
-
                             }
                             //get_buttons
-                            
+
                             result = result + "<td><button class=\"btn btn-orange mb-0\" type=\"submit\">Create " + t.name + "  </button></td>\n";
                             result += "</form>\n";
                             result += "</tr>\n";
@@ -2987,18 +3001,15 @@ namespace Data_Objects
                             result += "</div>\n";
                         }
                     }
-                    
                 }
             }
-            
+
             result += "</main>\n";
             result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";            //gen_header
             //gen_fileds
             //get_buttons
             //get_footer
             return result;
-
-            
 
         }
         /// <summary>
@@ -3035,10 +3046,10 @@ namespace Data_Objects
         private string importStatements(string objectname, string projectName)
         {
             string result = "\n";
-            result = result + "import com."+settings.owner_name+"."+ projectName + ".data." + name + "DAO;\n";
-            result = result + "import com."+settings.owner_name+"."+ projectName + ".models." + name + ";\n";
-            result += "import com."+settings.owner_name+"."+ projectName + ".models.User;\n";
-            result += "import com."+settings.owner_name+"."+ projectName + ".iData.i"+ objectname + "DAO;\n";
+            result = result + "import com." + settings.owner_name + "." + projectName + ".data." + name + "DAO;\n";
+            result = result + "import com." + settings.owner_name + "." + projectName + ".models." + name + ";\n";
+            result += "import com." + settings.owner_name + "." + projectName + ".models.User;\n";
+            result += "import com." + settings.owner_name + "." + projectName + ".iData.i" + objectname + "DAO;\n";
             result += "import jakarta.servlet.ServletException;\n";
             result += "import jakarta.servlet.annotation.WebServlet;\n";
             result += "import jakarta.servlet.http.HttpServlet;\n";
@@ -3049,7 +3060,7 @@ namespace Data_Objects
             result += "import java.util.HashMap;\n";
             result += "import java.util.List;\n";
             result += "import java.util.Map;\n";
-            
+
             return result;
         }
         /// <summary>
@@ -3066,7 +3077,7 @@ namespace Data_Objects
             result += "HttpSession session = req.getSession();\n";
             result += "User user = (User)session.getAttribute(\"User\");\n";
             result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
-            result += "resp.sendRedirect(\"/"+ settings.database_name+ "Login\");\n";
+            result += "resp.sendRedirect(\"/" + settings.database_name + "Login\");\n";
             result += "return;\n";
             result += "}\n";
             result += "\n";
@@ -3164,56 +3175,54 @@ namespace Data_Objects
             result += "\n}\n";
             return result;
         }
-        private string initMethod() {
-            string result ="";
+        private string initMethod()
+        {
+            string result = "";
             result += "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
             foreach (Column r in columns)
             {
-                if (r.foreign_key != "" )
+                if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result += "private i"+ fk_table + "_DAO "+ fk_table.ToLower() + "DAO;\n";
+                    result += "private i" + fk_table + "_DAO " + fk_table.ToLower() + "DAO;\n";
                 }
-
             }
             result += "@Override\n";
             result += "public void init() throws ServletExecption{\n";
             result += name.ToLower() + "DAO = new " + name + "_DAO();\n";
             foreach (Column r in columns)
             {
-                if (r.foreign_key != "" )
+                if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
                     result += fk_table.ToLower() + "DAO = new " + fk_table + "_DAO();\n";
                 }
-
             }
             result += "}\n";
             result += "public void init(";
             result += "i" + name + "_DAO " + name.ToLower() + "DAO";
             foreach (Column r in columns)
             {
-                
-                if (r.foreign_key != "" )
+
+                if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result +=  ",i" + fk_table + "_DAO " + fk_table.ToLower() + "DAO";
-                    
-                }
+                    result += ",i" + fk_table + "_DAO " + fk_table.ToLower() + "DAO";
 
+                }
             }
             result += "){\n";
             result += "this." + name.ToLower() + "DAO = " + name.ToLower() + "DAO;\n";
             foreach (Column r in columns)
             {
-                
-                if (r.foreign_key != "" )
+
+                if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
@@ -3225,7 +3234,8 @@ namespace Data_Objects
             return result;
         }
 
-        public string sp_definitions() {
+        public string sp_definitions()
+        {
             bool has_is_active = false;
             foreach (Column r in columns)
             {
@@ -3235,7 +3245,7 @@ namespace Data_Objects
                     break;
                 }
             }
-            
+
             string result = "";
             result += sp_header(); //good
             result += sp_insert(); //done
@@ -3248,8 +3258,10 @@ namespace Data_Objects
                 result += sp_deactivate(); //done
                 result += sp_activate();//done
             }
-            foreach (Column r in columns) {
-                if (r.data_type.toCSharpDataType().Equals("bool")&&!r.column_name.ToLower().Equals("is_active")) {
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("bool") && !r.column_name.ToLower().Equals("is_active"))
+                {
                     result += sp_make_bool_true(r.column_name);
                     result += sp_make_bool_false(r.column_name);
                 }
@@ -3260,155 +3272,144 @@ namespace Data_Objects
             return result;
 
         }
-        private string sp_header() {
-            string Name = name +"\n";
+        private string sp_header()
+        {
+            string Name = name + "\n";
             string creator = "Initial Creator : Jonathan Beck\n";
-            string date=DateTime.Today.ToLongDateString()+"\n\n";
+            string date = DateTime.Today.ToLongDateString() + "\n\n";
 
             string result = Name + creator + date;
             return result;
         }
         private string sp_insert()
         {
-            string result = "";
-            string header = "\nsp_insert_"+name+":\n";
+            string header = "\nsp_insert_" + name + ":\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(3);
 
-            string returns = "\n\tReturns:\t@@"+name+"_ID\n";
-            result = header + table_used + parameters + returns;
+            string returns = "\n\tReturns:\t@@" + name + "_ID\n";
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
-        
+
         private string sp_retreive_by_key()
         {
-            string result = "";
             string header = "\nsp_retreive_by_key_" + name + ":\n";
-            string table_used = sp_tables_used_gen(1);            
-            string parameters = sp_paramater_gen(0);            
+            string table_used = sp_tables_used_gen(1);
+            string parameters = sp_paramater_gen(0);
             string returns = sp_return_fields_gen();
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_retreive_by_all()
         {
-            string result = "";
             string header = "\nsp_retreive_by_all_" + name + ":\n";
             string table_used = sp_tables_used_gen(1);
             string parameters = sp_paramater_gen(2);
             string returns = sp_return_fields_gen();
-            
-            result = header + table_used + parameters + returns;
+
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_retreive_by_fk()
         {
-            string result = "";
             string header = "";
             string table_used = "";
             string parameters = "";
             string returns = "";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_update()
         {
-            string result = "";
-            string header = "\nsp_update_"+name+":\n";
+            string header = "\nsp_update_" + name + ":\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(1);
             string returns = "\n\tReturns: \tint(@@rowsAffected)\n";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_deactivate()
         {
-            string result = "";
-            string header = "\nsp_deactivate_"+name+":\n";
+            string header = "\nsp_deactivate_" + name + ":\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(0);
             string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_activate()
         {
-            string result = "";
             string header = "\nsp_activate_" + name + ":\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(0);
             string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
-        
+
         private string sp_make_bool_true(string column_name)
         {
-            string result = "";
             string header = "\nsp_set_" + column_name + "_true:\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(0);
             string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_make_bool_false(string column_name)
         {
-            string result = "";
             string header = "\nsp_set_" + column_name + "_false:\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(0);
             string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
         private string sp_delete()
         {
-            string result = "";
             string header = "\nsp_delete_" + name + ":\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(0);
             string returns = "\n\tReturns:\tint(@@RowsAffected)\n";
-            result = header + table_used + parameters + returns;
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
 
         private string sp_distinct()
         {
-            string result = "";
-            string header = "\nsp_select_distinct_and_active_"+name+"_for_dropdown:\n";
+            string header = "\nsp_select_distinct_and_active_" + name + "_for_dropdown:\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(4);
-            string returns = "\tReturns: \t"+name+"_ID\n";
-            result = header + table_used + parameters + returns;
+            string returns = "\tReturns: \t" + name + "_ID\n";
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
 
         private string sp_count()
         {
-            string result = "";
-            string header = "\nsp_retreive_"+name+"_count:\n";
+            string header = "\nsp_retreive_" + name + "_count:\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(4);
-            string returns = "\tReturns:\tCOUNT("+name+")\n";
-            result = header + table_used + parameters + returns;
+            string returns = "\tReturns:\tCOUNT(" + name + ")\n";
+            string result = header + table_used + parameters + returns;
             return result;
 
         }
 
-        
-        private string sp_return_fields_gen() {
+        private string sp_return_fields_gen()
+        {
             string comma = "";
             string returns = "\n\tReturns:\t";
             foreach (Column r in columns)
@@ -3438,8 +3439,9 @@ namespace Data_Objects
 
         private string sp_tables_used_gen(int mode)
         {
-            string result= "\tTables:\t\t" + name ;            
-            if (mode==1)  {              
+            string result = "\tTables:\t\t" + name;
+            if (mode == 1)
+            {
                 foreach (Column r in columns)
                 {
                     if (r.foreign_key != "")
@@ -3449,17 +3451,19 @@ namespace Data_Objects
                     }
                 }
             }
-           
+
             return result;
         }
 
-        private string sp_paramater_gen(int mode) {
+        private string sp_paramater_gen(int mode)
+        {
 
-            string result= "";
+            string result = "";
             //retreive pk
-            if (mode == 0) {
+            if (mode == 0)
+            {
                 string comma = "";
-                 result = "\n\tParameters:\t";
+                result = "\n\tParameters:\t";
                 foreach (Column r in columns)
                 {
                     if (r.primary_key == 'y' || r.primary_key == 'Y')
@@ -3467,12 +3471,12 @@ namespace Data_Objects
                         result += comma + "@" + r.column_name;
                         comma = ", ";
                     }
-                }             
+                }
             }
             //update
             if (mode == 1)
             {
-                result= "\n\tParameters:\t";
+                result = "\n\tParameters:\t";
                 string comma = "";
                 foreach (Column r in columns)
                 {
@@ -3483,14 +3487,14 @@ namespace Data_Objects
                         result += comma + "@new" + r.column_name;
                     }
                 }
-
             }
             //retreive by all
-            if (mode == 2) {
-                result="\n\tParameters:\t @limit_param, @offset_param";
+            if (mode == 2)
+            {
+                result = "\n\tParameters:\t @limit_param, @offset_param";
                 foreach (Column r in columns)
                 {
-                    if (r.foreign_key != ""&&!r.foreign_key.Equals("no")&r.references.Contains("."))
+                    if (r.foreign_key != "" && !r.foreign_key.Equals("no") & r.references.Contains("."))
                     {
                         string[] parts = r.references.Split('.');
                         result += ", @" + parts[1];
@@ -3498,8 +3502,9 @@ namespace Data_Objects
                 }
             }
             //add
-            if (mode == 3) {
-                result="\n\tParameters:\t";
+            if (mode == 3)
+            {
+                result = "\n\tParameters:\t";
 
                 string comma = "";
                 foreach (Column r in columns)
@@ -3507,16 +3512,17 @@ namespace Data_Objects
                     result += comma + "@" + r.column_name;
                     comma = ", ";
                 }
-
             }
-            if (mode == 4) {
+            if (mode == 4)
+            {
                 result = "\n\tParameters:\tNONE\n";
             }
 
             return result;
         }
 
-        public string createModelTests() {
+        public string createModelTests()
+        {
             string result = "";
             result += testInitialize(); //done
             result += testDefaultConstructor();
@@ -3525,7 +3531,8 @@ namespace Data_Objects
 
             //result += testVMDefaultConstructor();
             //result += testVMParameterizedConstructor();
-            foreach (Column r in columns) {
+            foreach (Column r in columns)
+            {
                 result += createColumnTests(r);
             }
             result += testCompareTo();
@@ -3553,16 +3560,17 @@ namespace Data_Objects
             {
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
-                      result += testListObjectSet(key.mainTable);
+                    result += testListObjectSet(key.mainTable);
                 }
             }
             //result += testVMCompareTo();
             result += "\n}\n";
             return result;
         }
-        private  string createColumnTests(Column r) { 
-        string result = "";
-            
+        private string createColumnTests(Column r)
+        {
+            string result = "";
+
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
                 result += testTooShort(r);  //done
@@ -3593,7 +3601,6 @@ namespace Data_Objects
                 result += testDatetimeSet(r); //done
             }
 
-
             return result;
 
         }
@@ -3605,15 +3612,15 @@ namespace Data_Objects
             result += "import org.junit.jupiter.api.BeforeEach;\n";
             result += "import org.junit.jupiter.api.Test;\n";
             result += "import static org.junit.jupiter.api.Assertions.*;\n";
-            result += "class "+name+"Test {\n";
-            result += "private "+name+ " "+"_"+name.ToLower()+";\n";
+            result += "class " + name + "Test {\n";
+            result += "private " + name + " " + "_" + name.ToLower() + ";\n";
             result += "@BeforeEach\n";
             result += "public void setup(){\n";
-            result += "_"+name.ToLower()+" = new "+name+"();\n";
+            result += "_" + name.ToLower() + " = new " + name + "();\n";
             result += "}\n";
             result += "@AfterEach\n";
             result += "public void teardown(){\n";
-            result += "_"+name.ToLower()+" = null;\n";
+            result += "_" + name.ToLower() + " = null;\n";
             result += "}\n";
 
             return result;
@@ -3643,35 +3650,35 @@ namespace Data_Objects
 
         }
 
-
-
         private string testParameterizedConstructor()
         {
-            
+
             string result = "@Test\n";
             //generate random values for each
-            ArrayList array = new ArrayList(columns.Count+1);
-            
-            foreach (Column r in columns) {
+            ArrayList array = new ArrayList(columns.Count + 1);
+
+            foreach (Column r in columns)
+            {
 
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    array.Add(generateRandomString(r, -2));
-                    Task.Delay(1);
+                    _ = array.Add(generateRandomString(r, -2));
+                    _ = Task.Delay(1);
                 }
                 else if (r.data_type.toCSharpDataType().Equals("bool"))
                 {
-                    array.Add(true);
+                    _ = array.Add(true);
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
                 {
-                    array.Add(rand.Next(0, 10000));
-                    Task.Delay(1);
+                    _ = array.Add(rand.Next(0, 10000));
+                    _ = Task.Delay(1);
                 }
-                else if (r.data_type.Equals("decimal")) {
+                else if (r.data_type.Equals("decimal"))
+                {
                     double toAdd = rand.Next(0, 10000) / 100.0;
-                    array.Add(toAdd);
-                    Task.Delay(1);
+                    _ = array.Add(toAdd);
+                    _ = Task.Delay(1);
                 }
                 else if (r.data_type.ToLower().Contains("date"))
                 {
@@ -3679,20 +3686,16 @@ namespace Data_Objects
                     int month = rand.Next(1, 11);
                     int day = rand.Next(1, 28);
                     DateTime toAdd = new DateTime(year, month, day);
-                    array.Add(toAdd);
-                    Task.Delay(1);
+                    _ = array.Add(toAdd);
+                    _ = Task.Delay(1);
                 }
                 else
                 {
-                    array.Add(null);
+                    _ = array.Add(null);
                 }
-                Task.Delay(5);
-
-
+                _ = Task.Delay(5);
 
             }
-            
-
 
             //method signature
             result += "public void test" + name + "ParameterizedConstructorSetsAllVariables(){\n";
@@ -3703,7 +3706,6 @@ namespace Data_Objects
             int i = 0;
             foreach (Column r in columns)
             {
-
 
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
@@ -3729,9 +3731,8 @@ namespace Data_Objects
                 {
                     result += comma + "new " + r.data_type + "()\n";
                 }
-                    comma = ",\n ";
+                comma = ",\n ";
 
-                
                 i++;
             }
             result += "\n);\n";
@@ -3741,7 +3742,7 @@ namespace Data_Objects
             {
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += "Assertions.assertEquals(\""+array[i]+"\",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    result += "Assertions.assertEquals(\"" + array[i] + "\",_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
                 else if (r.data_type.toCSharpDataType().Equals("bool"))
                 {
@@ -3749,7 +3750,7 @@ namespace Data_Objects
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
                 {
-                    result += "Assertions.assertEquals(" + array[i] +",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    result += "Assertions.assertEquals(" + array[i] + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
                 else if (r.data_type.Equals("decimal"))
                 {
@@ -3762,17 +3763,13 @@ namespace Data_Objects
 
                 else
                 {
-                    result += "Assertions.assertEquals(new "+r.data_type+"(),_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    result += "Assertions.assertEquals(new " + r.data_type + "(),_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
                 i++;
-
 
             }
             result += "}\n";
             return result;
-
-
-            
 
         }
 
@@ -3780,11 +3777,12 @@ namespace Data_Objects
         {
             string result = "@Test\n";
             result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
-            result += name + " _" + name.ToLower() + "= new " + name+"();\n";
-            foreach (Column r in columns) {
+            result += name + " _" + name.ToLower() + "= new " + name + "();\n";
+            foreach (Column r in columns)
+            {
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += "Assertions.assertNull(_"+name.ToLower()+".get"+r.column_name+"());\n";
+                    result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
                 else if (r.data_type.toCSharpDataType().Equals("bool"))
                 {
@@ -3794,11 +3792,10 @@ namespace Data_Objects
                 {
                     result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
-                else {
+                else
+                {
                     result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 }
-                
-
             }
             result += "}\n";
             return result;
@@ -3827,8 +3824,6 @@ namespace Data_Objects
                 {
                     result += "Assertions.assertNull(_" + name.ToLower() + "VM.get" + r.column_name + "());\n";
                 }
-
-
             }
             foreach (Column r in columns)
             {
@@ -3855,7 +3850,8 @@ namespace Data_Objects
 
         }
 
-        private string testKeyedParameterizedConstructor() {
+        private string testKeyedParameterizedConstructor()
+        {
             string result = "@Test\n";
             //generate random values for each
             ArrayList array = new ArrayList(columns.Count + 1);
@@ -3867,29 +3863,25 @@ namespace Data_Objects
 
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        array.Add(generateRandomString(r, -2));
-                        Task.Delay(1);
+                        _ = array.Add(generateRandomString(r, -2));
+                        _ = Task.Delay(1);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
-                        array.Add(true);
+                        _ = array.Add(true);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("int"))
                     {
-                        array.Add(rand.Next(0, 10000));
-                        Task.Delay(1);
+                        _ = array.Add(rand.Next(0, 10000));
+                        _ = Task.Delay(1);
                     }
                     else
                     {
-                        array.Add(null);
+                        _ = array.Add(null);
                     }
-                    Task.Delay(5);
+                    _ = Task.Delay(5);
                 }
-
-
             }
-
-
 
             //method signature
             result += "public void test" + name + "KeyedParameterizedConstructorSetsKeyedVariables(){\n";
@@ -3902,7 +3894,6 @@ namespace Data_Objects
             {
                 if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
                 {
-
 
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
@@ -3921,7 +3912,6 @@ namespace Data_Objects
                         result += comma + "new " + r.data_type + "()\n";
                     }
                     comma = ",\n ";
-
 
                     i++;
                 }
@@ -3952,7 +3942,8 @@ namespace Data_Objects
                     }
                     i++;
                 }
-                else {
+                else
+                {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
                         result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
@@ -3969,10 +3960,7 @@ namespace Data_Objects
                     {
                         result += "Assertions.assertNull(_" + name.ToLower() + ".get" + r.column_name + "());\n";
                     }
-
                 }
-
-
             }
             result += "}\n";
             return result;
@@ -3991,7 +3979,8 @@ namespace Data_Objects
 
                 }
             }
-            foreach (foreignKey key in data_tables.all_foreignKey) {
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
                     hasChild = true;
@@ -4020,23 +4009,23 @@ namespace Data_Objects
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        array.Add(generateRandomString(r, -2));
-                        Task.Delay(1);
+                        _ = array.Add(generateRandomString(r, -2));
+                        _ = Task.Delay(1);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
-                        array.Add(true);
+                        _ = array.Add(true);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("int"))
                     {
-                        array.Add(rand.Next(0, 10000));
-                        Task.Delay(1);
+                        _ = array.Add(rand.Next(0, 10000));
+                        _ = Task.Delay(1);
                     }
                     else if (r.data_type.Equals("decimal"))
                     {
                         double toAdd = rand.Next(0, 10000) / 100.0;
-                        array.Add(toAdd);
-                        Task.Delay(1);
+                        _ = array.Add(toAdd);
+                        _ = Task.Delay(1);
                     }
                     else if (r.data_type.ToLower().Contains("date"))
                     {
@@ -4047,17 +4036,17 @@ namespace Data_Objects
                         int minute = rand.Next(1, 55);
                         int second = rand.Next(2, 45);
                         DateTime toAdd = new DateTime(year, month, day, hour, minute, second);
-                        array.Add(toAdd);
-                        Task.Delay(1);
+                        _ = array.Add(toAdd);
+                        _ = Task.Delay(1);
                     }
                     else
                     {
-                        array.Add(null);
+                        _ = array.Add(null);
                     }
-                    Task.Delay(5);
+                    _ = Task.Delay(5);
                 }
                 //method signature
-                result +="\n@Test\n";
+                result += "\n@Test\n";
                 switch (j)
                 {
 
@@ -4098,7 +4087,6 @@ namespace Data_Objects
                 foreach (Column r in columns)
                 {
 
-
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
                         result += comma + "\"" + array[i] + "\"";
@@ -4125,11 +4113,11 @@ namespace Data_Objects
                     }
                     comma = ",\n ";
 
-
                     i++;
                 }
                 result += "\n);\n";
-                switch (j) {
+                switch (j)
+                {
                     case 0:
                         result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower() + ");\n";
                         break;
@@ -4138,11 +4126,10 @@ namespace Data_Objects
                         {
                             if (r.references != "")
                             {
-                                string vmTag = "_VM";
                                 string[] parts = r.references.Split('.');
                                 string fk_table = parts[0];
                                 string fk_name = parts[1];
-                                result += fk_table + " _"+ fk_table.ToLower()+" = new " + fk_table + "();\n";
+                                result += fk_table + " _" + fk_table.ToLower() + " = new " + fk_table + "();\n";
                             }
                         }
                         result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower();
@@ -4150,7 +4137,6 @@ namespace Data_Objects
                         {
                             if (r.references != "")
                             {
-                                string vmTag = "_VM";
                                 string[] parts = r.references.Split('.');
                                 string fk_table = parts[0];
                                 string fk_name = parts[1];
@@ -4168,16 +4154,16 @@ namespace Data_Objects
 
                                 string fk_table = key.mainTable;
 
-                                result += "List<" + fk_table + "> _" + fk_table.ToLower() + "s = new ArrayList<>();\n"; 
+                                result += "List<" + fk_table + "> _" + fk_table.ToLower() + "s = new ArrayList<>();\n";
                             }
                         }
                         result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower();
                         foreach (foreignKey key in data_tables.all_foreignKey)
                         {
-                            
+
                             if (key.referenceTable.ToLower().Equals(name.ToLower()))
                             {
-                                
+
                                 string fk_table = key.mainTable;
 
                                 result += ", " + fk_table.ToLower() + "s";
@@ -4225,11 +4211,10 @@ namespace Data_Objects
                         {
                             if (k.references != "")
                             {
-                                string vmTag = "_VM";
                                 string[] parts = k.references.Split('.');
                                 string fk_table = parts[0];
                                 string fk_name = parts[1];
-                                result += "Assertions.assertEquals(_"+fk_table.ToLower()+" ,_" + name.ToLower() + "VM.get" + fk_table + "());\n";
+                                result += "Assertions.assertEquals(_" + fk_table.ToLower() + " ,_" + name.ToLower() + "VM.get" + fk_table + "());\n";
 
                             }
                         }
@@ -4250,38 +4235,30 @@ namespace Data_Objects
                 }
 
                 result += "}\n";
-               
 
-
-                
-                
             }
-        
 
-
-
-                return result;
-            
+            return result;
 
         }
         private string testTooShort(Column r)
         {
             string result = "@Test\n";
-            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooShort(){\n";
+            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooShort(){\n";
             result += "String " + r.column_name + " = \"";
-            String dummy = generateRandomString(r, 2-r.length);
+            String dummy = generateRandomString(r, 2 - r.length);
             result += dummy; ;
             result += "\";\n";
-            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "("+r.column_name+");});\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
             result += "}\n";
             return result;
 
         }
         private string testTooLong(Column r)
         {
-            
+
             string result = "@Test\n";
-            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooLong(){\n";
+            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooLong(){\n";
             result += "String " + r.column_name + " = \"";
             String dummy = generateRandomString(r, +2);
             result += dummy;
@@ -4294,7 +4271,7 @@ namespace Data_Objects
         private string testIntTooBig(Column r)
         {
             string result = "@Test\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf"+r.column_name+"TooBig(){\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
             result += "int " + r.column_name + " = 10001;\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
             result += "}\n";
@@ -4306,19 +4283,19 @@ namespace Data_Objects
             string result = "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
             result += "int " + r.column_name + " = -1;\n";
-            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_"+name.ToLower()+".set"+r.column_name+"("+r.column_name+");});\n";
+            result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
             result += "}\n";
             return result;
         }
         private string testIntSet(Column r)
         {
-            
+
             int numberToTest = rand.Next(1, 10000);
             string result = "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "(){\n";
-            result += "int " + r.column_name +" = "+ numberToTest + ";\n";
+            result += "int " + r.column_name + " = " + numberToTest + ";\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
-            result += "Assertions.assertEquals("+r.column_name+", _"+name.ToLower()+".get"+r.column_name+"());\n";
+            result += "Assertions.assertEquals(" + r.column_name + ", _" + name.ToLower() + ".get" + r.column_name + "());\n";
             result += "}\n";
 
             return result;
@@ -4376,19 +4353,18 @@ namespace Data_Objects
             result += "String strDate = \"03/03/1990\";\n";
             result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
             result += "Date date = df.parse(strDate);\n";
-            
+
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(date);});\n";
             result += "}\n";
             return result;
         }
         private string testDatetimeSet(Column r)
         {
-
-            int numberToTest = rand.Next(1, 10000);
+            _ = rand.Next(1, 10000);
             string result = "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "() throws ParseException{\n";
             DateTime today = DateTime.Today;
-            result += "String strDate = \""+today.Day+"/"+today.Month+"/"+today.Year+"\";\n";
+            result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
             result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
             result += "Date date = df.parse(strDate);\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(date);\n";
@@ -4402,13 +4378,13 @@ namespace Data_Objects
         {
 
             String dummy = generateRandomString(r, -2);
-            
+
             string result = "@Test\n";
             result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
             result += "String " + r.column_name + " = \"" + dummy + "\";\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
-            result += "Assertions.assertEquals("+r.column_name+",_"+name.ToLower()+".get"+r.column_name+"());\n";
-            result += "}\n"; 
+            result += "Assertions.assertEquals(" + r.column_name + ",_" + name.ToLower() + ".get" + r.column_name + "());\n";
+            result += "}\n";
             return result;
 
         }
@@ -4435,15 +4411,16 @@ namespace Data_Objects
 
         }
 
-        private string testObjectSet(string objectname) {
+        private string testObjectSet(string objectname)
+        {
 
-                string result = "@Test\n";
-                result += "public void testSet" + objectname + "Sets" + objectname + "(){\n";
-                result += objectname +" _"+ objectname.ToLower() + " = new "+objectname+"();\n";
-                result += "_" + name.ToLower() + "VM.set" + objectname + "(_" + objectname.ToLower() + ");\n";
-                result += "Assertions.assertEquals(_" + objectname.ToLower() + ",_" + name.ToLower() + "VM.get" + objectname + "());\n";
-                result += "}\n";
-                return result;
+            string result = "@Test\n";
+            result += "public void testSet" + objectname + "Sets" + objectname + "(){\n";
+            result += objectname + " _" + objectname.ToLower() + " = new " + objectname + "();\n";
+            result += "_" + name.ToLower() + "VM.set" + objectname + "(_" + objectname.ToLower() + ");\n";
+            result += "Assertions.assertEquals(_" + objectname.ToLower() + ",_" + name.ToLower() + "VM.get" + objectname + "());\n";
+            result += "}\n";
+            return result;
 
         }
         private string testListObjectSet(string objectname)
@@ -4451,14 +4428,15 @@ namespace Data_Objects
 
             string result = "@Test\n";
             result += "public void testSet" + objectname + "sSets" + objectname + "s(){\n";
-            result += "List<"+objectname + "> _" + objectname.ToLower() + "s = new ArrayList<" + objectname + ">();\n";
+            result += "List<" + objectname + "> _" + objectname.ToLower() + "s = new ArrayList<" + objectname + ">();\n";
             result += "_" + name.ToLower() + "VM.set" + objectname + "s(_" + objectname.ToLower() + "s);\n";
             result += "Assertions.assertEquals(_" + objectname.ToLower() + "s,_" + name.ToLower() + "VM.get" + objectname + "s());\n";
             result += "}\n";
             return result;
 
         }
-        private string testCompareTo() {
+        private string testCompareTo()
+        {
             string result = "";
             bool hasDateTime = false;
             foreach (Column r in columns)
@@ -4471,20 +4449,23 @@ namespace Data_Objects
             }
             result += "@Test\n";
             result += "public void testCompareToCanCompareForEachDateField()";
-            if (hasDateTime) {
+            if (hasDateTime)
+            {
                 result += "throws ParseException";
             }
-            result+=" {\n";
-            
-            if (hasDateTime) {
+            result += " {\n";
+
+            if (hasDateTime)
+            {
                 result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
             }
             result += name + " smaller = new " + name + "();\n";
             result += name + " bigger = new " + name + "();\n";
             String smaller = "";
             String bigger = "";
-            foreach (Column r in columns) {
-                
+            foreach (Column r in columns)
+            {
+
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
                     smaller = "\"aaaa\"";
@@ -4511,23 +4492,23 @@ namespace Data_Objects
                     bigger = "df.parse(\"01/01/2024\")";
                 }
                 result += "//to compare a smaller and larger " + r.column_name + "\n";
-                result += "smaller.set" + r.column_name + "("+smaller+");\n";
-                result += "bigger.set" + r.column_name + "("+bigger+");\n";
+                result += "smaller.set" + r.column_name + "(" + smaller + ");\n";
+                result += "bigger.set" + r.column_name + "(" + bigger + ");\n";
                 result += "Assertions.assertTrue(smaller.compareTo(bigger)<0);\n";
                 result += "Assertions.assertTrue(bigger.compareTo(smaller)>0);\n";
                 result += "//to set the " + r.column_name + " as equal.\n";
-                result += "smaller.set" + r.column_name + "("+bigger+");\n";
+                result += "smaller.set" + r.column_name + "(" + bigger + ");\n";
             }
             result += "Assertions.assertTrue(bigger.compareTo(smaller)==0);\n";
             result += "}\n";
 
             return result;
-        
-        
+
         }
-        private string generateRandomString(Column r, int reletive_length) {
-            
-            char letter ;
+        private string generateRandomString(Column r, int reletive_length)
+        {
+
+            char letter;
             String dummy = "";
             for (int i = 0; i < r.length + reletive_length; i++)
             {
@@ -4547,11 +4528,12 @@ namespace Data_Objects
                 dummy += letter;
 
             }
-            dummy+="";
+            dummy += "";
             return dummy;
         }
 
-        public string genDataAccessFakes() {
+        public string genDataAccessFakes()
+        {
             string result = "";
             result += genJavaDAOFakeHeader(settings.database_name);   //done, needs javadoccomment
             result += genJavaDAOFakeCreate();      //done, needs javadoccomment
@@ -4575,7 +4557,7 @@ namespace Data_Objects
 
         private string genJavaDAOFakeHeader(string databasename)
         {
-            int x =0;
+            int x = 0;
             string result = "";
             int numberOfFakes = rand.Next(4, 6);
             hasVM = false;
@@ -4586,9 +4568,7 @@ namespace Data_Objects
                     hasVM = true;
                     break;
                 }
-
             }
-
 
             result += importStatements(name, databasename);
             result += "\npublic class " + name + "_DAO_Fake implements i" + name + "DAO{\n";
@@ -4600,7 +4580,7 @@ namespace Data_Objects
             {
                 result += "private  List<" + name + "> " + name.ToLower() + "s;\n";
             }
-            result += "public "+name+"_DAO_Fake(){\n";
+            result += "public " + name + "_DAO_Fake(){\n";
             if (hasVM)
             {
                 result += name.ToLower() + "VMs = new ArrayList<>();\n";
@@ -4684,7 +4664,6 @@ namespace Data_Objects
                                                     result += comma + newrandomtext;
 
                                                 }
-
                                             }
                                             else if (columns[k].data_type.toCSharpDataType().Equals("bool"))
                                             {
@@ -4767,35 +4746,32 @@ namespace Data_Objects
                                         result += ");\n";
                                         x++;
                                     }
-
                                 }
                             }
                         }
-                        
                     }
                 }
             numberOfFakes = x;
             //logic for vm goes here
             if (hasVM)
+            {
+                for (int i = 0; i < numberOfFakes; i++)
                 {
-                    for (int i = 0; i < numberOfFakes; i++)
-                    {
-                        result += name + "_VM " + name.ToLower() + "_VM" + i.ToString() + "= new " + name + "_VM(" + name.ToLower() + i.ToString() + ");\n";
-                    }
-                    for (int i = 0; i < numberOfFakes; i++)
-                    {
-                        result += name.ToLower() + "VMs.add(" + name.ToLower() + "_VM" + i.ToString() + ");\n";
-                    }
+                    result += name + "_VM " + name.ToLower() + "_VM" + i.ToString() + "= new " + name + "_VM(" + name.ToLower() + i.ToString() + ");\n";
                 }
-
-
-                else
+                for (int i = 0; i < numberOfFakes; i++)
                 {
-                    for (int i = 0; i < numberOfFakes; i++)
-                    {
-                        result += name.ToLower() + "s.add(" + name.ToLower() + i.ToString() + ");\n";
-                    }
+                    result += name.ToLower() + "VMs.add(" + name.ToLower() + "_VM" + i.ToString() + ");\n";
                 }
+            }
+
+            else
+            {
+                for (int i = 0; i < numberOfFakes; i++)
+                {
+                    result += name.ToLower() + "s.add(" + name.ToLower() + i.ToString() + ");\n";
+                }
+            }
             if (hasVM)
             {
                 result += "Collections.sort(" + name.ToLower() + "VMs);\n";
@@ -4804,12 +4780,11 @@ namespace Data_Objects
             {
                 result += "Collections.sort(" + name.ToLower() + "s);\n";
             }
-                result += "}\n";
+            result += "}\n";
 
-            
-                return result;
-            }
-        
+            return result;
+        }
+
         private string genJavaDAOFakeCreate()
         {
             string result = "";
@@ -4832,7 +4807,7 @@ namespace Data_Objects
             }
             if (hasVM)
             {
-                result += name + "_VM " + name.ToLower() + "_VM = new " + name + "_VM(_" + name.ToLower() + ");\n"; 
+                result += name + "_VM " + name.ToLower() + "_VM = new " + name + "_VM(_" + name.ToLower() + ");\n";
                 result += name.ToLower() + "s.add(" + name.ToLower() + "_VM);\n";
             }
             else
@@ -4848,12 +4823,13 @@ namespace Data_Objects
         private string genJavaDAOFakeRetreiveByKey()
         {
             string result = "";
-            string type = "";
+            string type;
             if (hasVM)
             {
                 type = name + "_VM";
             }
-            else {
+            else
+            {
                 type = name;
             }
             result += "@Override\n";
@@ -4863,8 +4839,10 @@ namespace Data_Objects
             result += "for (" + type + " " + name.ToLower() + " : " + name.ToLower() + "s) {\n";
             result += "if (";
             string andand = "";
-            foreach (Column r in columns) {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')) {
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
                     result += andand + name.ToLower() + ".get" + r.column_name + "().equals(_" + name.ToLower() + ".get" + r.column_name + "())";
                     andand = "&&";
                 }
@@ -4874,11 +4852,11 @@ namespace Data_Objects
             result += "break;\n}\n";
             result += "}\n";
             result += "if (result == null){\n";
-            result += "throw new SQLException(\""+name+" not found\");\n";
+            result += "throw new SQLException(\"" + name + " not found\");\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
-                return result;
+            return result;
         }
         private string genJavaDAOFakeRetreiveAll()
         {
@@ -4896,18 +4874,20 @@ namespace Data_Objects
                 }
 
                 result += ") throws SQLException {\n";
-                result += "List<" + name  + "_VM> results = new ArrayList<>();\n";
-                result += "for (" + name  + "_VM " + name.ToLower() + " : " + name.ToLower() + "VMs){\n";
+                result += "List<" + name + "_VM> results = new ArrayList<>();\n";
+                result += "for (" + name + "_VM " + name.ToLower() + " : " + name.ToLower() + "VMs){\n";
                 result += "if (";
                 string andand = "";
-                foreach (Column r in columns) {
-                    if (r.references != "") {
-                        result+=andand+"("+ name.ToLower() + ".get" + r.column_name + "()!=null||"+name.ToLower()+".get"+r.column_name+"().equals("+r.column_name + "))\n";
+                foreach (Column r in columns)
+                {
+                    if (r.references != "")
+                    {
+                        result += andand + "(" + name.ToLower() + ".get" + r.column_name + "()!=null||" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
                         andand = "&&";
                     }
                 }
 
-                result +="){\n";
+                result += "){\n";
                 result += "results.add(" + name.ToLower() + ");\n";
                 result += "}\n}\n";
                 result += "return results;\n}\n";
@@ -4917,11 +4897,10 @@ namespace Data_Objects
             {
                 result += "public List <" + name + "> getAll" + name + "(int limit, int offset) throws SQLException {\n";
 
-
                 result += "return " + name.ToLower() + "s;\n";
                 result += "}\n";
             }
-            
+
             return result;
         }
         private string genJavaDAOFakeRetriveActive()
@@ -4931,7 +4910,7 @@ namespace Data_Objects
             string result = "@Override\n";
 
             result += "public List<" + name + vmTag + "> getActive" + name + "() throws SQLException{\n";
-            result += "List<"+name + vmTag + "> results = new ArrayList<>();\n";
+            result += "List<" + name + vmTag + "> results = new ArrayList<>();\n";
             result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag + "s){\n";
             result += "if (" + name.ToLower() + ".getIs_Active()){\n";
             result += "results.add(" + name.ToLower() + ");\n";
@@ -4942,32 +4921,38 @@ namespace Data_Objects
         private string genJavaDAOFakeRetreiveDistinct()
         {
             string vmTag = "";
-            if (hasVM) {
+            if (hasVM)
+            {
                 vmTag = "_VM";
             }
             string result = "@Override\n";
             bool stringKey = false;
-            foreach (Column r in columns) {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')){
-                    if (r.data_type.toJavaDataType().Equals("String")) {
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    if (r.data_type.toJavaDataType().Equals("String"))
+                    {
                         stringKey = true;
                     }
                 }
             }
-            if (stringKey) {
+            if (stringKey)
+            {
                 result += "public List<String> getDistinct" + name + "ForDropdown() throws SQLException{\n";
                 result += "List<String> results = new ArrayList<>();\n";
-                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_","") + "s){\n";
+                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
                 result += "results.add(" + name.ToLower() + ".get" + columns[0].column_name + "());\n";
                 result += "}\n";
                 result += "return results;\n}\n";
             }
-            else {
+            else
+            {
                 result += "public List<" + name + "> getDistinct" + name + "ForDropdown() throws SQLException{\n";
-                result += "List<"+name+"> results = new ArrayList<>();\n";
-                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_","") + "s){\n";
+                result += "List<" + name + "> results = new ArrayList<>();\n";
+                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
                 result += name + " _" + name.ToLower() + " = new " + name + "();\n";
-                result += "_" + name.ToLower() + ".set" + columns[0].column_name + "(" + name.ToLower() + ".get" + columns[0].column_name +"());\n";
+                result += "_" + name.ToLower() + ".set" + columns[0].column_name + "(" + name.ToLower() + ".get" + columns[0].column_name + "());\n";
                 result += "_" + name.ToLower() + ".set" + columns[1].column_name + "(" + name.ToLower() + ".get" + columns[1].column_name + "());\n";
                 result += "results.add(_" + name.ToLower() + ");\n";
                 result += "}\n";
@@ -4978,17 +4963,19 @@ namespace Data_Objects
         private string genJavaDAOFakeRetriveByFK()
         {
             string result = "";
-            foreach (Column r in columns) {
-                if (r.references != "") {
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
                     string vmTag = "_VM";
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
                     result += "@Override\n";
-                    result += "public List<"+name+"_VM> get" + name + "by" + fk_table + "(" + r.data_type.toJavaDataType() + " " + fk_name + "){\n";
+                    result += "public List<" + name + "_VM> get" + name + "by" + fk_table + "(" + r.data_type.toJavaDataType() + " " + fk_name + "){\n";
                     result += "List<" + name + vmTag + "> results = new ArrayList<>();\n";
-                    result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_","") + "s){\n";
-                    result += "if (" + name.ToLower() + ".get"+r.column_name+"().equals("+fk_name+")){\n";
+                    result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
+                    result += "if (" + name.ToLower() + ".get" + r.column_name + "().equals(" + fk_name + ")){\n";
                     result += "results.add(" + name.ToLower() + ");\n";
                     result += "}\n}\n";
                     result += "return results;\n}\n";
@@ -5000,12 +4987,12 @@ namespace Data_Objects
         private string genJavaDAOFakeUpdate()
         {
             string VMTag = "";
-            if (hasVM) {
+            if (hasVM)
+            {
                 VMTag = "_VM";
             }
             string results = "@Override\n";
-            results += "public int update" +  "("+name+" old"+name+", "+name+" new"+name+") throws SQLException{\n";
-            
+            results += "public int update" + "(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException{\n";
 
             results += "int location =-1;\n";
             results += "if (duplicateKey(old" + name + ")){\n";
@@ -5014,18 +5001,18 @@ namespace Data_Objects
             results += "if (exceptionKey(old" + name + ")){\n";
             results += "throw new SQLException(\"error\");\n";
             results += "}\n";
-            results += "for (int i=0;i<" + name.ToLower() +VMTag.Replace("_","")+ "s.size();i++){\n";
+            results += "for (int i=0;i<" + name.ToLower() + VMTag.Replace("_", "") + "s.size();i++){\n";
             results += "if (";
             string andand = "";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
                 {
-                    results += andand + name.ToLower() +VMTag.Replace("_","") +"s.get(i).get" + r.column_name + "().equals(old"+name+".get"+r.column_name+"()"  + ")){\n";
+                    results += andand + name.ToLower() + VMTag.Replace("_", "") + "s.get(i).get" + r.column_name + "().equals(old" + name + ".get" + r.column_name + "()" + ")){\n";
                     andand = "&&";
                 }
             }
-            
+
             results += "location =i;\n";
             results += "break;\n";
             results += "}\n";
@@ -5050,8 +5037,10 @@ namespace Data_Objects
             string results = "@Override\n";
             results += "public int delete" + name + "(";
             string comma = "";
-            foreach (Column r in columns) {
-                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y')) {
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
                     results += comma + r.data_type.toJavaDataType() + " " + r.column_name;
                 }
             }
@@ -5068,9 +5057,11 @@ namespace Data_Objects
             results += "for (int i=0;i<" + name.ToLower() + "VMs.size();i++){\n";
             results += "if (";
             string andand = "";
-            foreach (Column r in columns) {
-                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y')) { 
-                results += andand + name.ToLower() + "VMs.get(i).get" + r.column_name + "().equals(" + r.column_name + ")";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + "VMs.get(i).get" + r.column_name + "().equals(" + r.column_name + ")";
                     andand = "&&";
                 }
             }
@@ -5093,7 +5084,7 @@ namespace Data_Objects
             }
             results += "return size-newsize;\n}\n";
             return results;
-            
+
         }
         private string genJavaDAOFakeUnDelete()
         {
@@ -5140,7 +5131,8 @@ namespace Data_Objects
             return results;
         }
 
-        private string genJavaDAOFakeDeactivate() {
+        private string genJavaDAOFakeDeactivate()
+        {
             string results = "@Override\n";
             results += "public int deactivate" + name + "(";
             string comma = "";
@@ -5180,21 +5172,24 @@ namespace Data_Objects
             results += "else {\n";
             results += "return 0;\n";
             results += "}\n";
-            results += "}\n";           
+            results += "}\n";
             return results;
 
         }
-        private string genJavaDAODuplicateKey() {
+        private string genJavaDAODuplicateKey()
+        {
             string result = "";
             result += "private boolean duplicateKey(" + name + " _" + name.ToLower() + "){\n";
-            foreach (Column r in columns) {
-                if (r.increment == 0&&r.data_type.toCSharpDataType().Equals("string"))
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && r.data_type.toCSharpDataType().Equals("string"))
                 {
                     result += "return _" + name.ToLower() + ".get" + r.column_name + "().equals(\"DUPLICATE\");\n";
                     result += "}\n";
                     break;
                 }
-                else {
+                else
+                {
                     continue;
                 }
             }
@@ -5221,23 +5216,25 @@ namespace Data_Objects
             return result;
         }
 
-
-        private string genJavaDAOFakeCount() {
+        private string genJavaDAOFakeCount()
+        {
             string result = "@Override\n";
             result += "public int get" + name + "Count() throws SQLException{\n";
             if (hasVM)
             {
                 result += "return " + name.ToLower() + "VMs.size();\n";
             }
-            else {
+            else
+            {
                 result += "return " + name.ToLower() + "VMs.size();\n";
             }
             result += "}\n";
             return result;
-        
+
         }
         //done
-        public string genJavaGetAllServletTests() {
+        public string genJavaGetAllServletTests()
+        {
             string result = "";
             result += packageStatementForTests();
             result += importStatementForTests();     //done
@@ -5256,7 +5253,7 @@ namespace Data_Objects
             result += "\n}\n";
             return result;
         }
-              
+
         //done
         public string genJavaCreateServletTests()
         {
@@ -5327,8 +5324,9 @@ namespace Data_Objects
             return result;
         }
         //done
-        private string initTests(int mode) {
-            
+        private string initTests(int mode)
+        {
+
             if (mode == 1)
             {
                 servletName = "All_" + name;
@@ -5348,22 +5346,20 @@ namespace Data_Objects
             }
             string result = "@BeforeEach\n";
             result += "public void setup() throws ServletException{\n\n";
-            result += "servlet = new " + servletName + "();\n" ;
+            result += "servlet = new " + servletName + "();\n";
             result += "servlet.init(";
-            string comma = "";
             result += "new " + name + "_DAO_Fake()";
             foreach (Column r in columns)
             {
-                
-                if (r.foreign_key != "" )
+
+                if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
                     result += ",new " + fk_table + "_DAO_Fake()";
-                    
-                }
 
+                }
             }
             result += ");\n";
             result += "request =  new MockHttpServletRequest();\n";
@@ -5374,13 +5370,15 @@ namespace Data_Objects
             return result;
         }
         //done
-        private string classNameAndStaticVariables(int mode) {
+        private string classNameAndStaticVariables(int mode)
+        {
             string result = "";
             string servletName = "";
-            if (mode == 1) {
+            if (mode == 1)
+            {
                 servletName = "All_" + name;
             }
-            
+
             if (mode == 2)
             {
                 servletName = "Add_" + name;
@@ -5393,20 +5391,21 @@ namespace Data_Objects
             {
                 servletName = "Edit_" + name;
             }
-            result += "\npublic class "+servletName+"Test {\n";
+            result += "\npublic class " + servletName + "Test {\n";
 
-            result += "private static final String PAGE=\"WEB-INF/"+settings.database_name+"/"+servletName+".jsp\";\n";
-            result += servletName+" servlet;\n";
+            result += "private static final String PAGE=\"WEB-INF/" + settings.database_name + "/" + servletName + ".jsp\";\n";
+            result += servletName + " servlet;\n";
             result += "MockHttpServletRequest request;\n";
             result += "MockHttpServletResponse response;\n";
             result += "HttpSession session;\n";
             result += "RequestDispatcher rd;\n";
-            
+
             return result;
         }
-        private string packageStatementForTests() {
-            return "package com."+settings.owner_name+"."+settings.database_name+".controllers;\n";
-        
+        private string packageStatementForTests()
+        {
+            return "package com." + settings.owner_name + "." + settings.database_name + ".controllers;\n";
+
         }
         //done
         private string importStatementForTests()
@@ -5414,10 +5413,10 @@ namespace Data_Objects
             string result = "";
             result += "import java.io.IOException;\n";
             result += "import java.util.*;\n";
-            result += "import com."+settings.owner_name+"."+settings.database_name+".data_fakes."+name+"_DAO_Fake;\n";
-            result += "import com."+settings.owner_name+"." + settings.database_name + ".models." + name +";\n";
-            result += "import com."+settings.owner_name+"." + settings.database_name + ".models." + name + "_VM;\n";
-            result += "import com."+settings.owner_name+"." + settings.database_name + ".models.User;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".data_fakes." + name + "_DAO_Fake;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + ";\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + "_VM;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models.User;\n";
             result += "import jakarta.servlet.RequestDispatcher;\n";
             result += "import jakarta.servlet.ServletException;\n";
             result += "import jakarta.servlet.http.*;\n";
@@ -5426,9 +5425,6 @@ namespace Data_Objects
             result += "import org.junit.jupiter.api.Test;\n";
             result += "import org.springframework.mock.web.*;\n";
             result += "import static org.junit.jupiter.api.Assertions.*;\n";
-            
-            
-
 
             return result;
         }
@@ -5443,7 +5439,7 @@ namespace Data_Objects
             result += "session=null;\n";
             result += "rd=null;\n";
             result += "}\n";
-            
+
             return result;
         }
         //done
@@ -5464,7 +5460,7 @@ namespace Data_Objects
         {
             string result = "@Test\n";
             result += "public void TestLoggedOutUserGets302OnDoGet() throws ServletException, IOException{\n";
-            
+
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
             result += "int status = response.getStatus();\n";
@@ -5490,7 +5486,7 @@ namespace Data_Objects
         {
             string result = "@Test\n";
             result += "public void TestLoggedOutUserGets302OnDoPost() throws ServletException, IOException{\n";
-            
+
             result += "request.setSession(session);\n";
             result += "servlet.doPost(request,response);\n";
             result += "int status = response.getStatus();\n";
@@ -5498,7 +5494,8 @@ namespace Data_Objects
             result += "}\n";
             return result;
         }
-        private string TestWrongRoleGets302onDoGet() {
+        private string TestWrongRoleGets302onDoGet()
+        {
             string result = "@Test\n";
             result += "public void TestWrongRoleGets302onDoGet() throws ServletException, IOException{\n";
             result += SetUserOnTest("WrongRole");
@@ -5528,15 +5525,15 @@ namespace Data_Objects
         private string TestGetAllGetsAll()
         {
             string result = "@Test\n";
-            result += "public void testLoggedInUserGetsAll"+name+ "s() throws ServletException, IOException{\n";
+            result += "public void testLoggedInUserGetsAll" + name + "s() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
-            result += "List<"+name+"_VM> "+name.ToLower()+"s = (List<"+name+"_VM>) request.getAttribute(\""+name+"s\");\n" ;
-            result += "assertNotNull("+name.ToLower()+"s);\n";
-            result += "assertEquals(20,"+name.ToLower()+"s.size());\n";
+            result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
+            result += "assertNotNull(" + name.ToLower() + "s);\n";
+            result += "assertEquals(20," + name.ToLower() + "s.size());\n";
             result += "}\n";
-            
+
             return result;
         }
 
@@ -5554,9 +5551,9 @@ namespace Data_Objects
                         result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
                         result += "request.setSession(session);\n";
                         result += "servlet.doGet(request,response);\n";
-                        result += name +"_VM "+  name.ToLower() + " = ("+ name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
+                        result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
                         result += "assertNotNull(" + name.ToLower() + ");\n";
-                        result += "assertEquals("+r.column_name+"," + name.ToLower() + ".get"+r.column_name+"());\n";
+                        result += "assertEquals(" + r.column_name + "," + name.ToLower() + ".get" + r.column_name + "());\n";
                         result += "}\n";
                     }
                 }
@@ -5572,19 +5569,20 @@ namespace Data_Objects
             foreach (Column r in columns)
             {
                 int columnToNull = 1;
-                if (columns.Count == 1) { 
-                
-                columnToNull = 0; 
+                if (columns.Count == 1)
+                {
+
+                    columnToNull = 0;
                 }
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     {
-                        
+
                         result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
                         result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
-                        
+
                         result += "assertNull(" + name.ToLower() + ".get" + columns[columnToNull].column_name + "());\n";
-                        
+
                     }
                 }
             }
@@ -5647,7 +5645,7 @@ namespace Data_Objects
             }
             foreach (Column r in columns)
             {
-                if (r.increment == 0&&!r.data_type.toCSharpDataType().Equals("bool"))
+                if (r.increment == 0 && !r.data_type.toCSharpDataType().Equals("bool"))
                 {
                     result += "assertNotEquals(\"\"," + r.column_name + "Error);\n";
                     result += "assertNotNull(" + r.column_name + "Error);\n";
@@ -5656,7 +5654,7 @@ namespace Data_Objects
 
             result += "assertEquals(200,responseStatus);\n";
             result += "}\n";
-            
+
             return result;
         }
         private string TestAddCanAddWithNoErrorsAndRedirects()
@@ -5665,8 +5663,10 @@ namespace Data_Objects
             result += "public void TestAddCanAddWithNoErrorsAndRedirects() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
-            foreach (Column r in columns) {
-                if (r.increment == 0) {
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
@@ -5687,16 +5687,17 @@ namespace Data_Objects
             result += "servlet.doPost(request,response);\n";
             result += "int responseStatus = response.getStatus();\n";
             result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
-            result += "String "+name+"_Added = results.get(\"dbStatus\");\n";
+            result += "String " + name + "_Added = results.get(\"dbStatus\");\n";
             result += "assertEquals(302,responseStatus);\n";
-            result += "assertNotNull("+name+"_Added);\n";
+            result += "assertNotNull(" + name + "_Added);\n";
             result += "assertEquals(\"" + name + " Added\"," + name + "_Added);\n";
             result += "assertNotEquals(\"\"," + name + "_Added);\n";
             result += "}\n";
             return result;
         }
 
-        private string testExceptionKeyThrowsException() {  //fix
+        private string testExceptionKeyThrowsException()
+        {  //fix
             string result = "@Test\n";
             result += "public void testExceptionKeyThrowsException() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
@@ -5738,7 +5739,8 @@ namespace Data_Objects
             return result;
         }
 
-        private string  testDuplicateKeyAddsZero() {
+        private string testDuplicateKeyAddsZero()
+        {
             string result = "@Test\n";
             result += "public void testDuplicateKeyReturnsZero() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
@@ -5815,10 +5817,11 @@ namespace Data_Objects
             result += "request.setSession(session);\n";
             result += "//to set the old " + name + "\n";
             result += name + " " + name.ToLower() + " = new " + name + "();\n";
-            foreach (Column r in columns) {
+            foreach (Column r in columns)
+            {
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += name.ToLower() + ".set" + r.column_name + "(\"test"+name+"\");\n";
+                    result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "\");\n";
 
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
@@ -5833,12 +5836,10 @@ namespace Data_Objects
                 }
                 else
                 {
-                    result += name.ToLower() + ".set" + r.column_name + "(new "+r.data_type+".toString());\n";
+                    result += name.ToLower() + ".set" + r.column_name + "(new " + r.data_type + ".toString());\n";
                 }
-
-
             }
-            
+
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
             result += "//create a new albums parameters\n";
             foreach (Column r in columns)
@@ -5874,7 +5875,8 @@ namespace Data_Objects
             return result;
         }
 
-        private string testUpdateCanThrowSQLException() {
+        private string testUpdateCanThrowSQLException()
+        {
             string result = "@Test\n";
             result += "public void testUpdateCanThrowSQLException() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
@@ -5898,8 +5900,6 @@ namespace Data_Objects
                     result += name.ToLower() + ".set" + r.column_name + "(true);\n";
 
                 }
-
-
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
@@ -5942,7 +5942,8 @@ namespace Data_Objects
 
         }
 
-        private string testUpdateCanReturnZero() {
+        private string testUpdateCanReturnZero()
+        {
             string result = "@Test\n";
             result += "public void testUpdateCanReturnZero() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
@@ -5970,8 +5971,6 @@ namespace Data_Objects
                 {
                     result += name.ToLower() + ".set" + r.column_name + "(new " + r.data_type + ".toString());\n";
                 }
-
-
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
@@ -6016,12 +6015,12 @@ namespace Data_Objects
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
             result += "request.setParameter(\"" + name + "id\",null);\n";
-            result += "request.setParameter(\"mode\",\"0\");\n" ;
-            result += "servlet.doPost(request,response);\n"; 
+            result += "request.setParameter(\"mode\",\"0\");\n";
+            result += "servlet.doPost(request,response);\n";
             result += "int status = (int) request.getAttribute(\"result\");\n";
             result += "assertEquals(1,status);\n";
             result += "}\n";
-            
+
             return result;
         }
 
@@ -6041,7 +6040,8 @@ namespace Data_Objects
             return result;
         }
 
-        private string TestDeactivateCanFailIfKeyNotFound() {
+        private string TestDeactivateCanFailIfKeyNotFound()
+        {
             string result = "@Test\n";
             result += "public void TestDeActivateCanFailIfKeyDoesNotExist() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
@@ -6091,7 +6091,8 @@ namespace Data_Objects
             return result;
         }
 
-        private string TestActivateCanFailIfKeyNotFound() {
+        private string TestActivateCanFailIfKeyNotFound()
+        {
             string result = "@Test\n";
             result += "public void TestActivateCanFailIfKeyDoesNotExist() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
@@ -6107,7 +6108,8 @@ namespace Data_Objects
             result += "}\n";
             return result;
         }
-        private string TestInitWithNoParamsDoesNotCrash() {
+        private string TestInitWithNoParamsDoesNotCrash()
+        {
             string result = "@Test\n";
             result += "public void testInitWithNoParametersDoesNotThrowException() throws ServletException {\n";
             result += "servlet = null;\n";
@@ -6116,19 +6118,21 @@ namespace Data_Objects
             result += "}\n";
 
             return result;
-        
+
         }
 
-        private string SetUserOnTest(string role) {
+        private string SetUserOnTest(string role)
+        {
             string result = "User user = new User();\n";
-            result += "user.setRole_ID(\"" + role +"\");\n";
+            result += "user.setRole_ID(\"" + role + "\");\n";
             result += "session.setAttribute(\"User\",user);\n";
 
             return result;
-        
+
         }
 
-        public string genJavascriptObject() {
+        public string genJavascriptObject()
+        {
             string result = "";
             result += genJavascriptConstructor();
             result += genJavascriptsetterAndGetter();
@@ -6136,38 +6140,40 @@ namespace Data_Objects
             result += "\n";
             return result;
         }
-        
+
         private string genJavascriptConstructor()
         {
             string result = "";
             result += "function " + name + "(";
             string comma = "";
-            foreach (Column r in columns) {
-                result += comma + "_"+r.column_name;
+            foreach (Column r in columns)
+            {
+                result += comma + "_" + r.column_name;
                 comma = ",";
             }
             result += ") {\n";
             comma = "";
-            foreach (Column r in columns) {
-                result += comma+"this." + r.column_name + " = _" + r.column_name+";";
+            foreach (Column r in columns)
+            {
+                result += comma + "this." + r.column_name + " = _" + r.column_name + ";";
                 comma = "\n";
             }
             result += "\n";
             return result;
         }
 
-        private string genJavascriptsetterAndGetter() 
+        private string genJavascriptsetterAndGetter()
         {
             string result = "";
             foreach (Column r in columns)
             {
                 //setter
-                result += "this.set" + r.column_name + "= function (_"+r.column_name+"){\n";
+                result += "this.set" + r.column_name + "= function (_" + r.column_name + "){\n";
                 result += "this." + r.column_name + "= _" + r.column_name + ";\n";
                 result += "}\n";
                 //getter
                 result += "this.get" + r.column_name + "= function() {\n";
-                result += "return this."+r.column_name+";\n";
+                result += "return this." + r.column_name + ";\n";
                 result += "}\n";
 
             }
@@ -6177,31 +6183,34 @@ namespace Data_Objects
         {
             string result = "";
             result += genPythonModel();
-            result += genPythonConstructor();
+            result += genPythonInstanceConstructor();
             result += genPythonsetterAndGetter();
             result += "\n";
             result += "\n";
             return result;
         }
 
-        public string genPythonCommmands() { 
-        string result = "";
-            
+        public string genPythonCommmands()
+        {
+            string result = "";
+
             result += genPythonCreate();
+            result += genPythonCreateFK();
             result += genPythonGetAll();
             result += genPythonGetByPK();
+            result += genPythonGetByFK();
             result += genPythonDelete();
             result += genPythonUpdate();
-        return result;
+            return result;
         }
-        private string genPythonConstructor()
+        private string genPythonInstanceConstructor()
         {
             string result = "";
             result += name.ToLower() + " = " + name + "(";
             string comma = "";
             foreach (Column r in columns)
             {
-                result +=comma+ r.column_name+"='"+genFakeData(r)+"'";
+                result += comma + r.column_name + "='" + genFakeData(r) + "'";
                 comma = ",";
 
             }
@@ -6209,16 +6218,16 @@ namespace Data_Objects
             return result;
         }
 
-        private string genPythonModel() {
+        private string genPythonModel()
+        {
+            string result = "class " + name + "(models.Model):\n";
+            foreach (Column r in columns)
+            {
+                string commentText = "\"holds " + r.column_name + " related to the " + name + " object\"";
 
-            string result = "";
-            result = "class " + name + "(models.Model):\n";
-            
-
-            foreach (Column r in columns) {
                 if (r.increment != 0)
                 {
-                    result += "\t" + r.column_name + " =  models.AutoField(primary_key=True)\n";
+                    result += fourSpaces + r.column_name + " =  models.AutoField(" + commentText + ",primary_key=True)\n";
                     continue;
                 }
                 if (r.references != "")
@@ -6226,32 +6235,33 @@ namespace Data_Objects
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result += "\t" + r.column_name + " =  models.ForeignKey(" + fk_table + ", on_delete=models.CASCADE)\n";
+                    result += fourSpaces + r.column_name + " =  models.ForeignKey(" + fk_table + ", on_delete=models.CASCADE)\n";
                     continue;
                 }
                 if (r.column_name.ToLower().Contains("email"))
                 {
-                    result += "\t" + r.column_name + " =  models.EmailField()\n";
+                    result += fourSpaces + r.column_name + " =  models.EmailField(" + commentText + ")\n";
                     continue;
                 }
                 string primary_key = "";
                 string default_value = "";
                 string unique = "";
                 string nullable = "";
-                string comma = "";
-                if (r.length != 0) {
+
+                string comma = ",";
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+
+                    primary_key = comma + "primary_key=True";
                     comma = ",";
                 }
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')) {
-
-                    primary_key = comma+"primary_key=True"; 
-                    comma=",";
-                }
-                if (r.default_value != "") {
+                if (r.default_value != "")
+                {
                     default_value = comma + "default=" + r.default_value;
                     comma = ",";
                 }
-                if (r.unique == 'y' || r.unique == 'Y') {
+                if (r.unique == 'y' || r.unique == 'Y')
+                {
                     unique = comma + "unique=True";
                     comma = ",";
                 }
@@ -6259,16 +6269,64 @@ namespace Data_Objects
                 {
                     nullable = comma + "null=True";
                     comma = ",";
-                }              
-                
-                 
-                
-                 result += "\t" + r.column_name + "=models." + r.data_type.toDjangoDataType(r.length) +primary_key+ default_value+unique+nullable+")\n";
-                
+                }
+
+                result += fourSpaces + r.column_name + "=models." + r.data_type.toDjangoDataType(r.length, commentText) + primary_key + default_value + unique + nullable + ")\n";
+
             }
+            result += genPython__init__();
+            result += genPythonToString();
             return result;
         }
+        /// <summary>
+        /// Generates a custom python init method for an object based on this <see cref="table"/>. 
+        /// This init method takes a paramater for each <see cref="Column"/> in <see cref="columns"/>
+        /// </summary>
+        /// <returns>a <see cref="String"/> that represents formatted python code for an __init__ function</returns>
+        private string genPython__init__()
+        {
+            string result = fourSpaces + "def __init__ (self";
+            foreach (Column r in columns)
+            {
+                result += ", _" + r.column_name.ToLower();
 
+            }
+            result += ") :\n";
+            foreach (Column r in columns)
+            {
+                result += fourSpaces + fourSpaces + "self." + r.column_name + " = _" + r.column_name.ToLower() + "\n";
+
+            }
+
+            return result;
+
+        }
+        /// <summary>
+        /// Generates a custom python __str__ method for an object based on this <see cref="table"/>. 
+        /// This __str__ method prints the current value for each <see cref="Column"/> in <see cref="columns"/>
+        /// </summary>
+        /// <returns>a <see cref="String"/> that represents formatted python code for an __str__ function</returns>
+        private string genPythonToString()
+        {
+            string result = fourSpaces + "# to define the to string method for the " + name + " model\n";
+            result += fourSpaces + "def __str__(self):\n";
+            result += fourSpaces + fourSpaces + "stringRep = \"\\n\"\n";
+            foreach (Column r in columns)
+            {
+                result += fourSpaces + fourSpaces + "stringRep += \"" + r.column_name + " = \" + self." + r.column_name + ".__str__()+\"\\n\"\n";
+
+            }
+            result += fourSpaces + fourSpaces + "stringRep += \"\\n\"\n";
+            result += fourSpaces + fourSpaces + "return stringRep\n";
+            return result;
+        }
+        /// <summary>
+        /// Generates a custom python getter and setter method for an object based on this <see cref="table"/>. 
+        /// The getter methods take no paramaters and return the current value of the variable.
+        /// the setter methods take a paramater and set the associated value
+        /// One setter and one getter is created for each <see cref="Column"/> in <see cref="columns"/>
+        /// </summary>
+        /// <returns>a <see cref="String"/> that represents formatted python code for an setter and getter functions</returns>
         private string genPythonsetterAndGetter()
         {
             string result = "";
@@ -6283,15 +6341,48 @@ namespace Data_Objects
             return result;
         }
 
-        private string genPythonCreate() {
-            string result = genPythonConstructor();
+        private string genPythonCreate()
+        {
+            string result = genPythonInstanceConstructor();
             result += name.ToLower() + ".save()\n";
             return result;
-        
+
+        }
+
+        private string genPythonCreateFK()
+        {
+            string result = "";
+            foreach (foreignKey key in data_tables.all_foreignKey)
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    foreach (table t in data_tables.all_tables)
+                    {
+                        if (t.name.Equals(key.mainTable))
+                        {
+                            {
+                                result += name.ToLower() + "." + key.mainTable.ToLower() + "_set.create(";
+                                string comma = "";
+
+                                foreach (Column r in t.columns)
+                                {
+                                    if (r.increment == 0 && r.references == "")
+                                    {
+                                        result += comma + r.column_name + "=" + genFakeData(r) + "";
+                                        comma = ",";
+                                    }
+                                }
+
+                                result += ")\n";
+                            }
+                        }
+                    }
+                }
+            return result;
+
         }
         private string genPythonGetAll()
         {
-            string result = name+".objects.values()\n";
+            string result = name + ".objects.values()\n";
             return result;
 
         }
@@ -6300,14 +6391,30 @@ namespace Data_Objects
             string result = "";
             string comma = "";
             result += name + ".objects.filter(";
-            foreach (Column r in columns) { 
-            if (r.primary_key == 'Y' || r.primary_key == 'y')
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'Y' || r.primary_key == 'y')
                 {
                     result += comma + r.column_name + "='xxx'";
                     comma = ",";
                 }
             }
             result += ").values()\n";
+            return result;
+
+        }
+
+        private string genPythonGetByFK()
+        {
+            string result = "";
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    result += name.ToLower() + "." + key.mainTable.ToLower() + "_set.all()\n";
+                    result += name.ToLower() + "." + key.mainTable.ToLower() + "_set.count()\n";
+                }
+            }
             return result;
 
         }
@@ -6355,13 +6462,14 @@ namespace Data_Objects
             return result;
 
         }
-        private string genFakeData(Column r) {
+        private string genFakeData(Column r)
+        {
             string result = "";
 
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
                 result = "\"" + generateRandomString(r, 8 - r.length) + "\"";
-                
+
             }
             else if (r.data_type.toCSharpDataType().Equals("bool"))
             {
@@ -6390,7 +6498,5 @@ namespace Data_Objects
             }
             return result;
         }
-        
-        
     }
 }

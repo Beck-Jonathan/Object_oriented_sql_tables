@@ -65,42 +65,43 @@ namespace Data_Objects
             return Char.ToLower(value[0]) + value.Substring(1);
         }
 
-        public static string toDjangoDataType(this string value,int length) {
-            string result = value;
+        public static string toDjangoDataType(this string value, int length, string comment)
+        {
             value = value.ToLower();
+            string result;
             switch (value)
             {
                 case "int":
-                    result = "IntegerField(";
+                    result = "IntegerField(" + comment;
                     break;
-                case "Date":
-                    result = "DateField(";
+                case "date":
+                    result = "DateField(" + comment;
                     break;
-                case "DateTime":
-                    result = "DatetimeField(";
+                case "dateTime":
+                    result = "DatetimeField(" + comment;
                     break;
                 case "bit":
-                    result = "BooleanField(";
+                    result = "BooleanField(" + comment;
                     break;
                 case "nvarchar":
-                    result = "CharField(max_length="+length;
+                    result = "CharField(" + comment + ",max_length=" + length;
                     break;
                 case "varchar":
-                    result = "CharField(max_length="+length;
+                    result = "CharField(" + comment + ",max_length=" + length;
                     break;
-                case "Decimal":
-                    result = "DecimalField(";
+                case "decimal":
+                    result = "DecimalField(" + comment;
                     break;
-                case "Time":
-                    result = "TimeField(";
+                case "time":
+                    result = "TimeField(" + comment;
                     break;
-                default :
-                    result = value+"Field(";
+                default:
+                    result = value + "Field(" + comment;
                     break;
             }
 
             return result;
-        
+
         }
     }
 }
