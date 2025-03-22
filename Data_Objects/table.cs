@@ -1159,6 +1159,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is Java code for this object.
+
         public string genJavaModel()
         {
             string result = "";
@@ -1170,6 +1171,10 @@ namespace Data_Objects
             result += genJavaFooter();
             return result;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public string genJavaModelNM()
         {
             string result = "";
@@ -1244,6 +1249,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's constructor.
+        ///
         private string genJavaContructor()
         {
             //default
@@ -1290,6 +1296,10 @@ namespace Data_Objects
             string result = defaultConstructor + ParamConsctructor + ParamConstructor2;
             return result;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private string genJavaVMContructor()
         {
             //default
@@ -1391,12 +1401,15 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's setters and getters for this object's instance variables.
+        ///
         private string genJavaSetterAndGetter()
         {
             string result = "";
             foreach (Column r in columns)
             {
+                result += commentBox.genJavaGetterJavaDoc(name, r);
                 string getter = "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
+                result += commentBox.genJavaSetterJavaDoc(name, r);
                 string setter = "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
                 if (r.data_type.Equals("datetime"))
                 {
@@ -1443,6 +1456,10 @@ namespace Data_Objects
             }
             return result;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private string genJavaVMSetterAndGetter()
         {
             string result = "";
@@ -1481,10 +1498,12 @@ namespace Data_Objects
             return result;
         }
         /// <summary>
-        /// Generates the footer for this Java data object for this <see cref="table"/> 
+        /// Generates the compareTo() method for this Java data object for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is  Java code for this object's footer.
+        /// <returns>A string that is  Java code for this object's compareTo() method
+        ///
+
         private string genJavaComparable()
         {
             string result = "";
@@ -1516,6 +1535,10 @@ namespace Data_Objects
             result += "}\n";
             return result;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         private string genJavaFooter()
         {
             string result = "\n}\n";
@@ -1526,6 +1549,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object.
+       
         public string genJavaDAO()
         {
             string result = "";
@@ -1543,10 +1567,11 @@ namespace Data_Objects
             return result;
         }
         /// <summary>
-        /// Generates the header for the Java DAO object for this <see cref="table"/> 
+        /// Generates the Java DAO interface for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is  Java code for this object's associated DAO object header.
+        /// <returns>A string that is  Java code for this object's associated DAO interface.
+
         public string genJavaiDAO()
         {
             String result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
@@ -1641,6 +1666,11 @@ namespace Data_Objects
             return result;
 
         }
+        /// <summary>
+        /// Generates the header for the Java DAO object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated DAO object header.
         private string genJavaDAOHeader(String projectName)
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDAO);
@@ -2046,6 +2076,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object delete method.
+        
         private string genJavaDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
@@ -2093,6 +2124,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object undelete method.
+        ///
         private string genJavaunDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Undelete);
@@ -2140,6 +2172,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object create method.
+        ///
         private string genJavaDAOCreate()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
@@ -2194,6 +2227,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated create servlet.
+       
         public string genCreateServelet()
         {
             string result = "";
@@ -2391,7 +2425,11 @@ namespace Data_Objects
             //get_footer
             return result;
         }
-        //Generates the Java Create JSP
+        /// <summary>
+        /// Generates the create JSP for the Java object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  Java code for this object's associated create jsp.
         public string genCreateJSP()
         {
             int rowcount = 0;
@@ -2474,6 +2512,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated view all servlet.</returns>
+        
         public string genviewAllServlet()
         {
             //this only creates the doGet method
@@ -2519,6 +2558,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated delete servlet.</returns>
+        
         public string genDeleteServlet()
         {
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
@@ -2566,6 +2606,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated edit servlet.</returns>
+        ///
         public string genViewEditServlet()
         {
             //do get
@@ -2720,6 +2761,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated View Single/Edit JSP.</returns>
+        
         public string genViewEditJSP()
         {
             int rowcount = 0;
@@ -2805,6 +2847,12 @@ namespace Data_Objects
             result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";
             return result;
         }
+        /// <summary>
+        /// Generates the View all with line items JSP for the Java  object for this <see cref="table"/> 
+        /// Jonathan Beck
+        /// </summary>
+        /// <returns>A string that is  JSP code for this object's associated view edit with line items.</returns>
+
         public string genViewEditWithLineItemsJSP()
         {
             int rowcount = 0;
@@ -3233,7 +3281,10 @@ namespace Data_Objects
             result += "}\n";
             return result;
         }
-
+        /// <summary>
+        /// Creates a list of common stored procedure definitions. Will write method signatures for basic CRRRUDD functions.
+        /// </summary>
+        /// <returns>a string</returns>
         public string sp_definitions()
         {
             bool has_is_active = false;
@@ -3521,6 +3572,10 @@ namespace Data_Objects
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public string createModelTests()
         {
             string result = "";

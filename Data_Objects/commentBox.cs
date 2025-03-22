@@ -406,5 +406,43 @@ namespace Data_Objects
             if (settings.TSQLMode) { full_comment_box = full_comment_box + PrintStatement; }
             return full_comment_box;
         }
+
+
+        public static String genJavaSetterJavaDoc(String tablename,Column r)
+        {
+            string result = "";
+            result = "\n";
+            result += "/**\n";
+            result += "* <p> Sets the " + r.column_name + " of the associated " + tablename + " object </p>\n";
+            result += "*@param " + r.column_name + " the " + r.column_name.ToLower() + " of the " + tablename.ToLower() + ",\n";
+            if (r.length != 0)
+            {
+                result += "* throws IllegalArgumentException if " + r.column_name + " under 3 characters or longer than " + r.length + " characters\n";
+            }
+
+            else if (r.data_type.ToLower().Equals("int"))
+            {
+                result += "* throws IllegalArgumentException if " + r.column_name + " is negative or greater than 10,000\n";
+            }
+            else
+            {
+                result += "* throws IllegalArgumentException if " + r.column_name + " is outside of a logical range\n";
+            }
+            result += "*/\n";
+            return result;
+
+        }
+        public static String genJavaGetterJavaDoc(String tablename, Column r)
+        {
+            string result = "";
+            result = "\n";
+            result += "/**\n";
+            result += "* <p> Gets the " + r.column_name + " of the associated " + tablename + " object </p>\n";
+            result += "* @return the " + r.column_name + " of this " + tablename + " object.\n";
+            result += "*/\n";
+            return result;
+
+        }
+        
     }
 }

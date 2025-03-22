@@ -54,7 +54,7 @@ namespace Data_Access
             string tablename = " ";
             string description;
             char[] separator = { '\t' };
-            _ = { ' ' };
+            
             List<Column> rows = new List<Column>();
             int count = 0;
             try
