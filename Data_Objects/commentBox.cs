@@ -414,7 +414,7 @@ namespace Data_Objects
             result = "\n";
             result += "/**\n";
             result += "* <p> Sets the " + r.column_name + " of the associated " + tablename + " object </p>\n";
-            result += "*@param " + r.column_name + " the " + r.column_name.ToLower() + " of the " + tablename.ToLower() + ",\n";
+            result += "* @param " + r.column_name + " the " + r.column_name.ToLower() + " of the " + tablename.ToLower() + ",\n";
             if (r.length != 0)
             {
                 result += "* throws IllegalArgumentException if " + r.column_name + " under 3 characters or longer than " + r.length + " characters\n";
@@ -443,6 +443,132 @@ namespace Data_Objects
             return result;
 
         }
-        
+
+        public static String genJavaTestJavaDoc(JavaTestType test, table t) {
+            String result = "\n/**\n";
+            result += "<p> ";
+            
+            switch (test)
+            {
+                case JavaTestType.SetterWorks:
+                    result += "Tests That the Setters for the " + t.name + "object work";
+                    break;
+                case JavaTestType.SetterThrowsException:
+                    result += "Tests That the Setters for the " + t.name + "object can throw exceptions with invalid inputs";
+                    break;
+                case JavaTestType.Getter:
+                    result += "Tests That the getters for the " + t.name + "object work";
+                    break;
+                case JavaTestType.ParamartizedConstructor:
+                    result += "Tests That the Paramaterized Constructor for the " + t.name + "object works";
+                    break;
+                case JavaTestType.DefaultConstructor:
+                    result += "Tests That the default constructor for the " + t.name + "object works";
+                    break;
+                case JavaTestType.CompareTo:
+                    result += "Tests That the CompareTo Method for the " + t.name + "object works";
+                    break;
+                case JavaTestType.TwoHundredOnGet:
+                    result += "Test That a logged in user gets a 200 status on doGet";
+                    break;
+                case JavaTestType.TwoHundredOnPost:
+                    result += "Test That a logged in user gets a 200 status on doPost";
+                    break;
+                case JavaTestType.TwoHundredIfLoggedIn:
+                    result += "Tests That the user will received a 200 status on doGet if they are logged in";
+                    break;
+                case JavaTestType.ThreeOhTwoOnGet:
+                    result += "Tests That the user will received a 302 status on doGet if they are logged out ";
+
+                    break;
+                case JavaTestType.ThreeOhTwoOnPost:
+                    result += "Tests That the user will received a 302 status on doPost if they are logged out ";
+
+                    break;
+                case JavaTestType.ThreeOhTwoIfLoggedOut:
+                    result += "";
+                    break;
+
+                case JavaTestType.CanAddWithNoErrors:
+                    result += "Tests That We can add to the database if all input fields are validated ";
+
+                    break;
+                case JavaTestType.CanThrowException:
+                    result += "Tests That the user will received a error messages for each incorrectly filled out field on the form.";
+
+                    break;
+                case JavaTestType.initTest:
+                    result += "Test That initialzing the Servlet Does Not Crash or cause an exception";
+                    break;
+                case JavaTestType.setupTests:
+                    result += "setup the tests by creating a new instance of the servlet and setting some standard variablges";
+                    break;
+                case JavaTestType.teardownTests:
+                    result += "tear down by setting all variablges to null.";
+                    break;
+                case JavaTestType.WrongRoleThreeOhTwoGet:
+                    result += "Test that a user in the wrong role will get a 302 on a doGet";
+                    break;
+                case JavaTestType.WrongRoleThreeOhTwoPost:
+                    result += "Test that a user in the wrong role will get a 302 on a doPost";
+                    break;
+                case JavaTestType.LoggedInGetAllGetsAll:
+                    result += "Test that a logged in user is able to retreive all of the " + t.name+ " objects.";
+                    break;
+                case JavaTestType.GetOneGetsOne:
+                    result += "Test that a logged in user is able to retreive a specific one of the "+t.name+" objects.";
+                    break;
+                case JavaTestType.GetOneCanFail:
+                    result += "Test that getting one "+ t.name+" can fail.";
+                    break;
+                case JavaTestType.GetAllCanFilter:
+                    result += "Test that getting all " + t.name + " can filter.";
+                    break;
+                case JavaTestType.ErrorMessagesforEachField:
+                    result += "Test that error messages are sent for each field for adding" + t.name + " objects. That is to say, testing server" +
+                        "side validation";
+                    break;
+                case JavaTestType.DuplicateDoesNotGetAdded:
+                    result += "Test that "+t.name+ " objects with duplicate primary keys don't get added, and proper error handling exists.";
+                    break;
+                case JavaTestType.CanUpdateWithNoErrors:
+                    result += "Test that we are able to update " + t.name+" objects if there are no errors in the input fields";
+                    break;
+                case JavaTestType.DuplicateDoesNotGetUpdated:
+                    result += "Test that a duplicate primary key will get caught when trying to update " + t.name + " objects.";
+
+                    break;
+                case JavaTestType.DeactivateCanDeactivate:
+                    result += "Test that the deactivation servlet can deactivate a " + t.name;
+                    break;
+                case JavaTestType.DeactivateCanFailIfalreadyInactive:
+                    result += "Test that the deactivate servlet will fail if the "+ t.name + " is already insactive.";
+                    break;
+                    
+                case JavaTestType.ActivateCanActivate:
+                    result += "Test that the activation servlet can active a "+t.name;
+                    break;
+                case JavaTestType.ActivateCanFailIfAlreadayActive:
+                    result += "Test that the activation servlet can fail if the "+ t.name+" is already active";
+                   
+                    break;
+                case JavaTestType.DeleteCanDelete:
+                    result += "Test that the delete servlet can delete a "+ t.name;
+                    break;
+                case JavaTestType.DeleteCanFailIfIDNotExist:
+                    result += "Test that the delete servlet can fail if the given "+t.name + " does not exist.";
+                    break;
+                default:
+                    result += "Test something, needs more specificity";
+                    break;
+            }
+
+            result += " </p>\n";
+            result += "*/\n";
+
+            return result;
+
+        }
+
     }
 }

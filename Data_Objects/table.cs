@@ -3580,6 +3580,7 @@ namespace Data_Objects
         {
             string result = "";
             result += testInitialize(); //done
+            
             result += testDefaultConstructor();
             result += testParameterizedConstructor();
             result += testKeyedParameterizedConstructor();
@@ -3628,6 +3629,7 @@ namespace Data_Objects
 
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
+                
                 result += testTooShort(r);  //done
                 result += testTooLong(r); //done
                 result += testStringSet(r); //done
@@ -3707,8 +3709,8 @@ namespace Data_Objects
 
         private string testParameterizedConstructor()
         {
-
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+            result += "@Test\n";
             //generate random values for each
             ArrayList array = new ArrayList(columns.Count + 1);
 
@@ -3830,7 +3832,8 @@ namespace Data_Objects
 
         private string testDefaultConstructor()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DefaultConstructor, this);
+             result += "@Test\n";
             result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
             result += name + " _" + name.ToLower() + "= new " + name + "();\n";
             foreach (Column r in columns)
@@ -3858,7 +3861,8 @@ namespace Data_Objects
         }
         private string testVMDefaultConstructor()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+            result += "@Test\n"; ;
             result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
             result += name + "_VM _" + name.ToLower() + "VM= new " + name + "_VM();\n";
             foreach (Column r in columns)
@@ -3907,7 +3911,8 @@ namespace Data_Objects
 
         private string testKeyedParameterizedConstructor()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+            result += "@Test\n";
             //generate random values for each
             ArrayList array = new ArrayList(columns.Count + 1);
 
@@ -4101,7 +4106,9 @@ namespace Data_Objects
                     _ = Task.Delay(5);
                 }
                 //method signature
-                result += "\n@Test\n";
+                result += "\n";
+                result += commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+                result += "@Test\n";
                 switch (j)
                 {
 
@@ -4298,7 +4305,8 @@ namespace Data_Objects
         }
         private string testTooShort(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooShort(){\n";
             result += "String " + r.column_name + " = \"";
             String dummy = generateRandomString(r, 2 - r.length);
@@ -4312,7 +4320,8 @@ namespace Data_Objects
         private string testTooLong(Column r)
         {
 
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooLong(){\n";
             result += "String " + r.column_name + " = \"";
             String dummy = generateRandomString(r, +2);
@@ -4325,7 +4334,8 @@ namespace Data_Objects
         }
         private string testIntTooBig(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
             result += "int " + r.column_name + " = 10001;\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
@@ -4335,7 +4345,8 @@ namespace Data_Objects
         }
         private string testIntTooSmall(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
             result += "int " + r.column_name + " = -1;\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
@@ -4346,7 +4357,8 @@ namespace Data_Objects
         {
 
             int numberToTest = rand.Next(1, 10000);
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this);
+            result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "(){\n";
             result += "int " + r.column_name + " = " + numberToTest + ";\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
@@ -4358,7 +4370,8 @@ namespace Data_Objects
         }
         private string testDecimalTooBig(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
             result += "double " + r.column_name + " = 10001;\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
@@ -4368,7 +4381,8 @@ namespace Data_Objects
         }
         private string testDecimalTooSmall(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
             result += "double " + r.column_name + " = -1;\n";
             result += "Assertions.assertThrows(IllegalArgumentException.class, () -> {_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");});\n";
@@ -4379,7 +4393,8 @@ namespace Data_Objects
         {
 
             int numberToTest = rand.Next(1, 10000);
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this);
+            result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "(){\n";
             result += "double " + r.column_name + " = " + numberToTest + ";\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
@@ -4391,7 +4406,8 @@ namespace Data_Objects
         }
         private string testDatetimeTooBig(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig() throws ParseException{\n";
             result += "String strDate = \"01/01/2190\";\n";
             result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
@@ -4403,7 +4419,8 @@ namespace Data_Objects
         }
         private string testDatetimeTooSmall(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this);
+            result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall() throws ParseException{\n";
             result += "String strDate = \"03/03/1990\";\n";
             result += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
@@ -4416,7 +4433,8 @@ namespace Data_Objects
         private string testDatetimeSet(Column r)
         {
             _ = rand.Next(1, 10000);
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this);
+            result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "() throws ParseException{\n";
             DateTime today = DateTime.Today;
             result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
@@ -4434,7 +4452,8 @@ namespace Data_Objects
 
             String dummy = generateRandomString(r, -2);
 
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this);
+            result += "@Test\n";
             result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
             result += "String " + r.column_name + " = \"" + dummy + "\";\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
@@ -4445,7 +4464,8 @@ namespace Data_Objects
         }
         private string testBoolSetFalse(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this);
+            result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "asFalse(){\n";
             result += "boolean status = false;\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(status);\n";
@@ -4456,7 +4476,8 @@ namespace Data_Objects
         }
         private string testBoolSetTrue(Column r)
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this);
+            result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "asTrue(){\n";
             result += "boolean status = true;\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(status);\n";
@@ -4502,6 +4523,8 @@ namespace Data_Objects
                     break;
                 }
             }
+            result += "\n";
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.CompareTo, this);
             result += "@Test\n";
             result += "public void testCompareToCanCompareForEachDateField()";
             if (hasDateTime)
@@ -5399,7 +5422,9 @@ namespace Data_Objects
             {
                 servletName = "Edit_" + name;
             }
-            string result = "@BeforeEach\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.setupTests, this);
+            result += "@BeforeEach\n";
+            
             result += "public void setup() throws ServletException{\n\n";
             result += "servlet = new " + servletName + "();\n";
             result += "servlet.init(";
@@ -5486,7 +5511,9 @@ namespace Data_Objects
         //done
         private string tearDownTests()
         {
-            string result = "@AfterEach\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.teardownTests, this);
+            result += "@AfterEach\n";
+            
             result += "public void teardown(){\n";
             result += "servlet=null;\n";
             result += "request=null;\n";
@@ -5500,7 +5527,8 @@ namespace Data_Objects
         //done
         private string testLoggedInGets200OnDoGet()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.TwoHundredIfLoggedIn, this);
+            result = "@Test\n";
             result += "public void TestLoggedInUserGets200OnDoGet() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5513,7 +5541,8 @@ namespace Data_Objects
         //done
         private string TestLoggedOutGets302onDoGet()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ThreeOhTwoOnGet, this);
+            result = "@Test\n";
             result += "public void TestLoggedOutUserGets302OnDoGet() throws ServletException, IOException{\n";
 
             result += "request.setSession(session);\n";
@@ -5526,7 +5555,8 @@ namespace Data_Objects
         //done
         private string testLoggedInGets200OnDoPost()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.TwoHundredOnPost, this);
+            result = "@Test\n";
             result += "public void TestLoggedInUserGets200OnDoPost() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5539,7 +5569,8 @@ namespace Data_Objects
         //done
         private string TestLoggedOutGets302onDoPost()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ThreeOhTwoOnPost, this);
+            result = "@Test\n";
             result += "public void TestLoggedOutUserGets302OnDoPost() throws ServletException, IOException{\n";
 
             result += "request.setSession(session);\n";
@@ -5551,7 +5582,8 @@ namespace Data_Objects
         }
         private string TestWrongRoleGets302onDoGet()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.WrongRoleThreeOhTwoGet, this);
+            result = "@Test\n";
             result += "public void TestWrongRoleGets302onDoGet() throws ServletException, IOException{\n";
             result += SetUserOnTest("WrongRole");
             result += "request.setSession(session);\n";
@@ -5564,7 +5596,8 @@ namespace Data_Objects
 
         private string TestWrongRoleGets302onDoPost()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.WrongRoleThreeOhTwoPost, this);
+            result = "@Test\n";
             result += "public void TestWrongRoleGets302onDoPost() throws ServletException, IOException{\n";
             result += SetUserOnTest("WrongRole");
             result += "request.setSession(session);\n";
@@ -5579,7 +5612,8 @@ namespace Data_Objects
 
         private string TestGetAllGetsAll()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.LoggedInGetAllGetsAll, this);
+            result = "@Test\n";
             result += "public void testLoggedInUserGetsAll" + name + "s() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5599,7 +5633,8 @@ namespace Data_Objects
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     {
-                        result += "@Test\n";
+                        result += commentBox.genJavaTestJavaDoc(JavaTestType.GetOneGetsOne, this);
+                        result = "@Test\n";
                         result += "public void testGetOne" + name + "GetsOne" + r.column_name + "() throws ServletException, IOException{\n";
                         result += SetUserOnTest("Jonathan");
                         result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
@@ -5617,8 +5652,8 @@ namespace Data_Objects
 
         private string TestGetOneCanFail()
         {
-            string result = "";
-            result += "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.GetOneCanFail, this);
+            result = "@Test\n";
             result += "public void testGetOne" + name + "CanFail" + "() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             foreach (Column r in columns)
@@ -5666,6 +5701,7 @@ namespace Data_Objects
                 if (r.references != "")
                 {
                     {
+                        result += commentBox.genJavaTestJavaDoc(JavaTestType.GetAllCanFilter, this);
                         result += "@Test\n";
                         result += "public void testLoggedInUserCanFilter" + name + "sBy" + r.column_name + "() throws ServletException, IOException{\n";
                         result += SetUserOnTest("Jonathan");
@@ -5684,7 +5720,8 @@ namespace Data_Objects
 
         private string TestAddHasErrorsForEachFieldAndKeepsOnSamePage()
         {
-            string result = "@Test\n";
+            string result  = commentBox.genJavaTestJavaDoc(JavaTestType.ErrorMessagesforEachField, this);
+            result += "@Test\n";
             result += "public void TestAddHasErrorsForEachFieldAndKeepsOnSamePage() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5714,7 +5751,8 @@ namespace Data_Objects
         }
         private string TestAddCanAddWithNoErrorsAndRedirects()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.CanAddWithNoErrors, this);
+            result += "@Test\n";
             result += "public void TestAddCanAddWithNoErrorsAndRedirects() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5753,7 +5791,8 @@ namespace Data_Objects
 
         private string testExceptionKeyThrowsException()
         {  //fix
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.CanThrowException, this);
+            result += "@Test\n";
             result += "public void testExceptionKeyThrowsException() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5796,7 +5835,8 @@ namespace Data_Objects
 
         private string testDuplicateKeyAddsZero()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DuplicateDoesNotGetAdded, this);
+            result += "@Test\n";
             result += "public void testDuplicateKeyReturnsZero() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5836,7 +5876,8 @@ namespace Data_Objects
 
         private string TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ErrorMessagesforEachField, this);
+            result += "@Test\n";
             result += "public void TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5866,7 +5907,8 @@ namespace Data_Objects
         }
         private string TestUpdateCanAddWithNoErrorsAndRedirects()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.CanUpdateWithNoErrors, this);
+            result += "@Test\n";
             result += "public void TestUpdateCanAddWithNoErrorsAndRedirects() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5932,7 +5974,8 @@ namespace Data_Objects
 
         private string testUpdateCanThrowSQLException()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.CanThrowException, this);
+            result += "@Test\n";
             result += "public void testUpdateCanThrowSQLException() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -5999,7 +6042,8 @@ namespace Data_Objects
 
         private string testUpdateCanReturnZero()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DuplicateDoesNotGetUpdated, this);
+            result += "@Test\n";
             result += "public void testUpdateCanReturnZero() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6065,7 +6109,8 @@ namespace Data_Objects
 
         private string TestDeactivateCanDeactivate()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DeactivateCanDeactivate, this);
+            result += "@Test\n";
             result += "public void TestDeactivateCanDeactivate() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6081,7 +6126,8 @@ namespace Data_Objects
 
         private string TestDeactivateFailIfAlreadyFalse()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DeactivateCanFailIfalreadyInactive, this);
+            result += "@Test\n";
             result += "public void TestDeactivateFailIfAlreadyFalse() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6097,7 +6143,8 @@ namespace Data_Objects
 
         private string TestDeactivateCanFailIfKeyNotFound()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DeactiveCanFailWithKeyNotfound, this);
+            result += "@Test\n";
             result += "public void TestDeActivateCanFailIfKeyDoesNotExist() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6116,7 +6163,8 @@ namespace Data_Objects
         }
         private string TestactivateCanActivate()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ActivateCanActivate, this);
+            result += "@Test\n";
             result += "public void TestactivateCanActivate() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6132,7 +6180,8 @@ namespace Data_Objects
 
         private string TestActivateFailIfAlreadyTrue()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ActivateCanFailIfAlreadayActive, this);
+            result += "@Test\n";
             result += "public void TestActivateFailIfAlreadyTrue() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6148,7 +6197,8 @@ namespace Data_Objects
 
         private string TestActivateCanFailIfKeyNotFound()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ActivateCanFailWithKeyNotFound, this);
+            result += "@Test\n";
             result += "public void TestActivateCanFailIfKeyDoesNotExist() throws ServletException, IOException {\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
@@ -6165,7 +6215,8 @@ namespace Data_Objects
         }
         private string TestInitWithNoParamsDoesNotCrash()
         {
-            string result = "@Test\n";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.initTest, this);
+            result += "@Test\n";
             result += "public void testInitWithNoParametersDoesNotThrowException() throws ServletException {\n";
             result += "servlet = null;\n";
             result += "servlet = new " + servletName + "();\n";

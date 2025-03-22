@@ -93,4 +93,45 @@
         Java_DAO_Update,
         Java_DAO_Get_Distinct
     }
+    public enum  JavaTestType
+    {
+        SetterWorks,
+        SetterThrowsException,
+        Getter,
+        ParamartizedConstructor,
+        DefaultConstructor,
+        CompareTo,
+        TwoHundredOnGet,
+        TwoHundredOnPost,
+        TwoHundredIfLoggedIn,
+        ThreeOhTwoOnGet,
+        ThreeOhTwoOnPost,
+        ThreeOhTwoIfLoggedOut,
+        CanAddWithNoErrors,
+        ErrorMessagesforEachField,
+        CanThrowException,
+        initTest,
+        setupTests,
+        teardownTests,
+        WrongRoleThreeOhTwoGet,
+        WrongRoleThreeOhTwoPost,
+        LoggedInGetAllGetsAll,
+        GetOneGetsOne,
+        GetOneCanFail,
+        GetAllCanFilter,
+        DuplicateDoesNotGetAdded,
+        CanUpdateWithNoErrors,
+        DuplicateDoesNotGetUpdated,
+        DeactivateCanDeactivate,
+        DeactivateCanFailIfalreadyInactive,
+        DeactiveCanFailWithKeyNotfound,
+        ActivateCanActivate,
+        ActivateCanFailIfAlreadayActive,
+        ActivateCanFailWithKeyNotFound,
+        DeleteCanDelete,
+        DeleteCanFailIfIDNotExist
+
+
+
+    }
 }
