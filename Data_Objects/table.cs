@@ -1407,10 +1407,10 @@ namespace Data_Objects
             string result = "";
             foreach (Column r in columns)
             {
-                result += commentBox.genJavaGetterJavaDoc(name, r);
-                string getter = "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
-                result += commentBox.genJavaSetterJavaDoc(name, r);
-                string setter = "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
+                string getter = commentBox.genJavaGetterJavaDoc(name, r);
+                getter += "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
+                string setter = commentBox.genJavaSetterJavaDoc(name, r);
+                 setter += "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
                 if (r.data_type.Equals("datetime"))
                 {
                     setter += "throws ParseException";
