@@ -445,28 +445,32 @@ namespace Data_Objects
         }
 
         public static String genJavaTestJavaDoc(JavaTestType test, table t) {
+            Column r = new Column();
+            return genJavaTestJavaDoc(test, t, r);
+        }
+        public static String genJavaTestJavaDoc(JavaTestType test, table t, Column r) {
             String result = "\n/**\n";
             result += "<p> ";
             
             switch (test)
             {
                 case JavaTestType.SetterWorks:
-                    result += "Tests That the Setters for the " + t.name + "object work";
+                    result += "Tests That the Setters for the " + t.name + "."+r.column_name+" field work";
                     break;
                 case JavaTestType.SetterThrowsException:
-                    result += "Tests That the Setters for the " + t.name + "object can throw exceptions with invalid inputs";
+                    result += "Tests That the Setters for the " + t.name + "." + r.column_name + " field can throw exceptions with invalid inputs";
                     break;
                 case JavaTestType.Getter:
-                    result += "Tests That the getters for the " + t.name + "object work";
+                    result += "Tests That the getters for the " + t.name + "." + r.column_name + " field work";
                     break;
                 case JavaTestType.ParamartizedConstructor:
-                    result += "Tests That the Paramaterized Constructor for the " + t.name + "object works";
+                    result += "Tests That the Parameterized Constructor for the " + t.name + " object works";
                     break;
                 case JavaTestType.DefaultConstructor:
-                    result += "Tests That the default constructor for the " + t.name + "object works";
+                    result += "Tests That the default constructor for the " + t.name + " object works";
                     break;
                 case JavaTestType.CompareTo:
-                    result += "Tests That the CompareTo Method for the " + t.name + "object works";
+                    result += "Tests That the CompareTo Method for the " + t.name + " object works";
                     break;
                 case JavaTestType.TwoHundredOnGet:
                     result += "Test That a logged in user gets a 200 status on doGet";
@@ -486,7 +490,7 @@ namespace Data_Objects
 
                     break;
                 case JavaTestType.ThreeOhTwoIfLoggedOut:
-                    result += "";
+                    result += "Tests That a logged out user gets a 302 redirect";
                     break;
 
                 case JavaTestType.CanAddWithNoErrors:
@@ -498,7 +502,7 @@ namespace Data_Objects
 
                     break;
                 case JavaTestType.initTest:
-                    result += "Test That initialzing the Servlet Does Not Crash or cause an exception";
+                    result += "Test That initializing the Servlet Does Not Crash or cause an exception";
                     break;
                 case JavaTestType.setupTests:
                     result += "setup the tests by creating a new instance of the servlet and setting some standard variablges";

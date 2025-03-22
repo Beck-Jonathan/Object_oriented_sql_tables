@@ -64,6 +64,11 @@ namespace Data_Objects
                 length_text = "(" + length + ")";
             };
         }
+
+        public Column()
+        {
+        }
+
         public String column_and_key_gen()
         {
             //generate this as a sql statement, and create an array of primary and foreign keys
