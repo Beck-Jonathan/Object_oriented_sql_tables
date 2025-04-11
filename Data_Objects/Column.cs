@@ -25,6 +25,7 @@ namespace Data_Objects
         public List<String> primary_keys { set; get; }
         public List<String> foreign_keys { set; get; }
         public String length_text = "";
+        public bool uuid = false;
         //constructor
         public Column(string column_name, string data_type, int length, string default_value, string identity, int start, int increment,
             char nullable, string index, char unique, char primary_key, string foreign_key, string integrity, string references, string description)
@@ -42,6 +43,9 @@ namespace Data_Objects
             this.length = length;
             this.default_value = default_value;
             this.identity = identity;
+            if (identity.ToLower().Equals("uuid")) {
+                uuid = true;
+            }
             this.start = start;
             this.increment = increment;
             this.nullable = nullable;
@@ -77,11 +81,14 @@ namespace Data_Objects
             String Column_text = "";
             Column_text = Column_text + column_name + "\t";
             Column_text = Column_text + data_type + length_text + "\t";
-            if (default_value != "" && data_type.toCSharpDataType().ToLower() != "string")
+            if (uuid) {
+                Column_text += "default uuid() \t";
+            }
+            else if (default_value != "" && data_type.toCSharpDataType().ToLower() != "string")
             {
                 Column_text = Column_text + "DEFAULT " + default_value + "\t";
             }
-            if (default_value != "" && data_type.toCSharpDataType().ToLower() == "string")
+            else if (default_value != "" && data_type.toCSharpDataType().ToLower() == "string")
             {
                 Column_text = Column_text + "DEFAULT \"" + default_value + "\"\t";
             }

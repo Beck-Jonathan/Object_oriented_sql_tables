@@ -2307,9 +2307,13 @@ namespace Data_Objects
                     {
                         result = result + name.ToLower() + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
                     }
-                    else if (r.data_type.ToLower().Equals("datetime"))
+                    else if (r.data_type.ToLower().Contains("date") || r.data_type.ToLower().Contains("time"))
                     {
                         result = result + name.ToLower() + ".set" + r.column_name + "(LocalDate.parse(_" + r.column_name + "));\n";
+                    }
+                    else if (r.data_type.ToLower().Contains("decimal")) {
+                        result = result + name.ToLower() + ".set" + r.column_name + "(Double.valueOf(_" + r.column_name + "));\n";
+
                     }
                     else
                     {
@@ -2447,7 +2451,7 @@ namespace Data_Objects
                 if (!r.column_name.ToLower().Contains("active"))
                 {
                     int i = 0;
-                    if (r.increment == 0)
+                    if (r.increment == 0 && r.default_value == "")
                     {
                         if (r.foreign_keys.Count < 1 || r.foreign_keys[i] == "")
                         {
@@ -2563,7 +2567,7 @@ namespace Data_Objects
         {
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
             result += importStatements(name, settings.database_name);
-            result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")";
+            result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")\n";
             result = result + "public class Delete" + name + "Servlet extends HttpServlet {\n";
             result += initMethod();
             result += "@Override\n";
@@ -2718,10 +2722,15 @@ namespace Data_Objects
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
                     }
-                    else if (r.data_type.ToLower().Equals("datetime"))
+                    else if (r.data_type.ToLower().Contains("date")|| r.data_type.ToLower().Contains("time"))
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(LocalDate.parse(_" + r.column_name + "));\n";
                     }
+                    else if (r.data_type.ToLower().Contains("decimal") )
+                    {
+                        result = result + " _new" + name + ".set" + r.column_name + "(Double.valueOf(_" + r.column_name + "));\n";
+                    }
+
                     else
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(_" + r.column_name + ");\n";
@@ -3191,36 +3200,36 @@ namespace Data_Objects
             //to loop through each input field
             foreach (Column r in columns)
             {
-                if (!r.identity.Equals("Y") && !r.identity.Equals("y"))
+                if (!r.identity.Equals("Y") && !r.identity.Equals("y")&&r.default_value.Equals(""))
                 {
                     string fieldname = "input" + name.ToLower() + r.column_name;
                     string jsname = r.column_name + "_input";
-                    result += "// to clearn the field, then set event listener for validating the input for " + r.column_name + "\n";
+                    result += "// to clean the field, then set event listener for validating the input for " + r.column_name + "\n";
                     result += "var " + jsname + "= document.getElementById(\"" + fieldname + "\");\n";
                     result += jsname + ".value=\'\';\n";
                     result += jsname + ".addEventListener(\'keyup',function(){\n";
                     //if for numeric check
                     if (r.length == 0)
                     {
-                        result += "if (" + jsname + ".value!=\"\"&& $.isNumeric(" + jsname + ".value)){\n";
+                        result += "if (" + jsname + ".value!=\"\"&& $.isNumeric(" + jsname + ".value){\n";
                     }
                     //if for varchar check
                     else
                     {
-                        result += "if (" + jsname + ".value!=\"\"&& " + jsname + ".value.length>1 && " + jsname + ".value.length<=" + r.length + ")){\n";
+                        result += "if (" + jsname + ".value!=\"\"&& " + jsname + ".value.length>1 && " + jsname + ".value.length<=" + r.length + "){\n";
                     }
                     //good input
-                    result += "$(" + jsname + ").addClass(\"ui-state-active\");\n";
+                    result += "$(" + jsname + ").addClass(\"ui-state-highlight\");\n";
                     result += "$(" + jsname + ").removeClass(\"ui-state-error\");\n";
                     //bad input
                     result += "}\n else {\n";
-                    result += "$(" + jsname + ").removeClass(\"ui-state-active\");\n";
+                    result += "$(" + jsname + ").removeClass(\"ui-state-highlight\");\n";
                     result += "$(" + jsname + ").addClass(\"ui-state-error\");\n";
                     result += "}\n}\n);\n";
                 }
             }
             // to end the js file
-            result += "\n}\n";
+            result += "\n}\n)\n";
             return result;
         }
         private string initMethod()
@@ -3719,7 +3728,14 @@ namespace Data_Objects
 
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    _ = array.Add(generateRandomString(r, -2));
+                    if (r.default_value.ToLower().Contains("uuid"))
+                    {
+                        _ = array.Add(generateRandomString(r, 0));
+                    }
+                    else {
+                        _ = array.Add(generateRandomString(r, -2));
+                    }
+                    
                     _ = Task.Delay(1);
                 }
                 else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -3923,7 +3939,15 @@ namespace Data_Objects
 
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        _ = array.Add(generateRandomString(r, -2));
+                        if (r.default_value.ToLower().Contains("uuid"))
+                        {
+                            _ = array.Add(generateRandomString(r, 0));
+
+                        }
+                        else {
+                            _ = array.Add(generateRandomString(r, -2));
+                        }
+                        
                         _ = Task.Delay(1);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -4069,7 +4093,15 @@ namespace Data_Objects
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        _ = array.Add(generateRandomString(r, -2));
+                        if (r.default_value.ToLower().Contains("uuid")) {
+                             array.Add(generateRandomString(r, 0));
+                        }
+                        else
+                        {
+                             array.Add(generateRandomString(r, -2));
+
+                        }
+                       
                         _ = Task.Delay(1);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -4450,7 +4482,15 @@ namespace Data_Objects
         private string testStringSet(Column r)
         {
 
-            String dummy = generateRandomString(r, -2);
+            String dummy = "";
+
+            if (r.default_value.ToLower().Contains("uuid"))
+            {
+                dummy = generateRandomString(r, 0);
+            }
+            else {
+                dummy = generateRandomString(r, -2);
+            }
 
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
             result += "@Test\n";
@@ -4679,7 +4719,15 @@ namespace Data_Objects
                     {
                         if (r.data_type.toCSharpDataType().Equals("string"))
                         {
-                            string randomtext = "\"" + generateRandomString(r, 8 - r.length) + "\"";
+                            int reletiveLength = 0;
+                            if (r.default_value.ToLower().Contains("uuid"))
+                            {
+                                reletiveLength = 0;
+                            }
+                            else {
+                                reletiveLength = 8 - r.length;
+                            }
+                            string randomtext = "\"" + generateRandomString(r, reletiveLength) + "\"";
                             result += comma + randomtext;
                         }
                         else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -4723,7 +4771,11 @@ namespace Data_Objects
                             {
                                 if (columns[j].data_type.toCSharpDataType().Equals("string"))
                                 {
+                                    
                                     string randomtext = "\"" + generateRandomString(columns[j], 8 - columns[j].length) + "\"";
+                                    if (columns[j].default_value.ToLower().Contains("uuid)")){
+                                        randomtext = "\"" + generateRandomString(columns[j], 0) + "\"";
+                                    }
                                     for (int i = 0; i < numberOfFakes; i++)
                                     {
                                         result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
@@ -4739,6 +4791,12 @@ namespace Data_Objects
                                                 else
                                                 {
                                                     string newrandomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
+                                                    if (columns[k].default_value.ToLower().Contains("uuid"))
+                                                    {
+                                                         newrandomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
+
+                                                    }
+
                                                     result += comma + newrandomtext;
 
                                                 }
@@ -4788,6 +4846,10 @@ namespace Data_Objects
                                             {
 
                                                 string randomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
+                                                if (columns[k].default_value.ToLower().Contains("uuid")) {
+                                                     randomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
+
+                                                }
                                                 result += comma + randomtext;
                                             }
                                             else if (columns[k].data_type.toCSharpDataType().Equals("bool"))
@@ -5775,6 +5837,17 @@ namespace Data_Objects
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
 
                     }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date")|| r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
+
+                    }
                 }
             }
             result += "servlet.doPost(request,response);\n";
@@ -5813,6 +5886,17 @@ namespace Data_Objects
                     if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
 
                     }
                 }
@@ -5857,6 +5941,17 @@ namespace Data_Objects
                     if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
 
                     }
                 }
@@ -5931,6 +6026,16 @@ namespace Data_Objects
                     result += name.ToLower() + ".set" + r.column_name + "(true);\n";
 
                 }
+                else if(r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(new Date());\n";
+                }
+
+                else if(r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += name.ToLower() + ".set" + r.column_name + "(23.2d);\n";
+                }
+
                 else
                 {
                     result += name.ToLower() + ".set" + r.column_name + "(new " + r.data_type + ".toString());\n";
@@ -5956,6 +6061,18 @@ namespace Data_Objects
                     if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+
+                    if (r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                    }
+
+                    if (r.data_type.ToLower().Contains("decimal"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
 
                     }
                 }
@@ -6019,6 +6136,17 @@ namespace Data_Objects
                     if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                    if (r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                    }
+
+                    if (r.data_type.ToLower().Contains("decimal"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
 
                     }
                 }
@@ -6091,6 +6219,17 @@ namespace Data_Objects
                     if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
 
                     }
                 }
@@ -6574,7 +6713,15 @@ namespace Data_Objects
 
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
-                result = "\"" + generateRandomString(r, 8 - r.length) + "\"";
+                result =  "\"" + generateRandomString(r, 8 - r.length) + "\"";
+
+                if (r.default_value.ToLower().Contains("uuid"))
+                {
+                    result = "\"" + generateRandomString(r, 0) + "\"";
+
+                }
+
+                
 
             }
             else if (r.data_type.toCSharpDataType().Equals("bool"))

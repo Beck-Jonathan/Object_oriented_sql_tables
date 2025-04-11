@@ -15,7 +15,7 @@ namespace Data_Objects
         public static string toCSharpDataType(this string sqlDataType)
         {
             string result = sqlDataType.Replace("[", "").Replace("]", "");
-            if (result == "nvarchar") { result = "string"; }
+            if (result.Contains("varchar")) { result = "string"; }
             if (result == "bit") { result = "bool"; }
             if (result == "tinyint") { result = "bool"; }
             if (result == "Int" || sqlDataType == "Integer") { result = "int"; }
@@ -41,7 +41,7 @@ namespace Data_Objects
             if (result.ToLower().Contains("bool")) { result = "Boolean"; }
             if (result.ToLower().Contains("int") || sqlDataType.ToLower().Equals("integer")) { result = "Int"; }
             if (result.ToLower().Contains("date")) { result = "LocalDate"; }
-            if (result.ToLower().Equals("decimal")) { result = "double"; }
+            if (result.ToLower().Equals("decimal")) { result = "Double"; }
             return result;
         }
         public static string bracketStrip(this string fieldName)
