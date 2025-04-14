@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 namespace Data_Objects
 {
@@ -92,7 +93,11 @@ namespace Data_Objects
                     selectfkThing = selectfkThing + "select" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ", int limit, int offset);";
                 }
             }
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + "}\n\n";
+
+            string fileWrite = "int write" + name + "sToFile(List<" + name + "> " + name + "s);\n";
+            string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
+
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead+ "}\n\n";
             return output;
         }
         /// <summary>
@@ -122,7 +127,9 @@ namespace Data_Objects
 
             string undeleteThing = genAccessorUndelete();
             string distinctThing = genAccessorDistinct();
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + "}\n\n";
+            string writeThing = genAccessorWrite();
+            string readThing = genAccessorRead();
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ "}\n\n";
             //good
             return output;
         }
@@ -178,14 +185,20 @@ namespace Data_Objects
                     dropdownThing = dropdownThing + "List<String> getDistinct" + fk.referenceTable + "ForDropDown();\n";
                 }
             }
-            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + "}\n\n";
+
+            string fk_thing = "";
             foreach (foreignKey key in data_tables.all_foreignKey)
             {
                 if (key.referenceTable == name)
                 {
-                    output = output + "List<" + key.mainTable + "> getAll" + key.mainTable + "by" + name + "();\n";
+                    fk_thing = fk_thing + "List<" + key.mainTable + "> getAll" + key.mainTable + "by" + name + "();\n";
                 }
             }
+
+            string fileWrite = "int write"+name+"sToFile(List<"+name+"> "+name+"s, string path);\n";
+            string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
+            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing+ fileRead+fileWrite+"}\n\n";
+            
             return output;
         }
         /// <summary>
@@ -205,6 +218,8 @@ namespace Data_Objects
             String RetreiveByFK = genManagerFK();
             String RetrieveAll = genManagerAll();
             String Update = genManagerUpdate();
+            String fileWrite = genManagerFileWrite();
+            String fileRead = genManagerFileRead();
             //String dropdown = genManagerDropDown();
             String footer = "\n}\n";
             result = result
@@ -216,6 +231,8 @@ namespace Data_Objects
                 + RetreiveByFK
                 + RetrieveAll
                 + Update
+                + fileWrite
+                + fileRead
                 // + dropdown
                 + footer
                 ;
@@ -428,6 +445,43 @@ namespace Data_Objects
             }
             return getfkThing;
         }
+
+        private string genManagerFileWrite() {
+            
+
+
+            string result = "int write" + name + "sToFile(List<" + name + "> "+name+"s, string path){\n";
+            result += "int result = 0;;\n";
+            result += "try\n{";
+            result += "result = Accessor.write" + name + "sToFile(" + name + "s, path);\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result = result + "throw new ApplicationException(\"" + name + "s not written to File\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            result += "\n";
+
+            return result;
+        }
+        private string genManagerFileRead() {
+            
+            string result = "List<" + name + "> read" + name + "sFromFile(string path){\n";
+            result += "List<"+name+"> results = new List<>();\n";
+            result += "try\n{";
+            result = result + "results = Accessor.read" + name + "sFromFile(string path));\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result = result + "throw new ApplicationException(\"" + name + "s not read from File\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            result += "return results;\n";
+            result += "}\n";
+            result += "\n";
+            return result;
+        }
+
         /// <summary>
         /// Generates a logic layer method that takes in two instances of an object (old and new) and passes them to the data
         /// access layer for updating
@@ -967,7 +1021,7 @@ namespace Data_Objects
             return deleteThing;
         }
         //Generates the get distinct for drop downs componoent of the accessor
-        public string genAccessorDistinct()
+        private string genAccessorDistinct()
         {
             string retreiveAllThing = "";
             List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
@@ -995,6 +1049,80 @@ namespace Data_Objects
             }
             return retreiveAllThing;
         }
+        private string genAccessorWrite() {
+            string result = "public int write" + name + "sToFile(List<"+name+"> "+name+"s,string path){\n";
+            result += "int result=0;\n";
+            result += "try\n{";
+            result += "StreamWriter streamWriter = new StreamWriter(path);\n";
+            result += "foreach (" + name + " " + name.ToLower() + " in " + name + "s){\n";
+            result += "streamWriter.WriteLine(\n";
+            string tab = "";
+            foreach (Column r in columns) {
+                result += tab + name.ToLower() + ".get" + r.column_name + "()\n";
+                tab = "+\"\\t\"+";
+            }
+            result += "}\n";
+            result += "streamWriter.Close();\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result = result + "throw new ApplicationException(\"" + name + "s not written to File\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            result += "\n";
+
+            return result;
+        }
+
+        private string genAccessorRead() {
+            string result = "public List<"+name+"> read"+name+"sFromFile(string path){\n";
+            result += "List<name> " + name + "s = new List<" + name + ">();\n";
+            result += "try\n{";
+            result += "StreamReader fileReader = new StreamReader(path);\n";
+            result += "char[] separator = { '\t' };\n";
+            result += "while (fileReader.EndOfStream == false)\n";
+            result += "{\n";
+            result += "string line = fileReader.ReadLine();\n";
+            result += "string[] parts;\n";
+            result += " if (line.Length > "+(columns.Count-1)+") //is this line long enough?\n";
+            result += "{\n";
+            result += "parts = line.Split(separator);\n";
+            result += "if (parts.Count() > "+ (columns.Count - 1) + ")  //are all properties present?\n";
+            int i = 0;
+            foreach (Column r in columns) {
+                if (r.increment == 0)
+                {
+                    result += r.data_type.toCSharpDataType()+" " + r.column_name.ToLower() + "=parts[" + i + "]\n";
+                    i++;
+                }
+            }
+            result += name+" "+name.ToLower()+" = new "+ name+"(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                result += comma+r.column_name.ToLower();
+                comma = ", ";
+            }
+            result += ");\n";
+            result += name+"s.Add("+name.ToLower()+");\n";
+            result += "}\n";
+            result += "}\n";
+            result += "}\n";
+            result += "fileReader.Close();\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result = result + "throw new ApplicationException(\"" + name + "s not read fom File\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            result += "return "+name+"s;\n";
+            result += "}\n";
+            result += "\n";
+
+            return result;
+
+        }
+
         /// <summary>
         /// Generates a rudamentary xaml window for creating records for  this <see cref="table"/> 
         /// Jonathan Beck
