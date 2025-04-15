@@ -533,6 +533,19 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+                if (true) //change this to these setings 23
+                {
+                    s = t.genUploadJSP();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaJSP", "UploadJSP");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
                 if (true) //change this to these setings 24
                 {
                     s = t.genCreateServelet();
@@ -540,6 +553,32 @@ namespace Object_oriented_sql_tables
                     try
                     {
                         file_write.fileWrite(s, t.name, "JavaServlet", "CreateServlet");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true) //change this to these setings 24
+                {
+                    s = t.genUploadServlet();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaServlet", "UploadServlet");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true) //change this to these setings 24
+                {
+                    s = t.genExportServlet();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaServlet", "ExportServlet");
                     }
                     catch (Exception ex)
                     {

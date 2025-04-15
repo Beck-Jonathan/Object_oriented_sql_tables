@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 namespace Data_Objects
@@ -94,10 +95,11 @@ namespace Data_Objects
                 }
             }
 
-            string fileWrite = "int write" + name + "sToFile(List<" + name + "> " + name + "s);\n";
+            string fileWrite = "int write" + name + "sToFile(List<" + name + "> " + name + "s, string path);\n";
             string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
+            string batchAdd = "int addBatchOf" + name + "(List<" + name + "> " + name.ToLower() + "s);\n";
 
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead+ "}\n\n";
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead+ batchAdd+"}\n\n";
             return output;
         }
         /// <summary>
@@ -129,7 +131,8 @@ namespace Data_Objects
             string distinctThing = genAccessorDistinct();
             string writeThing = genAccessorWrite();
             string readThing = genAccessorRead();
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ "}\n\n";
+            string addBatchThing = genAccessorBatchAdd();
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ addBatchThing + "}\n\n";
             //good
             return output;
         }
@@ -197,7 +200,9 @@ namespace Data_Objects
 
             string fileWrite = "int write"+name+"sToFile(List<"+name+"> "+name+"s, string path);\n";
             string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
-            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing+ fileRead+fileWrite+"}\n\n";
+            string batchAdd = "int addBatchOf" + name + "(List<" + name + "> " + name.ToLower() + "s);\n";
+
+            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing+ fileRead+fileWrite+batchAdd+"}\n\n";
             
             return output;
         }
@@ -220,6 +225,7 @@ namespace Data_Objects
             String Update = genManagerUpdate();
             String fileWrite = genManagerFileWrite();
             String fileRead = genManagerFileRead();
+            String batchAdd = genManagerBatchAdd();
             //String dropdown = genManagerDropDown();
             String footer = "\n}\n";
             result = result
@@ -233,6 +239,7 @@ namespace Data_Objects
                 + Update
                 + fileWrite
                 + fileRead
+                + batchAdd
                 // + dropdown
                 + footer
                 ;
@@ -281,6 +288,24 @@ namespace Data_Objects
             result += "catch (Exception ex)\n";
             result += "{\n";
             result = result + "throw new ApplicationException(\"" + name + " not added\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            result += "\n";
+            return comment + result;
+        }
+        private String genManagerBatchAdd()
+        {
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Add);
+            String result = "\n";
+            result = result + "public int addBatchOf" + name + "(List<" + name + "> " + "_" + name + "s){\n";
+            result += "int result = 0;\n";
+            result += "try\n{";
+            result +="result =  _" + name.firstCharLower() + "Accessor.addBatchOf" + name + "(_" + name + "s));\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result +=  "throw new ApplicationException(\"" + name + " not added\" + ex.InnerException.Message, ex);\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
@@ -645,7 +670,7 @@ namespace Data_Objects
         private string genSPfooter(int mode)
         {
             string returntype = "output";
-            if (mode == 2) { returntype = "rows"; }
+            if (mode == 2||mode==4) { returntype = "rows"; }
             string output = " \ncatch (Exception ex)\n"
 + "{\n"
 + "    throw ex;\n"
@@ -653,8 +678,11 @@ namespace Data_Objects
 + "finally\n"
 + "{\n"
 + "    conn.Close();\n"
-+ "}\n"
-+ "return " + returntype + ";\n}\n";
++ "}\n";
+            if (mode == 4) {
+                output += "}\n";
+            }
+output+="return " + returntype + ";\n}\n";
             return output;
         }
         /// <summary>
@@ -669,6 +697,7 @@ namespace Data_Objects
             createThing += "){\n";
             createThing += genSPHeaderA("sp_insert_" + name);
             //add parameters
+            
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -695,6 +724,43 @@ namespace Data_Objects
             createThing += genSPfooter(2);
             return createThing;
         }
+
+        private string genAccessorBatchAdd() {
+            string createThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Add);
+            createThing += "\npublic int addBatchOf" + name + "(List<" + name + "> _" + name.ToLower();
+            createThing += "s){\n";
+            createThing += genSPHeaderA("sp_insert_" + name);
+            createThing += "foreach (" + name + " _" + name.ToLower() + " in " + name + "s){\n";
+            //add parameters
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    createThing = createThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                }
+            }
+            //setting parameters
+            createThing += "\n //We need to set the parameter values\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    createThing = createThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + "_" + name.ToLower() + "." + r.column_name.bracketStrip() + ";\n";
+                }
+            }
+            //excute the quuery
+            createThing += "try \n { \n //open the connection \n conn.Open();  ";
+            createThing += "//execute the command and capture result\n";
+            createThing += "rows += cmd.ExecuteNonQuery();\n}\n";
+            //capture reuslts
+            createThing += "\n";
+            //cath block and onwards
+            createThing += genSPfooter(4);
+            return createThing;
+
+
+        }
+
         /// <summary>
         /// Generates an method for the data access layer retreive by PK method for this <see cref="table"/> 
         /// Jonathan Beck
@@ -1683,6 +1749,7 @@ namespace Data_Objects
             string result = "";
             result += genJavaDAOHeader(settings.database_name);        //works
             result += genJavaDAOCreate();       //returns ""
+            result += genJavaDAOAddBatch();
             result += genJavaDAORetreiveByKey(); // works
             result += genJavaDAORetreiveAll(); // wokring on it now
             result += genJavaDAORetriveActive(); // working on it now
@@ -1692,6 +1759,8 @@ namespace Data_Objects
             result += genJavaDelete(); //returns ""
             result += genJavaunDelete(); //returns ""
             result += genJavaDAOFooter(); //work
+            result += genJavaDAOFileRead();  //done
+            result += genJavaDAOFileWrite(); //pending
             return result;
         }
         /// <summary>
@@ -1790,7 +1859,16 @@ namespace Data_Objects
                 }
             }
             result += ") throws SQLException;\n";
+            
+            
+            //file read
+            result += "List<" + name + "> read" + name + "sFromFile(File uploadedFile) throws Exception;\n";
+            //add batch
+            result += "int addBatchOf" + name + "s(List<" + name + "> " + name.ToLower() + "s) throws SQLException;\n";
+            //write to file
+            result += "int write" + name + "ToFile(List<" + name + "> " + name + "s, String path) throws IOException;\n";
             result += "}\n";
+
             return result;
 
         }
@@ -2338,6 +2416,122 @@ namespace Data_Objects
             result += "\n";
             return result;
         }
+
+        private string genJavaDAOAddBatch() {
+            string result = "";
+            string comma = "";
+            result += "public int addBatchOf" + name + "s(List<" + name + "> " + name.ToLower() + "s) throws SQLException{\n";
+            result += "int numRowsAffected=0;\n";
+            result += "try (Connection connection = getConnection()) {\n";
+            result += "if (connection != null) {\n";
+            result += "for (" + name + " _" + name.ToLower() + " : " + name.ToLower() + "s) {\n";
+            result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_insert_" + name + "(";
+            foreach (Column r in columns)
+            {
+                if (r.identity == "" && r.default_value == "")
+                {
+                    result = result + comma + " ?";
+                    comma = ",";
+                }
+            }
+            result += ")}\")){\n";
+            int count = 1;
+            foreach (Column r in columns)
+            {
+                if (r.identity == "" && r.default_value == "")
+                {
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",_" + name.ToLower() + ".get" + r.column_name.bracketStrip() + "());\n";
+                    count++;
+                }
+            }
+            result += "numRowsAffected += statement.executeUpdate();\n";
+            
+            result += "} catch (SQLException e) {\n";
+            result = result + "continue;\n";
+            result += "}\n";
+            result += "}\n";
+            result += "}\n";
+            result += "} catch (Exception e) {\n";
+            result += "throw new SQLException(e);\n";
+            result += "}\n";
+            result += "return numRowsAffected;\n}";
+            result += "\n";
+            return result;
+            
+        }
+
+
+        private string genJavaDAOFileRead() {
+            string result = "public List<"+name+"> get"+name+"sFromFile(File file) throws FileNotFoundException {\n";
+            result += "List<"+name+"> results = new ArrayList<>();\n";
+            result += "BufferedReader reader;\n";
+            result += "try {\n";
+            result += "reader = new BufferedReader(new FileReader(file));\n";
+            result += "//first line is just heading data\n";
+            result += "String line = reader.readLine();\n";
+            result += "line = reader.readLine();\n";
+            result += "while (line!=null){\n";
+            result += "ArrayList parts = new ArrayList(List.of(line.split(\"\\t\")));\n";
+            int i = 0;
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    result += r.data_type.toJavaDataType() + " " + r.column_name.ToLower() + "=("+r.data_type.toJavaDataType()+") parts.get(" + i + ");\n";
+                    i++;
+                }
+            }
+            result += name + " " + name.ToLower() + " = new " + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                result += comma + r.column_name.ToLower();
+                comma = ", ";
+            }
+            result += ");\n";
+            result += "results.add(" + name.ToLower() + ");\n";
+            result += "line = reader.readLine();\n";
+            
+            result += "}\n";
+            result += "} catch (Exception e) {\n";
+            result += "throw new RuntimeException(e.getMessage()+\"\\n\\nCould Not Read " + name + "s. Please Check your file formatting;\");\n";
+            result += "}\n";
+            result += "return results;\n";
+
+            result += "}\n";
+
+
+            return result;
+        }
+
+        private string genJavaDAOFileWrite()
+        {
+            string result = "";
+            result += "int write" + name + "ToFile(List<" + name + "> " + name + "s, String path){\n";
+            result += "int result = 0;\n";
+            result += "PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);\n";
+            result += "writer.println(\"";
+            string tab = "";
+            foreach (Column r in columns) {
+                result += tab + r.column_name;
+                tab = "\\t";
+            }
+            tab = "";
+            result += "\");\n";
+            result += "for (" + name + " " + "_" + name.ToLower() + " : " + name + "s) {\n";
+            foreach (Column r in columns) {
+                result += "writer.print("+tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                tab = "\"\\t\"+";
+            }
+            result += "writer.print(\\n)\n";
+            result += "result ++;\n";
+            result += "}\n";
+            result += "writer.close();\n";
+            result += "return result;\n";
+            result += "}\n";
+            return result;
+        }
+
         /// <summary>
         /// Generates the batch command to load the <see cref="database"/>
         /// Jonathan Beck
@@ -2984,6 +3178,189 @@ namespace Data_Objects
             result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";
             return result;
         }
+
+        public string genUploadJSP() {
+            string result = "";
+            
+            return result;
+        }
+
+        public string genUploadServlet()
+        {
+            string result = "";
+            result += importStatements(name, settings.database_name);
+            
+            //change comment box
+            //settings
+            result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
+            result = result + "\n@WebServlet(\"/upload" + name + "\")\n";
+            result += "@MultipartConfig(\n";
+            result += "fileSizeThreshold = 1024 * 1024, // 1 MB\n";
+            result += "maxFileSize = 1024 * 1024 * 10,      // 10 MB\n";
+            result += "maxRequestSize = 1024 * 1024 * 100   // 100 MB\n";
+            result += ")\n";
+            result += "public class upload_" + name + "servlet extends HttpServlet {\n";
+            result += "private static final String UPLOAD_DIR = \"uploads\";\n";
+            result += "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
+            //init
+            result += "@Override\n";
+            result += "public void init()  {\n";
+            result += name.ToLower() + "DAO = new " + name + "DAO();\n";
+            result += "}\n";
+            result += "public void init( i"+name+"DAO "+name.ToLower()+"DAO){\n";
+            result += "this."+name.ToLower()+"DAO = "+name.ToLower()+"DAO;\n";
+            result += "}\n";
+
+            //doget
+            result += "@Override\n";
+            result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += privLevelStatement();
+            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Upload " + name + "\");\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_"+name+".jsp\").forward(req, resp);\n";
+            result += "}\n";
+
+            //dopost
+            result += "@Override\n";
+            result += "protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += privLevelStatement();
+            result += "String applicationPath = req.getServletContext().getRealPath(\"\");\n";
+            result += "String uploadFilePath = applicationPath +  UPLOAD_DIR;\n";
+            result += "File fileSaveDir = new File(uploadFilePath);\n";
+            result += "if (!fileSaveDir.exists()) {\n";
+            result += "fileSaveDir.mkdirs();\n";
+            result += "}\n";
+            result += "Map<String, String> results = new HashMap<>();\n";
+            result += "String fileName = \"\";\n";
+            result += "Part filePart = req.getPart(\"upload_transactions\");\n";
+            result += "Collection<Part> x = req.getParts();\n";
+            result += "if (filePart!=null) {\n";
+            result += "fileName = filePart.getSubmittedFileName();\n";
+            result += "File checkFile = new File(uploadFilePath + File.separator + fileName);\n";
+            result += "if (checkFile.exists()) {\n";
+            result += "checkFile.delete();\n";
+            result += "}\n";
+            result += "}\n";
+            result += "else {\n";
+            result += "results.put(\"FileEmptyError\", \"File is empty\");";
+            result += "}\n";
+            result += "try { \n";
+            result += "for (Part part : req.getParts()) {\n";
+            result += "part.write(uploadFilePath + File.separator + fileName);\n";
+            result += "}\n";
+            result += "} catch (Exception ex){\n";
+            result += "results.put(\"dbStatus\",ex.getMessage());\n";
+            result += "req.setAttribute(\"results\", results);\n";
+            result += "req.setAttribute(\"pageTitle\", \"Upload a file \");\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_"+name.ToLower()+".jsp\").forward(req, resp);\n";
+            result += "return;\n";
+            result += "}\n"; //line 93
+            result += "File uploadedFile = new File(uploadFilePath + File.separator + fileName);\n";
+            result += "List<"+name+"> "+name.ToLower()+"s = null;\n";
+            result += "try {\n";
+            result += name.ToLower()+"s = "+name.ToLower()+"DAO.read"+name+"sFromFile(uploadedFile);\n";
+            result += "} catch (Exception ex){\n";
+            result += "results.put(\"dbStatus\",ex.getMessage());\n";
+            result += "req.setAttribute(\"results\", results);\n";
+            result += "req.setAttribute(\"pageTitle\", \"Upload a file \");\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_" + name.ToLower() + ".jsp\").forward(req, resp);\n";
+            result += "return;\n";
+            result += "}\n"; //line 106
+            result += "int new"+name.ToLower()+"s = 0;\n";
+            result += "int old" + name.ToLower() + "s = 0;\n";
+            result += "int total" + name.ToLower() + "s = " + name.ToLower() + "s.size();\n";
+            result += "try { \n";
+            result += "new" + name.ToLower() + "s= " + name.ToLower() + "DAO.addBatchOf"+name+"s(" + name.ToLower() + "s);\n";
+            result += "} catch (Exception e) {\n";
+            result += "results.put(\"dbStatus\",e.getMessage());\n";
+            result += "}\n"; //line 116
+            result += "old"+name.ToLower()+"s= total"+name.ToLower()+"s- new"+name.ToLower()+"s;\n";
+            result += "uploadedFile.delete();\n";
+            result += "results.put(\"AddedCount\",\"You uploaded \"+total"+name.ToLower()+"s+\" "+name.ToLower()+"s. \"+new"+ name.ToLower() + "s+\" of them were new. \"+ old"+ name.ToLower() + "s+\" of them were old, and not added to the database.\");\n";
+            result += "session.setAttribute(\"results\",results);\n";
+            result += "resp.sendRedirect(\"home\");\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "}\n";
+
+
+
+
+            //result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            //result = result + "req.setAttribute(\"pageTitle\", \"Upload " + name + "\");\n";
+            //result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_" + name + ".jsp\").forward(req, resp);";
+
+            return result;
+        }
+
+        
+
+        public string genExportServlet()
+        {
+            string result = "";
+            result += importStatements(name, settings.database_name);
+            
+            //change comment box
+            //settings
+            result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
+            result += "\n@WebServlet(\"/export" + name + "\")\n";
+            result += "public class Export"+name+"Servlet extends HttpServlet {\n";
+            result += "private i"+name+"DAO "+name.ToLower()+"DAO;\n";
+            result += "private static final String UPLOAD_DIR = \"uploads\";\n";
+            result += "private ServletFileUpload uploader = null;\n";
+            result += "@Override\n";
+            result += "public void init() throws ServletException {\n";
+            result += name.ToLower() + "DAO = new " + name + "DAO();\n";
+            result += "DiskFileItemFactory fileFactory = new DiskFileItemFactory();\n";
+            result += "File filesDir = (File) getServletContext().getAttribute(\"FILES_DIR_FILE\");\n";
+            result += "fileFactory.setRepository(filesDir);\n";
+            result += "this.uploader = new ServletFileUpload(fileFactory);\n";
+            result += "}\n";
+            result += "public void init(i" + name + "DAO " + name.ToLower() + "DAO) {\n"; ;
+            result += "this."+name.ToLower()+"DAO = "+name.ToLower()+"DAO;\n";
+            result += "}\n";
+            result += "";
+            //do get
+            result += "@Override\n";
+            result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += "String applicationPath = req.getServletContext().getRealPath(\"\");\n";
+            result += "String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR;\n";
+            result += privLevelStatement();
+            result += "String filename = \"output_\"+user.getUser_Name()+\"_"+name+"\"+\".txt\";\n";
+            result += "String full_file = uploadFilePath + File.separator + filename;\n";
+            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result += "List<"+name+"> "+name.ToLower()+"s = null;\n";
+            result += "boolean error = false;\n";
+            result += "try {\n";
+            result += name.ToLower()+"s = "+name.ToLower()+"DAO.getAll"+name+"();\n";
+            result += "} catch (SQLException e) {\n";
+            result += "error = true;\n";
+            result += "}\n";
+            result += "try {\n";
+            result += name.ToLower()+"DAO.write"+name+"ToFile("+name.ToLower()+"s, full_file);\n";
+            result += "} catch (Exception e) {\n";
+            result += " error = true;\n";
+            result += "}\n";
+            
+            result += "resp.setContentType(\"APPLICATION/OCTET-STREAM\");\n";
+            result += "resp.setHeader(\"Content-Disposition\", \"attachment; filename=\\\"\" + filename + \"\\\"\");\n";
+            result += "java.io.FileInputStream fileInputStream = new java.io.FileInputStream(uploadFilePath +File.separator+ filename);\n";
+            result += "int i;\n";
+            result += "while ((i=fileInputStream.read()) != -1) {\n";
+            result += "resp.getOutputStream().write(i);\n";
+            result += "}\n";
+            result += "fileInputStream.close();\n";
+            result += "File delFile = new File(uploadFilePath+File.separator+filename);\n";
+            result += "delFile.delete();\n";
+            result += "}\n";
+            result += "}\n";
+
+
+
+
+            return result;
+        }
+
         /// <summary>
         /// Generates the View all with line items JSP for the Java  object for this <see cref="table"/> 
         /// Jonathan Beck
@@ -4783,6 +5160,7 @@ namespace Data_Objects
             string result = "";
             result += genJavaDAOFakeHeader(settings.database_name);   //done, needs javadoccomment
             result += genJavaDAOFakeCreate();      //done, needs javadoccomment
+            result += genJavaDAOFakeAddBatch();
             result += genJavaDAOFakeRetreiveByKey(); // done, needs javadoccomment
             result += genJavaDAOFakeRetreiveAll();  //done, needs javadoccomment
             result += genJavaDAOFakeRetriveActive(); //done, needs javadoccomment
@@ -4793,9 +5171,13 @@ namespace Data_Objects
             result += genJavaDAOFakeUnDelete();// done, needs javadoccomment
             result += genJavaDAOFakeDeactivate(); // done, needs javadoccomment
             result += genJavaDAOFakeCount(); // done, needs javadoccomment
+            result += genJavaDAOFakeFileWrite();
+            result += genJavaDAOFakeFileRead();
             result += genJavaDAODuplicateKey(); // not done
             result += genJavaDAOExceptionKey();
             result += genJavaDAOFooter(); // done, needs javadoccomment
+            
+            
 
             return result;
 
@@ -5087,6 +5469,21 @@ namespace Data_Objects
             result += "}\n";
 
             return result;
+        }
+
+        private string genJavaDAOFakeAddBatch() {
+
+            string result = "int addBatchOf" + name + "s(List<" + name + "> _" + name.ToLower() + "s) throws SQLException{\n";
+            result += "int result = 0;\n";
+            result += "for ("+name+" "+name.ToLower()+" : _" +name.ToLower()+"s) {\n";
+            result += name.ToLower()+"VMs.add("+name.ToLower()+");\n";
+            result += "result ++;\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+
+            return result;
+        
         }
         private string genJavaDAOFakeRetreiveByKey()
         {
@@ -5442,6 +5839,26 @@ namespace Data_Objects
             results += "}\n";
             results += "}\n";
             return results;
+
+        }
+
+        private string genJavaDAOFakeFileWrite() {
+            
+            string result = "int write" + name + "ToFile(List<" + name + "> _" + name + "s, String path) throws IOException{\n";
+            result += "return _" + name + "s.size();\n";
+            result += "}\n";
+            return result;
+        
+        }
+        private string genJavaDAOFakeFileRead()
+        {
+            
+            string result = "List<" + name + "> read" + name + "sFromFile(File uploadedFile) throws Exception{\n";
+            result += "return " + name.ToLower() + "VMs;\n";
+            result += "}\n";
+
+            return result;
+
 
         }
         private string genJavaDAODuplicateKey()
