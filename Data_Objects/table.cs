@@ -2699,7 +2699,14 @@ output+="return " + returntype + ";\n}\n";
             result += "<tr>\n";
             foreach (Column r in columns)
             {
-                result = result + "<th scope=\"col\">" + r.column_name + "</th>\n";
+                if (r.default_value.ToLower().Contains("uuid") || r.increment != 0)
+                {
+                    result = result + "<th scope=\"col\"> Details </th>\n";
+                }
+                else
+                {
+                    result = result + "<th scope=\"col\">" + r.column_name + "</th>\n";
+                }
             }
             result += "<th scope=\"col\">Edit</th>\n";
             result += "<th scope=\"col\">Delete</th>\n";
@@ -2715,7 +2722,14 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
-                        result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\">${fn:escapeXml(" + name.ToLower() + "." + name.ToLower() + "_ID)}</a></td>";
+                        if (r.default_value.ToLower().Contains("uuid") || r.increment != 0)
+                        {
+                            result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\"> Details </a></td>";
+
+                        }
+                        else {
+                            result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\">${fn:escapeXml(" + name.ToLower() + "." + name.ToLower() + "_ID)}</a></td>";
+                        }
                     }
                     else
                     {
@@ -3110,6 +3124,16 @@ output+="return " + returntype + ";\n}\n";
                 if (!r.column_name.ToLower().Contains("active"))
                 {
                     int i = 0;
+                    if (r.increment != 0 || r.default_value.ToLower().Contains("uuid")) {
+                        result = result + "<!-- " + r.column_name + " -->\n";
+                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                        result = result + "<h2>" + columns[i+1].column_name + "  :  \n";
+                        result = result + " ${fn:escapeXml(" + name.ToLower() + "." + columns[i+1].column_name.firstCharLower() + ")}</h2>\n";
+                        result += "</div>\n";
+                        rowcount++;
+
+                        continue;
+                    }
                     if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
                     {
                         result = result + "<!-- " + r.column_name + " -->\n";
@@ -6156,6 +6180,9 @@ output+="return " + returntype + ";\n}\n";
             result += "servlet.doGet(request,response);\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
+            result += "String redirect_link = response.getRedirectedUrl();\n";
+            result += "String desired_redirect = \"/"+settings.database_name+"_in\";\n";
+            result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "}\n";
             return result;
         }
@@ -6184,6 +6211,9 @@ output+="return " + returntype + ";\n}\n";
             result += "servlet.doPost(request,response);\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
+            result += "String redirect_link = response.getRedirectedUrl();\n";
+            result += "String desired_redirect = \"/" + settings.database_name + "_in\";\n";
+            result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "}\n";
             return result;
         }
@@ -6197,6 +6227,9 @@ output+="return " + returntype + ";\n}\n";
             result += "servlet.doGet(request,response);\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
+            result += "String redirect_link = response.getRedirectedUrl();\n";
+            result += "String desired_redirect = \"/" + settings.database_name + "_in\";\n";
+            result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "}\n";
             return result;
         }
@@ -6211,6 +6244,9 @@ output+="return " + returntype + ";\n}\n";
             result += "servlet.doPost(request,response);\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
+            result += "String redirect_link = response.getRedirectedUrl();\n";
+            result += "String desired_redirect = \"/" + settings.database_name + "_in\";\n";
+            result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "}\n";
             return result;
         }
