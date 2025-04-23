@@ -2791,21 +2791,44 @@ output+="return " + returntype + ";\n}\n";
                     {
                         if (r.foreign_keys.Count < 1 || r.foreign_keys[i] == "")
                         {
-                            string inputType = "text";
-                            if (r.data_type == "datetime") { inputType = "date"; }
-                            string fieldname = "input" + name.ToLower() + r.column_name;
-                            string errorname = name.ToLower() + r.column_name + "error";
-                            result = result + "<!-- " + r.column_name + " -->\n";
-                            result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
-                            result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
-                            result += "<div class=\"input-group input-group-lg\">\n";
-                            result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
-                            result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
-                            result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                            result += "</c:if>\n";
-                            result += "</div>\n";
-                            result += "</div>\n";
-                            rowcount++;
+                            if (r.data_type != "bit")
+                            {
+                                string inputType = "text";
+                                if (r.data_type == "datetime") { inputType = "date"; }
+                                string fieldname = "input" + name.ToLower() + r.column_name;
+                                string errorname = name.ToLower() + r.column_name + "error";
+                                result = result + "<!-- " + r.column_name + " -->\n";
+                                result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                                result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                                result += "<div class=\"input-group input-group-lg\">\n";
+                                result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
+                                result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                result += "</c:if>\n";
+                                result += "</div>\n";
+                                result += "</div>\n";
+                                rowcount++;
+                            }
+                            else {
+                                
+                                string fieldname = "input" + name.ToLower() + r.column_name;
+                                string errorname = name.ToLower() + r.column_name + "error";
+                                result +=   "<!-- " + r.column_name + " -->\n";
+                                result +=   "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                                result +=  "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                                result += "<div class=\"input-group input-group-lg\">\n";
+                                result += "<input type=\"radio\" id=\"" + fieldname + "true\" name=\"" + fieldname + "\" value=\"true\">";
+                                result += "<label for=\"" + fieldname + "true\">true</label><br>";
+                                result += "<input type=\"radio\" id=\""+fieldname+"false\" name=\""+fieldname+"\" value=\"false\">";
+                                result += "<label for=\""+fieldname+"false\">false</label><br>";
+                                result +=  "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                result +=  "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                result += "</c:if>\n";
+                                result += "</div>\n";
+                                result += "</div>\n";
+                                rowcount++;
+
+                            }
                         }
                         else
                         {
@@ -3146,21 +3169,42 @@ output+="return " + returntype + ";\n}\n";
                     }
                     if ((r.foreign_keys.Count < 1 || r.foreign_keys[i] == ""))
                     {
-                        string inputType = "text";
-                        if (r.data_type == "datetime") { inputType = "date"; }
-                        string fieldname = "input" + name.ToLower() + r.column_name;
-                        string errorname = name.ToLower() + r.column_name + "error";
-                        result = result + "<!-- " + r.column_name + " -->\n";
-                        result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
-                        result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
-                        result += "<div class=\"input-group input-group-lg\">\n";
-                        result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" <c:if test=\"${mode eq 'view'}\"> disabled </c:if>  id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}\">\n";
-                        result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
-                        result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
-                        result += "</c:if>\n";
-                        result += "</div>\n";
-                        result += "</div>\n";
-                        rowcount++;
+                        if (r.data_type != "bit")
+                        {
+                            string inputType = "text";
+                            if (r.data_type == "datetime") { inputType = "date"; }
+                            string fieldname = "input" + name.ToLower() + r.column_name;
+                            string errorname = name.ToLower() + r.column_name + "error";
+                            result = result + "<!-- " + r.column_name + " -->\n";
+                            result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                            result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                            result += "<div class=\"input-group input-group-lg\">\n";
+                            result = result + "<input type=\"" + inputType + "\" class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" <c:if test=\"${mode eq 'view'}\"> disabled </c:if>  id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(" + name.ToLower() + "." + r.column_name.firstCharLower() + ")}\">\n";
+                            result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                            result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                            result += "</c:if>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
+                            rowcount++;
+                        }
+                        else {
+                            string fieldname = "input" + name.ToLower() + r.column_name;
+                            string errorname = name.ToLower() + r.column_name + "error";
+                            result += "<!-- " + r.column_name + " -->\n";
+                            result += "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                            result += "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                            result += "<div class=\"input-group input-group-lg\">\n";
+                            result += "<input type=\"radio\" id=\"" + fieldname + "true\" name=\"" + fieldname + "\" value=\"true\">";
+                            result += "<label for=\"" + fieldname + "true\">true</label><br>";
+                            result += "<input type=\"radio\" id=\"" + fieldname + "false\" name=\"" + fieldname + "\" value=\"false\">";
+                            result += "<label for=\"" + fieldname + "false\">false</label><br>";
+                            result += "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                            result += "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                            result += "</c:if>\n";
+                            result += "</div>\n";
+                            result += "</div>\n";
+                            rowcount++;
+                        }
                     }
                     else
                     {
