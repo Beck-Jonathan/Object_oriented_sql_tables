@@ -89,6 +89,13 @@ namespace Object_oriented_sql_tables
             _ = new List<Boolean>();
             string analysis = data_tables.analyzeRelationships();
             file_write.fileWrite(analysis, "analysis", "analysis", "analysis");
+            string headerJSP = data_tables.genHeaderJSP();
+            file_write.fileWrite(headerJSP, settings.database_name, "JavaJSP", "headerJSP");
+            string footerJSP = data_tables.genFooterJSP();
+            file_write.fileWrite(footerJSP, settings.database_name, "JavaJSP", "footerJSP");
+
+
+
             foreach (iTable t in data_tables.all_tables)
 
             {
