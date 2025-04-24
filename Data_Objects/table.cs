@@ -2513,6 +2513,11 @@ output+="return " + returntype + ";\n}\n";
             string result = "";
             result += "int write" + name + "ToFile(List<" + name + "> " + name + "s, String path){\n";
             result += "int result = 0;\n";
+            result += "File file = new File(path);\n";
+            result += "if (!file.exists()) {\n";
+            result += "file.getParentFile().mkdirs();\n";
+            result += "file.createNewFile();\n";
+            result += "}";
             result += "PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);\n";
             result += "writer.println(\"";
             string tab = "";
@@ -2541,6 +2546,12 @@ output+="return " + returntype + ";\n}\n";
             string result = "";
             result += "int write" + name + "ToSQLInsert(List<" + name + "> " + name + "s, String path){\n";
             result += "int result = 0;\n";
+            result += "File file = new File(path);\n";
+            result += "if (!file.exists()) {\n";
+            result += "file.getParentFile().mkdirs();\n";
+            result += "file.createNewFile();\n";
+            result += "}";
+
             result += "PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);\n";
             result += "writer.println(\"INSERT\\t INTO \\t"+name+"\\t(";
             string tab = "";
@@ -2556,11 +2567,19 @@ output+="return " + returntype + ";\n}\n";
             result += "writer.print(\"(\");\n";
             foreach (Column r in columns)
             {
-                result += "writer.print(" + tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                if (r.data_type.ToLower().Equals("int") || r.data_type.ToLower().Equals("decimal"))
+                {
+                    result += "writer.print(" + tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                    
+                }
+                else {
+                    result += "writer.print(" + tab+"\"'\""+ "_" + name.ToLower() + ".get" + r.column_name + "()+\"'\");\n";
+
+                }
                 tab = "\" , \"+";
             }
             
-            result += "writer.print(\")\\n\");\n";
+            result += "writer.print(\"),\\n\");\n";
             result += "result ++;\n";
             result += "}\n";
             result += "writer.close();\n";
@@ -3435,7 +3454,7 @@ output+="return " + returntype + ";\n}\n";
             result += privLevelStatement();
             result += "String filename = \"output_\"+user.getUser_Name()+\"_"+name+"\"+\".txt\";\n";
             result += "String full_file = uploadFilePath + File.separator + filename;\n";
-            result += "String mode = req.getParamter(\"mode\");\n";
+            result += "String mode = req.getParameter(\"mode\");\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result += "List<"+name+"> "+name.ToLower()+"s = null;\n";
             result += "boolean error = false;\n";
@@ -3445,10 +3464,10 @@ output+="return " + returntype + ";\n}\n";
             result += "error = true;\n";
             result += "}\n";
             result += "try {\n";
-            result += "if (mode.equals(\"export\"){\n";
+            result += "if (mode.equals(\"export\")){\n";
             result += name.ToLower()+"DAO.write"+name+"ToFile("+name.ToLower()+"s, full_file);\n";
             result += "}\n";
-            result += "if (mode.equals(\"SQL\"){\n";
+            result += "if (mode.equals(\"SQL\")){\n";
             result += name.ToLower() + "DAO.write" + name + "ToSQLInsert(" + name.ToLower() + "s, full_file);\n";
             result += "}\n";
             result += "} catch (Exception e) {\n";
