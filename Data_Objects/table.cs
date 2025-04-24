@@ -1761,6 +1761,8 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOFooter(); //work
             result += genJavaDAOFileRead();  //done
             result += genJavaDAOFileWrite(); //pending
+            result += genJavaDAOSQLFileWrite();
+            
             return result;
         }
         /// <summary>
@@ -1867,6 +1869,8 @@ output+="return " + returntype + ";\n}\n";
             result += "int addBatchOf" + name + "s(List<" + name + "> " + name.ToLower() + "s) throws SQLException;\n";
             //write to file
             result += "int write" + name + "ToFile(List<" + name + "> " + name + "s, String path) throws IOException;\n";
+            //write to mySQL
+            result += "int write" + name + "ToSQLInsert(List<" + name + "> " + name + "s, String path) throws IOException;\n";
             result += "}\n";
 
             return result;
@@ -2523,7 +2527,40 @@ output+="return " + returntype + ";\n}\n";
                 result += "writer.print("+tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 tab = "\"\\t\"+";
             }
-            result += "writer.print(\\n)\n";
+            result += "writer.print(\"\\n\")\n";
+            result += "result ++;\n";
+            result += "}\n";
+            result += "writer.close();\n";
+            result += "return result;\n";
+            result += "}\n";
+            return result;
+        }
+        
+        private string genJavaDAOSQLFileWrite()
+        {
+            string result = "";
+            result += "int write" + name + "ToSQLInsert(List<" + name + "> " + name + "s, String path){\n";
+            result += "int result = 0;\n";
+            result += "PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);\n";
+            result += "writer.println(\"INSERT\\t INTO \\t"+name+"\\t(";
+            string tab = "";
+            foreach (Column r in columns)
+            {
+                result += tab + r.column_name;
+                tab = ",\\t";
+            }
+            tab = "";
+            result += ")\\n\");\n";
+            result += "writer.println(\"VALUES\\n\");\n";
+            result += "for (" + name + " " + "_" + name.ToLower() + " : " + name + "s) {\n";
+            result += "writer.print(\"(\");\n";
+            foreach (Column r in columns)
+            {
+                result += "writer.print(" + tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
+                tab = "\" , \"+";
+            }
+            
+            result += "writer.print(\")\\n\");\n";
             result += "result ++;\n";
             result += "}\n";
             result += "writer.close();\n";
@@ -2689,10 +2726,12 @@ output+="return " + returntype + ";\n}\n";
             result += "<div class = \"container\">\n";
             result += "<div class=\"row\">\n";
             result += "<div class=\"col-12\">\n";
-            result = result + "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + "s</h1>\n";
-            result = result + "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_", " ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
-            result = result + "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
-            result = result + "<c:if test=\"${" + name + "s.size() > 0}\">\n";
+            result +=  "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + "s</h1>\n";
+            result +=  "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_", " ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+            result +=  "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
+            result +=  "<c:if test=\"${" + name + "s.size() > 0}\">\n";
+            result += "Export " + name.Replace("_", " ") + "   <a href=\"export" + name + "?mode=export\">Add</a>\n";
+            result += "Write To SQL File " + name.Replace("_", " ") + "   <a href=\"export" + name + "?mode=SQL\">Add</a>\n";
             result += "<div class=\"table-responsive\">";
             result += "<table class=\"table table-bordered\">\n";
             result += "<thead>\n";
@@ -3396,6 +3435,7 @@ output+="return " + returntype + ";\n}\n";
             result += privLevelStatement();
             result += "String filename = \"output_\"+user.getUser_Name()+\"_"+name+"\"+\".txt\";\n";
             result += "String full_file = uploadFilePath + File.separator + filename;\n";
+            result += "String mode = req.getParamter(\"mode\");\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result += "List<"+name+"> "+name.ToLower()+"s = null;\n";
             result += "boolean error = false;\n";
@@ -3405,7 +3445,12 @@ output+="return " + returntype + ";\n}\n";
             result += "error = true;\n";
             result += "}\n";
             result += "try {\n";
+            result += "if (mode.equals(\"export\"){\n";
             result += name.ToLower()+"DAO.write"+name+"ToFile("+name.ToLower()+"s, full_file);\n";
+            result += "}\n";
+            result += "if (mode.equals(\"SQL\"){\n";
+            result += name.ToLower() + "DAO.write" + name + "ToSQLInsert(" + name.ToLower() + "s, full_file);\n";
+            result += "}\n";
             result += "} catch (Exception e) {\n";
             result += " error = true;\n";
             result += "}\n";
