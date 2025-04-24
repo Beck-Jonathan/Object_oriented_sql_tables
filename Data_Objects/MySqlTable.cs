@@ -531,7 +531,8 @@ namespace Data_Objects
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "(\n" +
                 "limit_param int ,\n " +
-                "offset_param int \n";
+                "offset_param int \n" +
+                "serach_param nvarchar(100)\n";
             foreach (Column t in columns)
             {
 
@@ -609,6 +610,15 @@ namespace Data_Objects
                     function_text += "end\n)\n";
                     count++;
                 }
+            }
+            function_text += "and\n";
+            function_text += "case \n";
+            function_text += "when search_param=\"\" then 0=0\n";
+            function_text += "when search param!=0 then ";
+            string or = "";
+            foreach(Column r in columns) {
+                function_text = or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')";
+                or = " OR ";
             }
 
             function_text += "\nORDER BY ";

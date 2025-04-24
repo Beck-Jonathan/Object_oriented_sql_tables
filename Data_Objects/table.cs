@@ -1800,7 +1800,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException;\n";
             //get all
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
-            result += "List<" + name + "> getAll" + name + "(int offset, int limit";
+            result += "List<" + name + "> getAll" + name + "(int offset, int limit, String search";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -1871,6 +1871,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int write" + name + "ToFile(List<" + name + "> " + name + "s, String path) throws IOException;\n";
             //write to mySQL
             result += "int write" + name + "ToSQLInsert(List<" + name + "> " + name + "s, String path) throws IOException;\n";
+            
             result += "}\n";
 
             return result;
@@ -1981,12 +1982,12 @@ output+="return " + returntype + ";\n}\n";
             string comma = "";
             string nullValue = "";
             result = result + "public List<" + name + "> getAll" + name + "() {\n";
-            result = result + "return getAll" + name + "(" + appData2.settings.page_size + ",0);";
+            result = result + "return getAll" + name + "(" + appData2.settings.page_size + ",0,\"\");";
             result += "}\n";
             result = result + "public static List<" + name + "> getAll" + name + "(int pagesize) {\n";
-            result = result + "return getAll" + name + "(pagesize" + ",0);";
+            result = result + "return getAll" + name + "(pagesize" + ",0,\"\");";
             result += "}\n";
-            result = result + "public static List<" + name + "> getAll" + name + "(int limit, int offset";
+            result = result + "public static List<" + name + "> getAll" + name + "(int limit, int offset, String search";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -1999,9 +2000,10 @@ output+="return " + returntype + ";\n}\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result += "try (Connection connection = getConnection()) { \n";
             result += "if (connection != null) {\n";
-            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "(?,?)}\")) {\n" +
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "(?,?,?)}\")) {\n" +
                 "statement.setInt(1,limit)\n;" +
-                "statement.setInt(2,offset);\n";
+                "statement.setInt(2,offset);\n" +
+                 "statement.setString(2,search);\n";
             int count = 3;
             foreach (Column r in columns)
             {
@@ -2749,6 +2751,16 @@ output+="return " + returntype + ";\n}\n";
             result +=  "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_", " ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
             result +=  "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
             result +=  "<c:if test=\"${" + name + "s.size() > 0}\">\n";
+
+            result += "<div class=\"search-container\">\n";
+            result += "<form action=\"all-"+name+"\">\n";
+            result += "<input type=\"text\" placeholder=\"Search..\" id=\"searchBox\" name=\"search\">\n";
+            result += "<button type=\"submit\"><i class=\"fa fa-search\"></i></button>\n";
+            result += "</form>\n";
+            result += "</div>\n";
+            result += "";
+
+
             result += "Export " + name.Replace("_", " ") + "   <a href=\"export" + name + "?mode=export\">Add</a>\n";
             result += "Write To SQL File " + name.Replace("_", " ") + "   <a href=\"export" + name + "?mode=SQL\">Add</a>\n";
             result += "<div class=\"table-responsive\">";
@@ -2946,10 +2958,19 @@ output+="return " + returntype + ";\n}\n";
             result += "@Override\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
+            result += "int errors = 0;\n";
+            result += "String search_term = req.getParameter(\"search\");\n";
+            result += "if (search_term==null){\n";
+            result += "search_term =\"\";\n";
+            result += "}\n";
+            result += "if (!search_term.equals(\"\") && (search_term.length()<2||search_term.length()>100)){\n";
+            result += "errors++;\n ";
+            result += "results.put(\"searchError\",\"Invalid search term\");\n";
+            result += "}\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "try {\n";
-            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(20,0";
+            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(20,0,search_term";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -5661,7 +5682,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Override\n";
             if (hasVM)
             {
-                result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset";
+                result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset, String serach_term";
                 foreach (Column r in columns)
                 {
                     if (r.references != "")
@@ -5685,16 +5706,31 @@ output+="return " + returntype + ";\n}\n";
                 }
 
                 result += "){\n";
+                result += "if (search_term.isEmpty() ";
+                foreach (Column r in columns) {
+                    result += "|| " + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
+                }
+                result += "){\n";
                 result += "results.add(" + name.ToLower() + ");\n";
-                result += "}\n}\n";
+                result += "}\n}\n}\n";
                 result += "return results;\n}\n";
 
             }
             else
             {
-                result += "public List <" + name + "> getAll" + name + "(int limit, int offset) throws SQLException {\n";
+                result += "public List <" + name + "> getAll" + name + "(int limit, int offset, String search_term) throws SQLException {\n";
+                result += "List<" + name + "> results = new ArrayList<>();\n";
+                result += "for (" + name + " " + name.ToLower() + " : " + name.ToLower() + "s){\n";
+                result += "if (search_term.isEmpty() ";
+                foreach (Column r in columns)
+                {
+                    result += "|| " + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
+                }
+                result += "){\n";
+                result += "results.add(" + name.ToLower() + ");\n";
+                result += "}\n}\n";
 
-                result += "return " + name.ToLower() + "s;\n";
+                result += "return results;\n";
                 result += "}\n";
             }
 
@@ -6066,7 +6102,10 @@ output+="return " + returntype + ";\n}\n";
             //result += TestWrongRoleGets302onDoPost(); //  done
             result += TestGetAllGetsAll();//done
             result += TestGetAllCanFilter(); //done
+            result += TestGetAllCanSearch();
+            result += TestGetAllCanSearchAndReturnZero();
             result += TestInitWithNoParamsDoesNotCrash();
+            
             result += "\n}\n";
             return result;
         }
@@ -6466,6 +6505,41 @@ output+="return " + returntype + ";\n}\n";
                         result += "}\n";
                     }
                 }
+            return result;
+        }
+
+        private string TestGetAllCanSearch()
+        {
+            string result = "";       
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.GetAllCanFilter, this);
+            result += "@Test\n";
+            result += "public void testLoggedInUserCanSearch" + name + "sBy" + r.column_name + "() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "String searchTerm = \"\";n";
+            result += "request.setParameter(\"search\",searchTerm);\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
+            result += "assertNotNull(" + name.ToLower() + "s);\n";
+            result += "assertEquals(20," + name.ToLower() + "s.size());\n";
+            result += "}\n";         
+            return result;
+        }
+        private string TestGetAllCanSearchAndReturnZero()
+        {
+            string result = "";
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.GetAllCanFilter, this);
+            result += "@Test\n";
+            result += "public void testLoggedInUserCanSearch" + name + "sBy" + r.column_name + "() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "String searchTerm = \"\";n";
+            result += "request.setParameter(\"search\",searchTerm);\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
+            result += "assertNotNull(" + name.ToLower() + "s);\n";
+            result += "assertEquals(0," + name.ToLower() + "s.size());\n";
+            result += "}\n";
             return result;
         }
 
