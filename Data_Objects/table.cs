@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 namespace Data_Objects
@@ -2784,7 +2785,7 @@ output+="return " + returntype + ";\n}\n";
             result += "</thead>\n";
             result += "<tbody>\n";
             result = result + "<c:forEach items=\"${" + name + "s}\" var=\"" + name.ToLower() + "\">\n";
-            result += "<tr>\n";
+            result += "<tr id=\"${"+name.ToLower()+"."+name.ToLower()+"_ID}row\">\n";
             foreach (Column r in columns)
             {
                 //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
@@ -2819,6 +2820,11 @@ output+="return " + returntype + ";\n}\n";
                 "\t\t\t\t\t\t<c:otherwise>1</c:otherwise>\n" +
                 "\t\t\t\t\t\t</c:choose>\">\n" +
                 "<c:if test=\"${!" + name.ToLower() + ".is_active}\">un</c:if>Delete </a></td> \n";
+            result += "<td>\n<div> \n";
+            result += "<button class=\"delButton\" href=\"${"+name.ToLower()+"."+name.ToLower()+"_ID\"} >Delete</button> </div>\n";
+            result += "<div style=\"display: none;\" id=\"" + name.ToLower()+"."+name.ToLower()+"_IDStatus></div>\n";
+
+            result += " </td>\n";
             result += "</tr>\n";
             result += "</c:forEach>\n";
             result += "</tbody>\n";
@@ -2827,6 +2833,9 @@ output+="return " + returntype + ";\n}\n";
             result += "</c:if>\n";
             result += "</div>\n";
             result += "</div>\n";
+            result += "</div>\n";
+            result += "<div id=\"dialog\" title=\"Confirmation Required\">\n";
+            result += "Are you sure about this?\n";
             result += "</div>\n";
             result += "</main>\n";
             result += "<%@include file=\"/WEB-INF/" + settings.database_name + "/personal_bottom.jsp\"%>\n";            //gen_header
@@ -3016,6 +3025,13 @@ output+="return " + returntype + ";\n}\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Delete " + name + "\");\n";
             result = result + "int " + name + "ID = Integer.valueOf(req.getParameter(\"" + name.ToLower() + "id\"));\n";
             result += "int mode = Integer.valueOf(req.getParameter(\"mode\"));\n";
+            result += "boolean _ajax=false;\n";
+            result += "String AJAX = req.getParameter(\"AJAX\");\n";
+            result += "try { \n";
+            result += "_ajax = Boolean.parseBoolean(AJAX);\n";
+            result += "} catch (Exception e){\n";
+            result += "_ajax = false;\n";
+            result += "}\n";
             result += "int result = 0;\n";
             result += "if (mode==0){\n";
             result += "try{\n";
@@ -3032,6 +3048,15 @@ output+="return " + returntype + ";\n}\n";
             result += "catch(Exception ex){\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
             result += "}\n";
+            result += "}\n";
+            result += "if (_ajax){\n";
+            result += "resp.setStatus(200);\n";
+            result += "resp.setContentType(\"text/plain\");\n";
+            result += "PrintWriter writer=resp.getWriter();\n";
+            result += "writer.write(result.toString());\n";
+            result += "writer.flush();\n";
+            result += "writer.close();\n";
+            result += "return;\n";
             result += "}\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result = result + name.ToLower() + "s = " + name.ToLower() + "DAO.getAll" + name + "();\n";
@@ -3888,6 +3913,70 @@ output+="return " + returntype + ";\n}\n";
             }
             // to end the js file
             result += "\n}\n)\n";
+            return result;
+        }
+        public string jQueryDelete() {
+            string result = "$(document).ready(function() {\r\n";
+            
+            result += "$(\"#dialog\").dialog({\n";
+            result += "modal: true,\n";
+            result += "bgiframe: true,\n";
+            result += "autoOpen: false,\n";
+            result += "width: 500,\n";
+            result += "height: 400,\n";
+            result += "});\n";
+            
+            result += "$(\".delButton\").click(function(e) {\n";
+            result += "e.preventDefault();\n";
+            result += "var headers = document.getElementsByClassName('table-responsive')[0].childNodes[0].childNodes[1].childNodes[1].childNodes;\r\n";
+            result += "var parentrow = this.parentElement.parentElement.parentElement.children;";
+            result += "var rowid =\"#\"+ targetUrl+\"row\";\n";
+            result += "var text = \"\";\n";
+            result += "for (i=1;i<headers.length-2;i=i+2){\n";
+            result += "text +=headers[i].textContent+\": \"+parentrow[(i-1)/2].innerHTML+\"</br>\";\n";
+            result += "}\n";
+            result += "document.getElementById(\"dialog\").innerHTML=text;";
+            
+            result += "var targetUrl = $(this).attr(\"href\");\n";
+            result += "$('#dialog').dialog('option', 'title', 'Delete '+parentrow[1].innerHTML+\"???\");\n";
+            result += "$(\"#dialog\").dialog({\n";
+            result += "hide: {\n";
+            result += "effect: \"explode\",\n";
+            result += "duration: 300\n";
+            result += "},\n";
+            result += "show: {\n";
+            result += "effect: \"explode\",\n";
+            result += "duration: 300\n";
+            result += "},\n";
+            result += "buttons : {\n";
+            result += "\"Delete For Real\" : function() {\n";
+            result += "console.log(\"try\");\n";
+            result += "$.ajax({\n";
+            result += "url: 'delete"+name+"',\n";
+            result += "data: \""+name.ToLower()+"id=\" + targetUrl+\"&AJAX=true\" ,\n";
+            result += "type: 'post',\n";
+            result += "async: true,\n";
+            result += "success: function (response) {\n";
+            result += "if (response==1){\n";
+            result += "$(rowid).slideUp();";
+            result += "}\n";
+            result += "else {\n ";
+            result += "$(rowid).addClass(\"ui-state-error\");\n";
+            result += "}\n";
+            result += "}})\n";
+            result += "$(this).dialog(\"close\");\n";
+            result += "var rowid =\"#\"+ targetUrl+\"row\";\n";
+            result += "$(rowid).slideUp();\n";
+            result += "},\n";
+            
+            result += "\"Let It Stay\" : function() {\n";
+            result += " $(this).dialog(\"close\");\n";
+            result += "}\n";
+            result += "}\n";
+            result += "});\n";
+            result += "$(\"#dialog\").dialog(\"open\");";
+            result += " });";
+            
             return result;
         }
         private string initMethod()

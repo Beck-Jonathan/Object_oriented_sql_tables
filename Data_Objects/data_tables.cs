@@ -112,6 +112,12 @@ namespace Data_Objects
                 result += "<script src=\"css/"+settings.database_name+"/add" + t.name + ".css\"></script>\n";
                 result += "</c:if>\n";
             }
+            foreach (table t in all_tables)
+            {
+                result += "<c:if test=\"${pageTitle eq 'All " + t.name + "'}\">\n";
+                result += "<script src=\"css/" + settings.database_name + "/all" + t.name + ".css\"></script>\n";
+                result += "</c:if>\n";
+            }
             result += "<body onload=\"\">\n";
             result += "<header id=\"xxxHeader\" onload=\"\">\n";
             result += "<div class=\"row\">\n";
@@ -150,6 +156,12 @@ namespace Data_Objects
             foreach (table t in all_tables) {
                 result += "<c:if test=\"${pageTitle eq 'Add "+t.name+ "'|| pageTitle eq 'Edit "+t.name+"'}\">\n";
                 result += "<script src=\"js/"+settings.database_name+"/add"+t.name+".js\"></script>\n";
+                result += "</c:if>\n";
+            }
+            foreach (table t in all_tables)
+            {
+                result += "<c:if test=\"${pageTitle eq 'All " + t.name + "'}\">\n";
+                result += "<script src=\"js/" + settings.database_name + "/all" + t.name + ".js\"></script>\n";
                 result += "</c:if>\n";
             }
             result += "</body>\n";            

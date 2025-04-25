@@ -698,6 +698,20 @@ namespace Object_oriented_sql_tables
                     }
                 }
                 if (true)
+                {    //change to these settings 31.5
+                    s = t.jQueryDelete();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "jQuery", "DeleteValidate");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+
+                if (true)
                 {    //change to these settings 32
                     s = t.genJavaiDAO();
                     alloutput += s + "\n";
