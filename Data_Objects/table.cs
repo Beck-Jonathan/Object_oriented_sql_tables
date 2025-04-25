@@ -6195,7 +6195,7 @@ output+="return " + returntype + ";\n}\n";
             result += initTests(1); //done
             result += tearDownTests(); //done
             result += testLoggedInGets200OnDoGet();//done
-            //result += testLoggedInGets200OnDoPost();//done
+            //result += testLoggedInGets302OnDoPostWithNoObjectSet();//done
             result += TestLoggedOutGets302onDoGet();//done
             //result += TestLoggedOutGets302onDoPost();//done
             result += TestWrongRoleGets302onDoGet(); // done
@@ -6219,7 +6219,7 @@ output+="return " + returntype + ";\n}\n";
             result += initTests(2); //done
             result += tearDownTests(); //done
             result += testLoggedInGets200OnDoGet(); //done
-            result += testLoggedInGets200OnDoPost(); //done
+            result += testLoggedInGets302OnDoPostWithNoObjectSet(); //done
             result += TestLoggedOutGets302onDoGet();//done 
             result += TestLoggedOutGets302onDoPost();//done
             result += TestWrongRoleGets302onDoGet(); // done
@@ -6241,7 +6241,7 @@ output+="return " + returntype + ";\n}\n";
             result += initTests(3);//done 
             result += tearDownTests();//done
             result += testLoggedInGets200OnDoGet();//done
-            //result += testLoggedInGets200OnDoPost();//done
+            //result += testLoggedInGets302OnDoPostWithNoObjectSet();//done
             result += TestLoggedOutGets302onDoGet();//done
             //result += TestLoggedOutGets302onDoPost();//done
             result += TestDeactivateCanDeactivate(); //done
@@ -6264,7 +6264,7 @@ output+="return " + returntype + ";\n}\n";
             result += initTests(4);//done
             result += tearDownTests();//done
             result += testLoggedInGets200OnDoGet();//done
-            result += testLoggedInGets200OnDoPost();//done
+            result += testLoggedInGets302OnDoPostWithNoObjectSet();//done
             result += TestLoggedOutGets302onDoGet();//done
             result += TestLoggedOutGets302onDoPost();//done
             result += TestWrongRoleGets302onDoGet(); // done
@@ -6434,16 +6434,16 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
         //done
-        private string testLoggedInGets200OnDoPost()
+        private string testLoggedInGets302OnDoPostWithNoObjectSet()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.TwoHundredOnPost, this);
             result += "@Test\n";
-            result += "public void TestLoggedInUserGets200OnDoPost() throws ServletException, IOException{\n";
+            result += "public void TestLoggedInUserGets302nDoPostWithNo"+name+"Set() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
             result += "servlet.doPost(request,response);\n";
             result += "int status = response.getStatus();\n";
-            result += "assertEquals(200,status);\n";
+            result += "assertEquals(302,status);\n";
             result += "}\n";
             return result;
         }
@@ -6838,6 +6838,8 @@ output+="return " + returntype + ";\n}\n";
             result += "@Test\n";
             result += "public void TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
+            result += name + " " + name.ToLower() + " = new " + name + "();\n";
+            result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
             result += "request.setSession(session);\n";
             result += "servlet.doPost(request,response);\n";
             result += "int responseStatus = response.getStatus();\n";
