@@ -3108,13 +3108,18 @@ output+="return " + returntype + ";\n}\n";
             result = result + name.ToLower() + ".set" + name + "_ID(primaryKey);\n";
             result += "} catch (Exception e){\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
+            result += "resp.sendRedirect(\"all-" + name.ToLower() + "s\");\n";
             result += "}\n";
             result += "try{\n";
             result = result + name.ToLower() + "=" + name.ToLower() + "DAO.get" + name + "ByPrimaryKey(" + name.ToLower() + ");\n";
             result += "} catch (SQLException e) {\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
+            result += name.ToLower() + "= null;\n";
             result += "}\n";
-
+            result += "if (" + name.ToLower() + "==null || " + name.ToLower() + ".get" + columns[0].column_name + "==null){\n";
+            result += "resp.sendRedirect(\"all-" + name + "s\");\n";
+            result += "return;\n";
+            result += "}\n";
             result = result + "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
@@ -3152,6 +3157,12 @@ output+="return " + returntype + ";\n}\n";
             result = result + "//to get the old " + name + "\n";
 
             result = result + name + " _old" + name + "= (" + name + ")session.getAttribute(\"" + name.ToLower() + "\");\n";
+            result += "if (_old"+name+"==null){\n";
+            result += "resp.sendRedirect(\"all-"+name.ToLower()+"s\");\n";
+            result += "return;\n";
+            result += "}\n";
+            
+
             result += "//to get the new event's info\n";
             foreach (Column r in columns)
             {
