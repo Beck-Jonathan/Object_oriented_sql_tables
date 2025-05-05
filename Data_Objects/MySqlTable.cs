@@ -331,17 +331,17 @@ namespace Data_Objects
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive by primary key function. This funciton will ask for the pimary key(s) of the table, 
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retrieve by primary key function. This funciton will ask for the pimary key(s) of the table, 
         /// and return all fields of the record, joining with keyed fields to return a full "view model".
         /// Jonathan Beck
         /// </summary>
-        /// <returns> a string comment box followed by a  string MySQL code that creates the the retreive by Primary key SP for the table </returns>
-        public String gen_retreive_by_key()
+        /// <returns> a string comment box followed by a  string MySQL code that creates the the retrieve by Primary key SP for the table </returns>
+        public String gen_retrieve_by_key()
         {
-            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_PK);
-            String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_pk_" + name + ";\n"
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_retrieve_By_PK);
+            String firstLine = "DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_" + name + ";\n"
                 + "DELIMITER $$\n";
-            String secondLine = "CREATE PROCEDURE sp_retreive_by_pk_" + name + "\n"
+            String secondLine = "CREATE PROCEDURE sp_retrieve_by_pk_" + name + "\n"
                 + "(\n";
             String function_text = firstLine + secondLine;
             int count = 0;
@@ -415,13 +415,13 @@ namespace Data_Objects
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive by foreign key function. This funciton will ask for a foregn key(s) of the table, 
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retrieve by foreign key function. This funciton will ask for a foregn key(s) of the table, 
         /// and return all fields of the record, joining with keyed fields to return a full "view model".
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retreive by Foreign-key SP for the table </returns>
-        public String gen_retreive_by_fkey()
+        /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retrieve by Foreign-key SP for the table </returns>
+        public String gen_retrieve_by_fkey()
         {
             string fulltext = "";
             foreach (Column r in columns)
@@ -433,10 +433,10 @@ namespace Data_Objects
                     string fk_name = parts[1];
                     String comma = "";
                     int count = 0;
-                    String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_FK);
-                    String firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_" + name + "_by_" + fk_table + ";\n"
+                    String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_retrieve_By_FK);
+                    String firstLine = "DROP PROCEDURE IF EXISTS sp_retrieve_" + name + "_by_" + fk_table + ";\n"
                         + "DELIMITER $$\n";
-                    String secondLine = "CREATE PROCEDURE sp_retreive_" + name + "_by_" + fk_table + " \n"
+                    String secondLine = "CREATE PROCEDURE sp_retrieve_" + name + "_by_" + fk_table + " \n"
                         + "(\n";
                     String function_text = firstLine + secondLine;
                     String add = "";
@@ -517,19 +517,19 @@ namespace Data_Objects
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retreive  all key function. This funciton  
+        /// generates a string comment box followed by a  a MySQL stored procedure that creates a retrieve  all key function. This funciton  
         /// return all fields of the record, joining with keyed fields to return a full "view model".
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retreive by all SP for the table </returns>
-        public String gen_retreive_by_all()
+        /// <returns>generates a string comment box followed by a  string MySQL code that creates the the retrieve by all SP for the table </returns>
+        public String gen_retrieve_by_all()
         {
             int count = 0;
-            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_By_All);
-            string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_all_" + name + ";\n"
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_retrieve_By_All);
+            string firstLine = "DROP PROCEDURE IF EXISTS sp_retrieve_by_all_" + name + ";\n"
                 + "DELIMITER $$\n";
-            string secondLine = "CREATE PROCEDURE sp_retreive_by_all_" + name + "(\n" +
+            string secondLine = "CREATE PROCEDURE sp_retrieve_by_all_" + name + "(\n" +
                 "limit_param int ,\n " +
                 "offset_param int \n" +
                 "serach_param nvarchar(100)\n";
@@ -617,7 +617,7 @@ namespace Data_Objects
             function_text += "when search param!=0 then ";
             string or = "";
             foreach(Column r in columns) {
-                function_text = or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')";
+                function_text += or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')";
                 or = " OR ";
             }
 
@@ -643,18 +643,18 @@ namespace Data_Objects
         }
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates generates a string comment box followed by MySQL stored procedure that creates a retreive active (that is, is_active==1) key function. This funciton  
+        /// generates generates a string comment box followed by MySQL stored procedure that creates a retrieve active (that is, is_active==1) key function. This funciton  
         /// return all fields of the record, joining with keyed fields to return a full "view model".
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a MySQL code that creates the the retreive by active SP for the table </returns>
-        public String gen_retreive_by_active()
+        /// <returns>generates a string comment box followed by a MySQL code that creates the the retrieve by active SP for the table </returns>
+        public String gen_retrieve_by_active()
         {
-            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Retreive_Active);
-            string firstLine = "DROP PROCEDURE IF EXISTS sp_retreive_by_active_" + name + ";\n"
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_retrieve_Active);
+            string firstLine = "DROP PROCEDURE IF EXISTS sp_retrieve_by_active_" + name + ";\n"
                 + "DELIMITER $$\n";
-            string secondLine = "CREATE PROCEDURE sp_retreive_by_active_" + name + "()\n";
+            string secondLine = "CREATE PROCEDURE sp_retrieve_by_active_" + name + "()\n";
             String function_text = firstLine + secondLine;
             function_text += "begin \n SELECT \n";
             int count = 0;

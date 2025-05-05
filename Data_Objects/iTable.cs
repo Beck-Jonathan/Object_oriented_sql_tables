@@ -75,40 +75,40 @@ namespace Data_Objects
         String gen_undelete();
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates a string comment box followed by a  a specified SQL language stored procedure that creates a retreive by primary key function. This funciton will ask for the pimary key(s) of the table, 
+        /// generates a string comment box followed by a  a specified SQL language stored procedure that creates a retrieve by primary key function. This funciton will ask for the pimary key(s) of the table, 
         /// and return all fields of the record, joining with keyed fields to return a full "view model".
         /// Jonathan Beck
         /// </summary>
-        /// <returns> a string comment box followed by a  string specified SQL language code that creates the the retreive by Primary key SP for the table </returns>
-        String gen_retreive_by_key();
+        /// <returns> a string comment box followed by a  string specified SQL language code that creates the the retrieve by Primary key SP for the table </returns>
+        String gen_retrieve_by_key();
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates a string comment box followed by a  a specified SQL language stored procedure that creates a retreive by foreign key function. This funciton will ask for a foregn key(s) of the table, 
+        /// generates a string comment box followed by a  a specified SQL language stored procedure that creates a retrieve by foreign key function. This funciton will ask for a foregn key(s) of the table, 
         /// and return all fields of the record, joining with keyed fields to return a full "view model".
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a  string specified SQL language code that creates the the retreive by Foreign-key SP for the table </returns>
-        //to generate retreive by fk, not implmented well yet
-        String gen_retreive_by_fkey();
+        /// <returns>generates a string comment box followed by a  string specified SQL language code that creates the the retrieve by Foreign-key SP for the table </returns>
+        //to generate retrieve by fk, not implmented well yet
+        String gen_retrieve_by_fkey();
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates a string comment box followed by a  a specified SQL language stored procedure that creates a retreive  all key function. This funciton  
+        /// generates a string comment box followed by a  a specified SQL language stored procedure that creates a retrieve  all key function. This funciton  
         /// return all fields of the record, joining with keyed fields to return a full "view model".
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a  string specified SQL language code that creates the the retreive by Foreign-key SP for the table </returns>
-        String gen_retreive_by_all();
+        /// <returns>generates a string comment box followed by a  string specified SQL language code that creates the the retrieve by Foreign-key SP for the table </returns>
+        String gen_retrieve_by_all();
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
-        /// generates generates a string comment box followed by specified SQL language stored procedure that creates a retreive active (that is, is_active==1) key function. This funciton  
+        /// generates generates a string comment box followed by specified SQL language stored procedure that creates a retrieve active (that is, is_active==1) key function. This funciton  
         /// return all fields of the record, joining with keyed fields to return a full "view model".
         /// Typically this will return a list of objects.
         /// Jonathan Beck
         /// </summary>
-        /// <returns>generates a string comment box followed by a specified SQL language code that creates the the retreive by active SP for the table </returns>
-        String gen_retreive_by_active();
+        /// <returns>generates a string comment box followed by a specified SQL language code that creates the the retrieve by active SP for the table </returns>
+        String gen_retrieve_by_active();
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a string comment box followed by a specified SQL language stored procedure that creates a standard insert function. This funciton will ask for  each field, 

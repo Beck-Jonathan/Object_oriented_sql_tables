@@ -51,19 +51,19 @@ namespace Data_Objects
         {
             throw new NotImplementedException();
         }
-        public string gen_retreive_by_all()
+        public string gen_retrieve_by_all()
         {
             throw new NotImplementedException();
         }
-        public String gen_retreive_by_active()
+        public String gen_retrieve_by_active()
         {
             return "";
         }
-        public string gen_retreive_by_fkey()
+        public string gen_retrieve_by_fkey()
         {
             throw new NotImplementedException();
         }
-        public string gen_retreive_by_key()
+        public string gen_retrieve_by_key()
         {
             throw new NotImplementedException();
         }

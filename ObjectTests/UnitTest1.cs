@@ -16,7 +16,7 @@ namespace ObjectTests
         public void testMySqlSelectAll()
         {
             iTable user = (iTable)data_tables.all_tables[0];
-            string actual = user.gen_retreive_by_key();
+            string actual = user.gen_retrieve_by_key();
             string expected = "DROP PROCEDURE IF EXISTS sp_update_User;\r\n DELIMITER $$\r\nCREATE PROCEDURE sp_update_User\r\n(oldUser_ID int\r\noldUser_Name nvarchar(100),\r\nnewUser_Name nvarchar(100),\r\noldUser_PW nvarchar(100),\r\nnewUser_PW nvarchar(100),\r\noldEmail nvarchar(100),\r\nnewEmail nvarchar(100),\r\n)\r\nbegin \r\nUPDATE User\r\nset,\r\nUser_Name = newUser_Name,\r\nUser_PW = newUser_PW,\r\nEmail = newEmail\r\nWHERE User_ID= oldUser_ID\r\nAND User_Name= oldUser_Name\r\nAND User_PW= oldUser_PW\r\nAND Email= oldEmail\r\n ;\r\nend $$";
             Assert.AreEqual(expected, actual);
         }

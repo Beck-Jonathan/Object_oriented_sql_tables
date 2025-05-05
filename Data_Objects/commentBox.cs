@@ -56,8 +56,8 @@ namespace Data_Objects
                     Params = "\n///<param name=\"_" + table.name + "\">the <see cref=\"" + table.name + "\"/> to be restored</param>";
                     returns = "Int, number of records restored";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_By_PK:
-                    summary = "Logic layer retreive by pk method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Manager_retrieve_By_PK:
+                    summary = "Logic layer retrieve by pk method for " + table.name + " objects";
                     foreach (Column r in table.columns)
                     {
                         if (r.primary_key == 'y' || r.primary_key == 'Y')
@@ -67,18 +67,18 @@ namespace Data_Objects
                     }
                     returns = "<see cref=\"" + table.name + "\">";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_All_No_Param:
-                    summary = "Logic layer retreive all method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Manager_retrieve_All_No_Param:
+                    summary = "Logic layer retrieve all method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_All_One_Param:
-                    summary = "Logic layer retreive all method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Manager_retrieve_All_One_Param:
+                    summary = "Logic layer retrieve all method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param:
-                    summary = "Logic layer retreive all method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Manager_retrieve_All_Two_Param:
+                    summary = "Logic layer retrieve all method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
@@ -88,17 +88,17 @@ namespace Data_Objects
                     Params += "\n///<param name=new\"" + table.name.ToLower() + "\">the <see cref=\"" + table.name + "\"/> the updated version</param>";
                     returns = "Int, number of records updated";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_By_FK_No_Param:
+                case XML_Method_Type.CSharp_Manager_retrieve_By_FK_No_Param:
                     summary = "Logic layer retrevei by fk method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_By_FK_One_Param:
+                case XML_Method_Type.CSharp_Manager_retrieve_By_FK_One_Param:
                     summary = "Logic layer retrevei by fk method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
-                case XML_Method_Type.CSharp_Manager_Retreive_By_FK_Two_Param:
+                case XML_Method_Type.CSharp_Manager_retrieve_By_FK_Two_Param:
                     summary = "Logic layer retrevei by fk method for" + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
@@ -130,8 +130,8 @@ namespace Data_Objects
                     }
                     returns = "Int, number of records restored";
                     break;
-                case XML_Method_Type.CSharp_Accessor_Retreive_By_PK:
-                    summary = "Data Access layer retreive by PK method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Accessor_retrieve_By_PK:
+                    summary = "Data Access layer retrieve by PK method for " + table.name + " objects";
                     foreach (Column r in table.columns)
                     {
                         if (r.primary_key == 'y' || r.primary_key == 'Y')
@@ -141,8 +141,8 @@ namespace Data_Objects
                     }
                     returns = "<see cref=\"" + table.name + "\">";
                     break;
-                case XML_Method_Type.CSharp_Accessor_Retreive_All_Two_Param:
-                    summary = "Data Access layer Retreive All method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Accessor_retrieve_All_Two_Param:
+                    summary = "Data Access layer retrieve All method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
@@ -152,8 +152,8 @@ namespace Data_Objects
                     Params += "\n///<param name=\"new" + table.name + "\">the <see cref=\"" + table.name + "\"/> the updated version</param>";
                     returns = "Int, number of records updated";
                     break;
-                case XML_Method_Type.CSharp_Accessor_Retreive_By_FK_Two_Param:
-                    summary = "Data Access layer Retreive by FK method for " + table.name + " objects";
+                case XML_Method_Type.CSharp_Accessor_retrieve_By_FK_Two_Param:
+                    summary = "Data Access layer retrieve by FK method for " + table.name + " objects";
                     Params = "";
                     returns = "List of <see cref=\"" + table.name + "\">";
                     break;
@@ -188,19 +188,19 @@ namespace Data_Objects
                     Params = "\n* @param " + table.name + " the " + table.name + " to be undeleted";
                     returns = "\n* @return number of records undeleted";
                     break;
-                case JavaDoc_Method_Type.Java_DAO_Retreive_By_FK:
-                    summary = "\n* DAO Method to retreive by Foreign Key " + table.name + " objects";
+                case JavaDoc_Method_Type.Java_DAO_retrieve_By_FK:
+                    summary = "\n* DAO Method to retrieve by Foreign Key " + table.name + " objects";
                     Params = "";
                     returns = "\n* @return List of " + table.name;
                     break;
-                case JavaDoc_Method_Type.Java_DAO_Retreive_All_:
-                    summary = "\n* DAO Method to retreive all " + table.name + " objects";
+                case JavaDoc_Method_Type.Java_DAO_retrieve_All_:
+                    summary = "\n* DAO Method to retrieve all " + table.name + " objects";
                     Params = "";
                     returns = "\n* @return List of " + table.name;
                     break;
-                case JavaDoc_Method_Type.Java_DAO_Retreive_By_PK:
-                    summary = "\n* DAO Method to retreive by ID " + table.name + " objects";
-                    Params = "\n* @param " + table.name + " the " + table.name + " to be retreived";
+                case JavaDoc_Method_Type.Java_DAO_retrieve_By_PK:
+                    summary = "\n* DAO Method to retrieve by ID " + table.name + " objects";
+                    Params = "\n* @param " + table.name + " the " + table.name + " to be retrieved";
                     returns = "\n* @return List of " + table.name;
                     break;
                 case JavaDoc_Method_Type.Java_DAO_Update:
@@ -244,13 +244,13 @@ namespace Data_Objects
             {
                 middle = "Create the delete script for the " + table + " table";
             }
-            if (type.Equals(Component_Enum.SQL_Retreive_By_PK))
+            if (type.Equals(Component_Enum.SQL_retrieve_By_PK))
             {
-                middle = "Create the retreive by key script for the " + table + " table";
+                middle = "Create the retrieve by key script for the " + table + " table";
             }
-            if (type.Equals(Component_Enum.SQL_Retreive_By_All))
+            if (type.Equals(Component_Enum.SQL_retrieve_By_All))
             {
-                middle = "Create the retreive by all script for the " + table + " table";
+                middle = "Create the retrieve by all script for the " + table + " table";
             }
             if (type.Equals(Component_Enum.SQL_Insert))
             {
@@ -324,9 +324,9 @@ namespace Data_Objects
             {
                 middle = "Create the undelete script for the " + table + " table";
             }
-            if (type.Equals(Component_Enum.SQL_Retreive_Active))
+            if (type.Equals(Component_Enum.SQL_retrieve_Active))
             {
-                middle = "Create The Retreive_By_Active script for the " + table + " table";
+                middle = "Create The retrieve_By_Active script for the " + table + " table";
             }
             if (type.Equals(Component_Enum.Java_Servlet_Delete))
             {
@@ -362,42 +362,42 @@ namespace Data_Objects
             {
                 middle = "Create the Logic Layer Undelete method for the " + table + " table";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_PK))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_By_PK))
             {
-                middle = "Create the Logic Layer Retreive by Primary Key method for the" + table + " table";
+                middle = "Create the Logic Layer retrieve by Primary Key method for the" + table + " table";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_All_No_Param))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_All_No_Param))
             {
-                middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+                middle = "Create the Logic Layer retrieve all method for the the " + table + " table";
                 middle += "\n with no paramater supplied.";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_All_One_Param))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_All_One_Param))
             {
-                middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+                middle = "Create the Logic Layer retrieve all method for the the " + table + " table";
                 middle += "\n with one paramater supplied.";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_All_Two_Param))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_All_Two_Param))
             {
-                middle = "Create the Logic Layer Retreive all method for the the " + table + " table";
+                middle = "Create the Logic Layer retrieve all method for the the " + table + " table";
                 middle += "\n with two paramater supplied.";
             }
             if (type.Equals(Component_Enum.CSharp_Manager_Update))
             {
                 middle = "Create the Logic Layer Update method for the " + table + " table";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_No_Param))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_By_FK_No_Param))
             {
-                middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+                middle = "Create the Logic Layer retrieve by FK method for the " + table + " table";
                 middle += "\n with no paramater supplied.";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_One_Param))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_By_FK_One_Param))
             {
-                middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+                middle = "Create the Logic Layer retrieve by FK method for the " + table + " table";
                 middle += "\n with one paramater supplied.";
             }
-            if (type.Equals(Component_Enum.CSharp_Manager_Retreive_By_FK_Two_Param))
+            if (type.Equals(Component_Enum.CSharp_Manager_retrieve_By_FK_Two_Param))
             {
-                middle = "Create the Logic Layer retreive by FK method for the " + table + " table";
+                middle = "Create the Logic Layer retrieve by FK method for the " + table + " table";
                 middle += "\n with two paramater supplied.";
             }
             middle += "\n Created By Jonathan Beck " + DateTime.Now.ToShortDateString();
@@ -517,10 +517,10 @@ namespace Data_Objects
                     result += "Test that a user in the wrong role will get a 302 on a doPost";
                     break;
                 case JavaTestType.LoggedInGetAllGetsAll:
-                    result += "Test that a logged in user is able to retreive all of the " + t.name+ " objects.";
+                    result += "Test that a logged in user is able to retrieve all of the " + t.name+ " objects.";
                     break;
                 case JavaTestType.GetOneGetsOne:
-                    result += "Test that a logged in user is able to retreive a specific one of the "+t.name+" objects.";
+                    result += "Test that a logged in user is able to retrieve a specific one of the "+t.name+" objects.";
                     break;
                 case JavaTestType.GetOneCanFail:
                     result += "Test that getting one "+ t.name+" can fail.";

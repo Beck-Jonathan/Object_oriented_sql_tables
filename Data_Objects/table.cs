@@ -118,11 +118,11 @@ namespace Data_Objects
 
             string addThing = genAccessorAdd();
 
-            string selectThingbyPK = genAccessorRetreiveByKey();
+            string selectThingbyPK = genAccessorretrieveByKey();
 
-            string selectallThing = genAccessorRetreiveAll();
+            string selectallThing = genAccessorretrieveAll();
 
-            string selectbyFK = genAccessorRetreivefk();
+            string selectbyFK = genAccessorretrievefk();
 
             string updateThing = genAccessorUpdate();
 
@@ -220,8 +220,8 @@ namespace Data_Objects
             String Add = genManagerAdd();
             String Delete = genManagerDelete();
             String unDelete = genManagerUnDelete();
-            String RetreiveByPK = genManagerPK();
-            String RetreiveByFK = genManagerFK();
+            String retrieveByPK = genManagerPK();
+            String retrieveByFK = genManagerFK();
             String RetrieveAll = genManagerAll();
             String Update = genManagerUpdate();
             String fileWrite = genManagerFileWrite();
@@ -234,8 +234,8 @@ namespace Data_Objects
                 + Add
                 + Delete
                 + unDelete
-                + RetreiveByPK
-                + RetreiveByFK
+                + retrieveByPK
+                + retrieveByFK
                 + RetrieveAll
                 + Update
                 + fileWrite
@@ -364,77 +364,77 @@ namespace Data_Objects
         /// access layer for accessing a record by primary key
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer retreive by PK method, in c#. </returns>
+        /// <returns>A logic layer retrieve by PK method, in c#. </returns>
         private string genManagerPK()
         {
-            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_By_PK); string retreiveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
-            retreiveThing = retreiveThing + name + " result =null ;\n";
-            retreiveThing += "try{\n";
-            retreiveThing = retreiveThing + "result = _" + name.ToLower() + "Accessor.select" + name + "ByPrimaryKey(" + name + "ID);\n";
-            retreiveThing += "if (result == null){\n";
-            retreiveThing = retreiveThing + "throw new ApplicationException(\"Unable to retreive " + name + "\" );\n";
-            retreiveThing += "}\n";
-            retreiveThing += "}\n";
-            retreiveThing += "catch (Exception ex){\n";
-            retreiveThing += "throw ex;\n";
-            retreiveThing += "}\n";
-            retreiveThing += "return result;\n}\n";
-            return comment + retreiveThing;
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_By_PK); string retrieveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
+            retrieveThing = retrieveThing + name + " result =null ;\n";
+            retrieveThing += "try{\n";
+            retrieveThing = retrieveThing + "result = _" + name.ToLower() + "Accessor.select" + name + "ByPrimaryKey(" + name + "ID);\n";
+            retrieveThing += "if (result == null){\n";
+            retrieveThing = retrieveThing + "throw new ApplicationException(\"Unable to retrieve " + name + "\" );\n";
+            retrieveThing += "}\n";
+            retrieveThing += "}\n";
+            retrieveThing += "catch (Exception ex){\n";
+            retrieveThing += "throw ex;\n";
+            retrieveThing += "}\n";
+            retrieveThing += "return result;\n}\n";
+            return comment + retrieveThing;
         }
         /// <summary>
         /// Generates a logic layer method that takes in no paramaters and passes a request to the data
         /// access layer for accessing all records for this <see cref="table"/>
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A logic layer retreive by all method, in c#. </returns>
+        /// <returns>A logic layer retrieve by all method, in c#. </returns>
         private string genManagerAll()
         {
-            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_No_Param);
-            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_No_Param);
-            string retreiveAll = comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
-            retreiveAll = retreiveAll + "return get" + name + "ByAll(0," + appData2.settings.page_size + ");\n}\n";
-            comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_One_Param);
-            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_One_Param);
-            retreiveAll = retreiveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
-            retreiveAll = retreiveAll + "return get" + name + "ByAll(offset, " + appData2.settings.page_size + ");\n}\n";
-            comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_All_Two_Param);
-            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
-            retreiveAll = retreiveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit";
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_retrieve_All_No_Param);
+            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_All_No_Param);
+            string retrieveAll = comment + "\npublic List<" + name + "> get" + name + "ByAll(){\n";
+            retrieveAll = retrieveAll + "return get" + name + "ByAll(0," + appData2.settings.page_size + ");\n}\n";
+            comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_retrieve_All_One_Param);
+            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_All_One_Param);
+            retrieveAll = retrieveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset){\n";
+            retrieveAll = retrieveAll + "return get" + name + "ByAll(offset, " + appData2.settings.page_size + ");\n}\n";
+            comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_retrieve_All_Two_Param);
+            comment += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_All_Two_Param);
+            retrieveAll = retrieveAll + comment + "\npublic List<" + name + "> get" + name + "ByAll(int offset, int limit";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retreiveAll += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
+                    retrieveAll += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
                 }
             }
-            retreiveAll += "){\n";
-            retreiveAll = retreiveAll + "List<" + name + "> result =new List<" + name + ">();\n";
-            retreiveAll += "try{\n";
-            retreiveAll = retreiveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit";
+            retrieveAll += "){\n";
+            retrieveAll = retrieveAll + "List<" + name + "> result =new List<" + name + ">();\n";
+            retrieveAll += "try{\n";
+            retrieveAll = retrieveAll + "result = _" + name.ToLower() + "Accessor.selectAll" + name + "(offset,limit";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retreiveAll += ", " + r.column_name;
+                    retrieveAll += ", " + r.column_name;
                 }
             }
-            retreiveAll += ");\n";
-            retreiveAll += "if (result.Count == 0){\n";
-            retreiveAll = retreiveAll + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
-            retreiveAll += "}\n";
-            retreiveAll += "}\n";
-            retreiveAll += "catch (Exception ex){\n";
-            retreiveAll += "throw ex;\n";
-            retreiveAll += "}\n";
-            retreiveAll += "return result;\n}\n";
-            return retreiveAll;
+            retrieveAll += ");\n";
+            retrieveAll += "if (result.Count == 0){\n";
+            retrieveAll = retrieveAll + "throw new ApplicationException(\"Unable to retrieve " + name + "s\" );\n";
+            retrieveAll += "}\n";
+            retrieveAll += "}\n";
+            retrieveAll += "catch (Exception ex){\n";
+            retrieveAll += "throw ex;\n";
+            retrieveAll += "}\n";
+            retrieveAll += "return result;\n}\n";
+            return retrieveAll;
         }
         /// <summary>
         /// Generates a logic layer method that takes in an object ID and passes it to the data
         /// access layer for accessing a record by foreign key
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string representing logic layer retreive by FK method, in c#.</returns>
+        /// <returns>A string representing logic layer retrieve by FK method, in c#.</returns>
         private string genManagerFK()
         {
             string getfkThing = "";
@@ -445,22 +445,22 @@ namespace Data_Objects
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_No_Param);
+                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_retrieve_By_FK_No_Param);
                     getfkThing = getfkThing + "\npublic List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + "){\n" +
                         "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",0);" +
                         "\n}\n";
-                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_One_Param);
+                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_retrieve_By_FK_One_Param);
                     getfkThing = getfkThing +
                     "\npublic List<" + name + "> getAll" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ",int offset){\n" +
                  "return getAll" + name + "by" + fk_table + "(" + fk_name + "," + appData2.settings.page_size + ",offset);" +
                 "\n}\n";
-                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_Retreive_By_FK_Two_Param);
+                    getfkThing += commentBox.genCommentBox(name, Component_Enum.CSharp_Manager_retrieve_By_FK_Two_Param);
                     getfkThing = getfkThing + "public List<" + name + "> getAll" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + ",int limit, int offset){\n";
                     getfkThing = getfkThing + "List<" + name + "> result =new List<" + name + ">();\n";
                     getfkThing += "try{\n";
                     getfkThing = getfkThing + "result = _" + name.ToLower() + "Accessor.select" + name + "by" + fk_table + "(" + fk_name + ",offset,limit);\n";
                     getfkThing += "if (result.Count == 0){\n";
-                    getfkThing = getfkThing + "throw new ApplicationException(\"Unable to retreive " + name + "s\" );\n";
+                    getfkThing = getfkThing + "throw new ApplicationException(\"Unable to retrieve " + name + "s\" );\n";
                     getfkThing += "}\n";
                     getfkThing += "}\n";
                     getfkThing += "catch (Exception ex){\n";
@@ -763,56 +763,56 @@ output+="return " + returntype + ";\n}\n";
         }
 
         /// <summary>
-        /// Generates an method for the data access layer retreive by PK method for this <see cref="table"/> 
+        /// Generates an method for the data access layer retrieve by PK method for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for retreiving by PK from the database </returns>
-        private string genAccessorRetreiveByKey()
+        private string genAccessorretrieveByKey()
         {
-            string retreiveThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Retreive_By_PK);
+            string retrieveThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_retrieve_By_PK);
             int count = 0;
             string comma = "";
-            retreiveThing += "\npublic " + name + " select" + name + "ByPrimaryKey(";
+            retrieveThing += "\npublic " + name + " select" + name + "ByPrimaryKey(";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
                     if (count > 0) { comma = "  "; }
                     String add = comma + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip();
-                    retreiveThing += add;
+                    retrieveThing += add;
                     count++;
                 }
             }
-            retreiveThing += "){\n";
-            retreiveThing += genSPHeaderB(name, "sp_retreive_by_pk_" + name);
+            retrieveThing += "){\n";
+            retrieveThing += genSPHeaderB(name, "sp_retrieve_by_pk_" + name);
             //add parameters
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
-                    retreiveThing = retreiveThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                    retrieveThing = retrieveThing + "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
                 }
             }
             //setting parameters
-            retreiveThing += "\n //We need to set the parameter values\n";
+            retrieveThing += "\n //We need to set the parameter values\n";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
-                    retreiveThing = retreiveThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
+                    retrieveThing = retrieveThing + "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
                 }
             }
             //excute the quuery
-            retreiveThing += "try \n { \n //open the connection \n conn.Open();  ";
-            retreiveThing += "//execute the command and capture result\n";
-            retreiveThing += "var reader = cmd.ExecuteReader();\n";
+            retrieveThing += "try \n { \n //open the connection \n conn.Open();  ";
+            retrieveThing += "//execute the command and capture result\n";
+            retrieveThing += "var reader = cmd.ExecuteReader();\n";
             //capture reuslts
-            retreiveThing += "//process the results\n";
-            retreiveThing += "if (reader.HasRows)\n if (reader.Read())\n{";
+            retrieveThing += "//process the results\n";
+            retrieveThing += "if (reader.HasRows)\n if (reader.Read())\n{";
             count = 0;
             foreach (Column r in columns)
             {
-                retreiveThing = getCSharpOrdinal(r);
+                retrieveThing = getCSharpOrdinal(r);
                 count++;
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -823,74 +823,74 @@ output+="return " + returntype + ";\n}\n";
                     {
                         if (t.name.Equals(fk.referenceTable))
                         {
-                            retreiveThing = retreiveThing + "Output." + t.name + "= new" + t.name + "();\n";
+                            retrieveThing = retrieveThing + "Output." + t.name + "= new" + t.name + "();\n";
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0) { comma = ","; }
-                                retreiveThing += getCSharpOrdinal(t, r);
+                                retrieveThing += getCSharpOrdinal(t, r);
                                 count++;
                             }
                         }
                     }
                 }
             }
-            retreiveThing += "\n}\n";
-            retreiveThing = retreiveThing + "else \n { throw new ArgumentException(\"" + name + " not found\");\n}\n}";
+            retrieveThing += "\n}\n";
+            retrieveThing = retrieveThing + "else \n { throw new ArgumentException(\"" + name + " not found\");\n}\n}";
             //cath block and onwards
-            retreiveThing += genSPfooter(0);
-            return retreiveThing;
+            retrieveThing += genSPfooter(0);
+            return retrieveThing;
         }
         /// <summary>
-        /// Generates an method for the data access layer retreive by all method for this <see cref="table"/> 
+        /// Generates an method for the data access layer retrieve by all method for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for retreving all from the database 
-        private string genAccessorRetreiveAll()
+        private string genAccessorretrieveAll()
         {
-            string retreiveAllThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Retreive_All_Two_Param);
-            retreiveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset";
+            string retrieveAllThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_All_Two_Param);
+            retrieveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retreiveAllThing += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
+                    retrieveAllThing += "," + r.data_type.toCSharpDataType() + " " + r.column_name;
                 }
             }
 
-            retreiveAllThing += "){\n";
-            retreiveAllThing += genSPHeaderC(name, "sp_retreive_by_all_" + name);
+            retrieveAllThing += "){\n";
+            retrieveAllThing += genSPHeaderC(name, "sp_retrieve_by_all_" + name);
             //no paramaters to set or add
-            retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
-            retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
+            retrieveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
+            retrieveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retreiveAllThing += "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                    retrieveAllThing += "cmd.Parameters.Add(\"@" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
                 }
             }
-            retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
-            retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
+            retrieveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
+            retrieveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
 
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retreiveAllThing += "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
+                    retrieveAllThing += "cmd.Parameters[\"@" + r.column_name.bracketStrip() + "\"].Value = " + r.column_name.bracketStrip() + ";\n";
                 }
             }
             //excute the quuery
-            retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
-            retreiveAllThing += "//execute the command and capture result\n";
-            retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
+            retrieveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
+            retrieveAllThing += "//execute the command and capture result\n";
+            retrieveAllThing += "var reader = cmd.ExecuteReader();\n";
             //capture reuslts
-            retreiveAllThing += "//process the results\n";
-            retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
-            retreiveAllThing = retreiveAllThing + "var _" + name + "= new " + name + "();\n";
+            retrieveAllThing += "//process the results\n";
+            retrieveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
+            retrieveAllThing = retrieveAllThing + "var _" + name + "= new " + name + "();\n";
             int count = 0;
             foreach (Column r in columns)
             {
-                retreiveAllThing += getCSharpOrdinal(r);
+                retrieveAllThing += getCSharpOrdinal(r);
                 count++;
             }
             foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -901,33 +901,33 @@ output+="return " + returntype + ";\n}\n";
                     {
                         if (t.name.Equals(fk.referenceTable))
                         {
-                            retreiveAllThing = retreiveAllThing + "Output." + t.name + "= new" + t.name + "();\n";
+                            retrieveAllThing = retrieveAllThing + "Output." + t.name + "= new" + t.name + "();\n";
                             foreach (Column r in t.columns)
                             {
                                 if (count > 0)
                                 {
                                 }
-                                retreiveAllThing += getCSharpOrdinal(t, r);
+                                retrieveAllThing += getCSharpOrdinal(t, r);
                                 count++;
                             }
                         }
                     }
                 }
             }
-            retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
-            retreiveAllThing += "\n}\n}";
+            retrieveAllThing = retrieveAllThing + "output.Add(_" + name + ");";
+            retrieveAllThing += "\n}\n}";
             //cath block and onwards
-            retreiveAllThing += genSPfooter(0);
-            return retreiveAllThing;
+            retrieveAllThing += genSPfooter(0);
+            return retrieveAllThing;
         }
         /// <summary>
-        /// Generates an method for the data access layer retreive by FK method for this <see cref="table"/> 
+        /// Generates an method for the data access layer retrieve by FK method for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for retereiving by FK from the database
-        private string genAccessorRetreivefk()
+        private string genAccessorretrievefk()
         {
-            string retreiveAllThing = "";
+            string retrieveAllThing = "";
             foreach (Column q in columns)
             {
                 if (q.references != "")
@@ -936,28 +936,28 @@ output+="return " + returntype + ";\n}\n";
                     string fk_table = parts[0];
                     string fk_name = parts[1];
                     int count = 0;
-                    retreiveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Retreive_By_FK_Two_Param);
-                    retreiveAllThing += "\npublic List<" + name + "> select" + name + "by" + fk_table + "(" + q.data_type.toCSharpDataType() + " " + fk_name + ",int limit, int offset){\n";
-                    retreiveAllThing += genSPHeaderC(name, "sp_retreive_" + name + "_by_" + q.column_name.bracketStrip());
+                    retrieveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_retrieve_By_FK_Two_Param);
+                    retrieveAllThing += "\npublic List<" + name + "> select" + name + "by" + fk_table + "(" + q.data_type.toCSharpDataType() + " " + fk_name + ",int limit, int offset){\n";
+                    retrieveAllThing += genSPHeaderC(name, "sp_retrieve_" + name + "_by_" + q.column_name.bracketStrip());
                     //no paramaters to set or add
-                    retreiveAllThing += "cmd.Parameters.Add(\"@" + q.column_name.bracketStrip() + "\", SqlDbType." + q.data_type.bracketStrip().toSQLDBType(q.length) + ");\n";
-                    retreiveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
-                    retreiveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
-                    retreiveAllThing += "cmd.Parameters[\"@" + q.column_name.bracketStrip() + "\"].Value = " + fk_name + " ;\n";
-                    retreiveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
-                    retreiveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
+                    retrieveAllThing += "cmd.Parameters.Add(\"@" + q.column_name.bracketStrip() + "\", SqlDbType." + q.data_type.bracketStrip().toSQLDBType(q.length) + ");\n";
+                    retrieveAllThing += "cmd.Parameters.Add(\"@limit SqlDbType.Int);\n";
+                    retrieveAllThing += "cmd.Parameters.Add(\"@offset SqlDbType.Int);\n";
+                    retrieveAllThing += "cmd.Parameters[\"@" + q.column_name.bracketStrip() + "\"].Value = " + fk_name + " ;\n";
+                    retrieveAllThing += "cmd.Parameters[\"@limit\"].Value = limit ;\n";
+                    retrieveAllThing += "cmd.Parameters[\"@offset\"].Value = offset ;\n";
                     //excute the quuery
-                    retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
-                    retreiveAllThing += "//execute the command and capture result\n";
-                    retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
+                    retrieveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
+                    retrieveAllThing += "//execute the command and capture result\n";
+                    retrieveAllThing += "var reader = cmd.ExecuteReader();\n";
                     //capture reuslts
-                    retreiveAllThing += "//process the results\n";
-                    retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
-                    retreiveAllThing = retreiveAllThing + "var _" + name + "= new " + name + "();\n";
+                    retrieveAllThing += "//process the results\n";
+                    retrieveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
+                    retrieveAllThing = retrieveAllThing + "var _" + name + "= new " + name + "();\n";
                     count = 0;
                     foreach (Column r in columns)
                     {
-                        retreiveAllThing += getCSharpOrdinal(r);
+                        retrieveAllThing += getCSharpOrdinal(r);
                         count++;
                     }
                     foreach (foreignKey fk in data_tables.all_foreignKey)
@@ -968,26 +968,26 @@ output+="return " + returntype + ";\n}\n";
                             {
                                 if (t.name.Equals(fk.referenceTable))
                                 {
-                                    retreiveAllThing = retreiveAllThing + "Output." + t.name + "= new" + t.name + "();\n";
+                                    retrieveAllThing = retrieveAllThing + "Output." + t.name + "= new" + t.name + "();\n";
                                     foreach (Column r in t.columns)
                                     {
                                         if (count > 0)
                                         {
                                         }
-                                        retreiveAllThing += getCSharpOrdinal(t, r);
+                                        retrieveAllThing += getCSharpOrdinal(t, r);
                                         count++;
                                     }
                                 }
                             }
                         }
                     }
-                    retreiveAllThing = retreiveAllThing + "output.Add(_" + name + ");";
-                    retreiveAllThing += "\n}\n}";
+                    retrieveAllThing = retrieveAllThing + "output.Add(_" + name + ");";
+                    retrieveAllThing += "\n}\n}";
                     //cath block and onwards
-                    retreiveAllThing += genSPfooter(0);
+                    retrieveAllThing += genSPfooter(0);
                 }
             }
-            return retreiveAllThing;
+            return retrieveAllThing;
         }
         /// <summary>
         /// Generates an method for the data access layer update method method for this <see cref="table"/> 
@@ -1090,31 +1090,31 @@ output+="return " + returntype + ";\n}\n";
         //Generates the get distinct for drop downs componoent of the accessor
         private string genAccessorDistinct()
         {
-            string retreiveAllThing = "";
+            string retrieveAllThing = "";
             List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
             foreach (foreignKey fk in all_foreignKey)
             {
                 if (fk.mainTable == name)
                 {
-                    retreiveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Select_Distinct_For_Dropdown);
-                    retreiveAllThing = retreiveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
-                    retreiveAllThing += genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
+                    retrieveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Select_Distinct_For_Dropdown);
+                    retrieveAllThing = retrieveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
+                    retrieveAllThing += genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
                     //no paramaters to set or add
                     //excute the quuery
-                    retreiveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
-                    retreiveAllThing += "//execute the command and capture result\n";
-                    retreiveAllThing += "var reader = cmd.ExecuteReader();\n";
+                    retrieveAllThing += "try \n { \n //open the connection \n conn.Open();  ";
+                    retrieveAllThing += "//execute the command and capture result\n";
+                    retrieveAllThing += "var reader = cmd.ExecuteReader();\n";
                     //capture reuslts
-                    retreiveAllThing += "//process the results\n";
-                    retreiveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
-                    retreiveAllThing = retreiveAllThing + "String _" + fk.referenceTable + "= reader.Get" + columns[0].data_type.toSqlReaderDataType() + "(0);\n";
-                    retreiveAllThing = retreiveAllThing + "output.Add(_" + fk.referenceTable + ");";
-                    retreiveAllThing += "\n}\n}";
+                    retrieveAllThing += "//process the results\n";
+                    retrieveAllThing += "if (reader.HasRows)\n while (reader.Read())\n{";
+                    retrieveAllThing = retrieveAllThing + "String _" + fk.referenceTable + "= reader.Get" + columns[0].data_type.toSqlReaderDataType() + "(0);\n";
+                    retrieveAllThing = retrieveAllThing + "output.Add(_" + fk.referenceTable + ");";
+                    retrieveAllThing += "\n}\n}";
                     //cath block and onwards
-                    retreiveAllThing += genSPfooter(0);
+                    retrieveAllThing += genSPfooter(0);
                 }
             }
-            return retreiveAllThing;
+            return retrieveAllThing;
         }
         private string genAccessorWrite() {
             string result = "public int write" + name + "sToFile(List<"+name+"> "+name+"s,string path){\n";
@@ -1613,7 +1613,7 @@ output+="return " + returntype + ";\n}\n";
                 setter += " {\n";
                 if (r.data_type.Equals("nvarchar"))
                 {
-                    setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^A-Za-z0-9 - ]\",\"\");\n";
+                    setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^.,!()A-Za-z0-9 - ]\",\"\");\n";
                     setter = setter + "if(" + r.column_name + ".length()<4){\n";
                     setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too short.\");\n}\n";
                     setter = setter + "if(" + r.column_name + ".length()>" + r.length + "){\n";
@@ -1751,10 +1751,10 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOHeader(settings.database_name);        //works
             result += genJavaDAOCreate();       //returns ""
             result += genJavaDAOAddBatch();
-            result += genJavaDAORetreiveByKey(); // works
-            result += genJavaDAORetreiveAll(); // wokring on it now
+            result += genJavaDAOretrieveByKey(); // works
+            result += genJavaDAOretrieveAll(); // wokring on it now
             result += genJavaDAORetriveActive(); // working on it now
-            result += genJavaDAORetreiveDistinct();
+            result += genJavaDAOretrieveDistinct();
             result += genJavaDAORetriveByFK();
             result += genJavaDAOUpdate(); //rturns ""
             result += genJavaDelete(); //returns ""
@@ -1781,7 +1781,7 @@ output+="return " + returntype + ";\n}\n";
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Add);
             result += "int add (" + name + " _" + name.ToLower() + ") throws SQLException;\n";
             //get by pk
-            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_By_FK);
             result += name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException;\n";
             //get by fk
             foreach (Column r in columns)
@@ -1791,7 +1791,7 @@ output+="return " + returntype + ";\n}\n";
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+                    result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_By_FK);
                     result = result + "public List<" + name + "> get" + name + "by" + fk_table + "(" + r.data_type.toJavaDataType() + " " + fk_name + ") throws SQLException; \n";
                 }
             }
@@ -1800,7 +1800,7 @@ output+="return " + returntype + ";\n}\n";
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
             result += "int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException;\n";
             //get all
-            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
             result += "List<" + name + "> getAll" + name + "(int offset, int limit, String search";
             foreach (Column r in columns)
             {
@@ -1812,7 +1812,7 @@ output+="return " + returntype + ";\n}\n";
 
             result += ") throws SQLException;\n";
             // get active
-            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
             result += "List<" + name + "> getActive" + name + "() throws SQLException;\n";
             //get for dropdown
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Get_Distinct);
@@ -1911,19 +1911,19 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
         /// <summary>
-        /// Generates the retreive by PK for the Java DAO object for this <see cref="table"/> 
+        /// Generates the retrieve by PK for the Java DAO object for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is  Java code for this object's associated DAO object retreive by PK function.
-        private string genJavaDAORetreiveByKey()
+        /// <returns>A string that is  Java code for this object's associated DAO object retrieve by PK function.
+        private string genJavaDAOretrieveByKey()
         {
-            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_PK);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_By_PK);
             string nullValue = "";
             string comma = "";
             result = result + "public " + name + " get" + name + "ByPrimaryKey(" + name + " _" + name.ToLower() + ") throws SQLException{\n";
             result = result + name + " result = null;\n";
             result += "try(Connection connection = getConnection()) {\n";
-            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_pk_" + name + "(?)}\")) {\n";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_by_pk_" + name + "(?)}\")) {\n";
             for (int i = 0; i < columns.Count; i++)
                 if (columns[i].primary_key == 'y' || columns[i].primary_key == 'Y')
                 {
@@ -1973,13 +1973,13 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
         /// <summary>
-        /// Generates the retreive by all for the Java DAO object for this <see cref="table"/> 
+        /// Generates the retrieve by all for the Java DAO object for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is  Java code for this object's associated DAO object retreive all.
-        private string genJavaDAORetreiveAll()
+        /// <returns>A string that is  Java code for this object's associated DAO object retrieve all.
+        private string genJavaDAOretrieveAll()
         {
-            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
             string comma = "";
             string nullValue = "";
             result = result + "public List<" + name + "> getAll" + name + "() {\n";
@@ -2001,7 +2001,7 @@ output+="return " + returntype + ";\n}\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result += "try (Connection connection = getConnection()) { \n";
             result += "if (connection != null) {\n";
-            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_all_" + name + "(?,?,?)}\")) {\n" +
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_by_all_" + name + "(?,?,?)}\")) {\n" +
                 "statement.setInt(1,limit)\n;" +
                 "statement.setInt(2,offset);\n" +
                  "statement.setString(2,search);\n";
@@ -2064,10 +2064,10 @@ output+="return " + returntype + ";\n}\n";
             result += "return result;}\n";
             return result;
         }
-        private string genJavaDAORetreiveDistinct()
+        private string genJavaDAOretrieveDistinct()
         {
             {
-                string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+                string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
                 string comma = "";
 
                 result = result + "public static List<" + name + "> selectDistinct" + name + "ForDropdown() {\n";
@@ -2114,19 +2114,19 @@ output+="return " + returntype + ";\n}\n";
             }
         }
         /// <summary>
-        /// Generates the retreive active for the Java DAO object for this <see cref="table"/> 
+        /// Generates the retrieve active for the Java DAO object for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is  Java code for this object's associated DAO object retreive active function.
+        /// <returns>A string that is  Java code for this object's associated DAO object retrieve active function.
         public String genJavaDAORetriveActive()
         {
-            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_All_);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
             string comma = "";
             result = result + "public List<" + name + "> getActive" + name + "() {\n";
             result = result + "List<" + name + "> result = new ArrayList<>();\n";
             result += "try (Connection connection = getConnection()) { \n";
             result += "if (connection != null) {\n";
-            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_by_active_" + name + "()}\"))\n {";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_by_active_" + name + "()}\"))\n {";
             result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
             result += "while (resultSet.next()) {\n";
             foreach (Column r in columns)
@@ -2158,13 +2158,13 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
         /// <summary>
-        /// Generates the retreive by FK for the Java DAO object for this <see cref="table"/> 
+        /// Generates the retrieve by FK for the Java DAO object for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
-        /// <returns>A string that is  Java code for this object's associated DAO object retreive by FK.
+        /// <returns>A string that is  Java code for this object's associated DAO object retrieve by FK.
         public String genJavaDAORetriveByFK()
         {
-            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Retreive_By_FK);
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_By_FK);
             string comma = "";
             string nullValue = "";
             foreach (Column s in columns)
@@ -2184,7 +2184,7 @@ output+="return " + returntype + ";\n}\n";
                     result = result + "List<" + name + "> result = new ArrayList<>();\n";
                     result += "try (Connection connection = getConnection()) { \n";
                     result += "if (connection != null) {\n";
-                    result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retreive_" + name + "_by" + fk_table + "(?,?,?)}\")) {\n" +
+                    result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_" + name + "_by" + fk_table + "(?,?,?)}\")) {\n" +
                         "statement.set" + s.data_type.toJavaDAODataType() + "(1," + fk_name + ")\n;" +
                         "statement.setInt(2,limit)\n;" +
                         "statement.setInt(3,offset);\n";
@@ -3835,43 +3835,43 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
         /// <summary>
-        /// Generates the retreive line for C# data access layers, using only a column name
+        /// Generates the retrieve line for C# data access layers, using only a column name
         /// Jonathan Beck
         /// </summary>
         /// <param name="r"> The column that you are requesting data from </param>
-        /// <returns>A string that is  C# code for retreiveing a particular </returns>
+        /// <returns>A string that is  C# code for retrieveing a particular </returns>
         private string getCSharpOrdinal(Column r)
         {
-            String retreiveThing = "";
+            String retrieveThing = "";
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
             {
-                retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
+                retrieveThing = retrieveThing + "output." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
             }
             else
             {
-                retreiveThing = retreiveThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
+                retrieveThing = retrieveThing + "output." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + name + "_" + r.column_name.bracketStrip() + "\"));\n";
             }
-            return retreiveThing;
+            return retrieveThing;
         }
         /// <summary>
-        /// Generates the retreive line for C# data access layers, using  a column name and a table name
+        /// Generates the retrieve line for C# data access layers, using  a column name and a table name
         /// Jonathan Beck
         /// </summary>
         /// <param name="r"> The column that you are requesting data from </param>
         /// /// <param name="t"> The table you are requesting data from </param>
-        /// <returns>A string that is  C# code for retreiveing a particular </returns>
+        /// <returns>A string that is  C# code for retrieveing a particular </returns>
         private string getCSharpOrdinal(table t, Column r)
         {
-            String retreiveThing = "";
+            String retrieveThing = "";
             if (!r.nullable.Equals('n') || !r.nullable.Equals("N"))
             {
-                retreiveThing = retreiveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
+                retrieveThing = retrieveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
             }
             else
             {
-                retreiveThing = retreiveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
+                retrieveThing = retrieveThing + "output." + t.name + "." + r.column_name.bracketStrip() + " = reader.IsDBNull(" + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\")) ? \"\" : reader.Get" + r.data_type.toSqlReaderDataType() + "(reader.GetOrdinal(\"" + t.name + "_" + r.column_name.bracketStrip() + "\"));\n";
             }
-            return retreiveThing;
+            return retrieveThing;
         }
         /// <summary>
         /// Generates the rudamentary jQuery validation for this <see cref="table"/>.
@@ -4067,9 +4067,9 @@ output+="return " + returntype + ";\n}\n";
             string result = "";
             result += sp_header(); //good
             result += sp_insert(); //done
-            result += sp_retreive_by_key(); //done
-            result += sp_retreive_by_all(); //done
-            result += sp_retreive_by_fk();
+            result += sp_retrieve_by_key(); //done
+            result += sp_retrieve_by_all(); //done
+            result += sp_retrieve_by_fk();
             result += sp_update();  //done
             if (has_is_active)
             {
@@ -4111,9 +4111,9 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string sp_retreive_by_key()
+        private string sp_retrieve_by_key()
         {
-            string header = "\nsp_retreive_by_key_" + name + ":\n";
+            string header = "\nsp_retrieve_by_key_" + name + ":\n";
             string table_used = sp_tables_used_gen(1);
             string parameters = sp_paramater_gen(0);
             string returns = sp_return_fields_gen();
@@ -4121,9 +4121,9 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string sp_retreive_by_all()
+        private string sp_retrieve_by_all()
         {
-            string header = "\nsp_retreive_by_all_" + name + ":\n";
+            string header = "\nsp_retrieve_by_all_" + name + ":\n";
             string table_used = sp_tables_used_gen(1);
             string parameters = sp_paramater_gen(2);
             string returns = sp_return_fields_gen();
@@ -4132,7 +4132,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string sp_retreive_by_fk()
+        private string sp_retrieve_by_fk()
         {
             string header = "";
             string table_used = "";
@@ -4217,7 +4217,7 @@ output+="return " + returntype + ";\n}\n";
 
         private string sp_count()
         {
-            string header = "\nsp_retreive_" + name + "_count:\n";
+            string header = "\nsp_retrieve_" + name + "_count:\n";
             string table_used = sp_tables_used_gen(0);
             string parameters = sp_paramater_gen(4);
             string returns = "\tReturns:\tCOUNT(" + name + ")\n";
@@ -4277,7 +4277,7 @@ output+="return " + returntype + ";\n}\n";
         {
 
             string result = "";
-            //retreive pk
+            //retrieve pk
             if (mode == 0)
             {
                 string comma = "";
@@ -4306,7 +4306,7 @@ output+="return " + returntype + ";\n}\n";
                     }
                 }
             }
-            //retreive by all
+            //retrieve by all
             if (mode == 2)
             {
                 result = "\n\tParameters:\t @limit_param, @offset_param";
@@ -5414,10 +5414,10 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOFakeHeader(settings.database_name);   //done, needs javadoccomment
             result += genJavaDAOFakeCreate();      //done, needs javadoccomment
             result += genJavaDAOFakeAddBatch();
-            result += genJavaDAOFakeRetreiveByKey(); // done, needs javadoccomment
-            result += genJavaDAOFakeRetreiveAll();  //done, needs javadoccomment
+            result += genJavaDAOFakeretrieveByKey(); // done, needs javadoccomment
+            result += genJavaDAOFakeretrieveAll();  //done, needs javadoccomment
             result += genJavaDAOFakeRetriveActive(); //done, needs javadoccomment
-            result += genJavaDAOFakeRetreiveDistinct(); //done, needs javadoccomment
+            result += genJavaDAOFakeretrieveDistinct(); //done, needs javadoccomment
             result += genJavaDAOFakeRetriveByFK();//not done, needs javadoccomment
             result += genJavaDAOFakeUpdate(); // done, needs javadoccomment
             result += genJavaDAOFakeDelete(); // done, needs javadoccomment
@@ -5738,7 +5738,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
         
         }
-        private string genJavaDAOFakeRetreiveByKey()
+        private string genJavaDAOFakeretrieveByKey()
         {
             string result = "";
             string type;
@@ -5776,7 +5776,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
-        private string genJavaDAOFakeRetreiveAll()
+        private string genJavaDAOFakeretrieveAll()
         {
             string result = "";
             result += "@Override\n";
@@ -5851,7 +5851,7 @@ output+="return " + returntype + ";\n}\n";
             result += "return results;\n}\n";
             return result;
         }
-        private string genJavaDAOFakeRetreiveDistinct()
+        private string genJavaDAOFakeretrieveDistinct()
         {
             string vmTag = "";
             if (hasVM)

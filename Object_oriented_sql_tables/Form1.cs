@@ -235,10 +235,10 @@ namespace Object_oriented_sql_tables
                     }
                     //file_write.sqlBuddy2.Write(s);
                 }
-                // if selected, add an SP_retreive that requires a PK
+                // if selected, add an SP_retrieve that requires a PK
                 if (these_settings[6])
                 {
-                    s = t.gen_retreive_by_key();
+                    s = t.gen_retrieve_by_key();
                     alloutput += s + "\n";
                     try
                     {
@@ -250,10 +250,10 @@ namespace Object_oriented_sql_tables
                     }
                     //file_write.sqlBuddy2.Write(s);
                 }
-                //if selected an an SP_retreive that shows all data in table
+                //if selected an an SP_retrieve that shows all data in table
                 if (these_settings[7])
                 {
-                    s = t.gen_retreive_by_all();
+                    s = t.gen_retrieve_by_all();
                     alloutput += s + "\n";
                     try
                     {
@@ -268,7 +268,7 @@ namespace Object_oriented_sql_tables
                 //if selected create an sp_retrive that gets all active data in the table
                 if (these_settings[7])
                 {
-                    s = t.gen_retreive_by_active();
+                    s = t.gen_retrieve_by_active();
                     alloutput += s + "\n";
                     try
                     {
@@ -283,7 +283,7 @@ namespace Object_oriented_sql_tables
                 //if selected create an sp_select that gets all data by a foreign key
                 if (true)
                 {
-                    s = t.gen_retreive_by_fkey();
+                    s = t.gen_retrieve_by_fkey();
                     alloutput += s + "\n";
                     try
                     {

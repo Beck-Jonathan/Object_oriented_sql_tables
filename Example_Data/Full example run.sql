@@ -88,11 +88,11 @@ DELETE FROM ARENAS
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the ARENAS table
+Create the retrieve by key script for the ARENAS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_ARENAS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_ARENAS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_ARENAS
+CREATE PROCEDURE sp_retrieve_by_pk_ARENAS
 (
 arena_name_param nvarchar(50)
 )
@@ -108,11 +108,11 @@ where arena_name=arena_name_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the ARENAS table
+Create the retrieve by all script for the ARENAS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_ARENAS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_ARENAS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_ARENAS()
+CREATE PROCEDURE sp_retrieve_by_all_ARENAS()
 begin 
  SELECT 
 arena_name
@@ -311,11 +311,11 @@ DELETE FROM TEAM
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the TEAM table
+Create the retrieve by key script for the TEAM table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_TEAM;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_TEAM;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_TEAM
+CREATE PROCEDURE sp_retrieve_by_pk_TEAM
 (
 team_name_param nvarchar(50)
 )
@@ -331,11 +331,11 @@ where team_name=team_name_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the TEAM table
+Create the retrieve by all script for the TEAM table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_TEAM;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_TEAM;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_TEAM()
+CREATE PROCEDURE sp_retrieve_by_all_TEAM()
 begin 
  SELECT 
 team_name
@@ -534,11 +534,11 @@ DELETE FROM SKATER
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the SKATER table
+Create the retrieve by key script for the SKATER table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_SKATER;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_SKATER;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_SKATER
+CREATE PROCEDURE sp_retrieve_by_pk_SKATER
 (
 derby_name_param nvarchar(50)
 )
@@ -554,11 +554,11 @@ where derby_name=derby_name_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the SKATER table
+Create the retrieve by all script for the SKATER table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_SKATER;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_SKATER;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_SKATER()
+CREATE PROCEDURE sp_retrieve_by_all_SKATER()
 begin 
  SELECT 
 derby_name
@@ -761,11 +761,11 @@ DELETE FROM INVOICES_ISSUED
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the INVOICES_ISSUED table
+Create the retrieve by key script for the INVOICES_ISSUED table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_INVOICES_ISSUED;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_INVOICES_ISSUED;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_INVOICES_ISSUED
+CREATE PROCEDURE sp_retrieve_by_pk_INVOICES_ISSUED
 (
 invoice_number_param int
 )
@@ -782,11 +782,11 @@ where invoice_number=invoice_number_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the INVOICES_ISSUED table
+Create the retrieve by all script for the INVOICES_ISSUED table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_INVOICES_ISSUED;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_INVOICES_ISSUED;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_INVOICES_ISSUED()
+CREATE PROCEDURE sp_retrieve_by_all_INVOICES_ISSUED()
 begin 
  SELECT 
 invoice_number
@@ -984,11 +984,11 @@ DELETE FROM MIXERS
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the MIXERS table
+Create the retrieve by key script for the MIXERS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_MIXERS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_MIXERS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_MIXERS
+CREATE PROCEDURE sp_retrieve_by_pk_MIXERS
 (
 game_id_param int
 )
@@ -1002,11 +1002,11 @@ where game_id=game_id_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the MIXERS table
+Create the retrieve by all script for the MIXERS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_MIXERS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_MIXERS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_MIXERS()
+CREATE PROCEDURE sp_retrieve_by_all_MIXERS()
 begin 
  SELECT 
 game_id
@@ -1189,11 +1189,11 @@ AND game_count=game_count_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the MIXER_PARTICIPANTS table
+Create the retrieve by key script for the MIXER_PARTICIPANTS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_MIXER_PARTICIPANTS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_MIXER_PARTICIPANTS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_MIXER_PARTICIPANTS
+CREATE PROCEDURE sp_retrieve_by_pk_MIXER_PARTICIPANTS
 (
 game_id_param int
 ,game_count_param int
@@ -1210,11 +1210,11 @@ AND game_count=game_count_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the MIXER_PARTICIPANTS table
+Create the retrieve by all script for the MIXER_PARTICIPANTS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_MIXER_PARTICIPANTS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_MIXER_PARTICIPANTS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_MIXER_PARTICIPANTS()
+CREATE PROCEDURE sp_retrieve_by_all_MIXER_PARTICIPANTS()
 begin 
  SELECT 
 game_id
@@ -1414,11 +1414,11 @@ DELETE FROM VENDORS
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the VENDORS table
+Create the retrieve by key script for the VENDORS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_VENDORS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_VENDORS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_VENDORS
+CREATE PROCEDURE sp_retrieve_by_pk_VENDORS
 (
 vendor_name_param nvarchar(50)
 )
@@ -1436,11 +1436,11 @@ where vendor_name=vendor_name_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the VENDORS table
+Create the retrieve by all script for the VENDORS table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_VENDORS;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_VENDORS;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_VENDORS()
+CREATE PROCEDURE sp_retrieve_by_all_VENDORS()
 begin 
  SELECT 
 vendor_name
@@ -1661,11 +1661,11 @@ DELETE FROM INVOICES_RECEIVED
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by key script for the INVOICES_RECEIVED table
+Create the retrieve by key script for the INVOICES_RECEIVED table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_pk_INVOICES_RECEIVED;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_pk_INVOICES_RECEIVED;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_pk_INVOICES_RECEIVED
+CREATE PROCEDURE sp_retrieve_by_pk_INVOICES_RECEIVED
 (
 invoice_sequence_param int
 )
@@ -1683,11 +1683,11 @@ where invoice_sequence=invoice_sequence_param
  ; END $$
  DELIMITER ;
 /******************
-Create the retreive by all script for the INVOICES_RECEIVED table
+Create the retrieve by all script for the INVOICES_RECEIVED table
 ***************/
-DROP PROCEDURE IF EXISTS sp_retreive_by_all_INVOICES_RECEIVED;
+DROP PROCEDURE IF EXISTS sp_retrieve_by_all_INVOICES_RECEIVED;
 DELIMITER $$
-CREATE PROCEDURE sp_retreive_by_all_INVOICES_RECEIVED()
+CREATE PROCEDURE sp_retrieve_by_all_INVOICES_RECEIVED()
 begin 
  SELECT 
 invoice_sequence
