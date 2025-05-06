@@ -6,6 +6,7 @@ using System.Data.Common;
 using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Xml.XPath;
 namespace Data_Objects
 {
     public class table
@@ -2756,6 +2757,29 @@ output+="return " + returntype + ";\n}\n";
             result += "<div class=\"search-container\">\n";
             result += "<form action=\"all-"+name+"\">\n";
             result += "<input type=\"text\" placeholder=\"Search..\" id=\"searchBox\" name=\"search\">\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.foreign_keys[0].Split('.');
+                    string fieldname = "input" + name.ToLower() + r.column_name;
+                    string errorname = name.ToLower() + r.column_name + "error";
+                    
+                    result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                    result += "<div class=\"input-group input-group-lg\">\n";
+                    result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
+                    result = result + "<c:forEach items=\"${" + parts[0] + "s}\" var=\"" + parts[0] + "\">\n";
+                    result = result + "<option value=\"${" + parts[0] + "." + parts[1].firstCharLower() + "}\">${" + parts[0] + ".name}   </option>\n";
+                    result += "</c:forEach>\n";
+                    result += "</select>\n";
+                    result += "";
+                    result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                    result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                    result += "</c:if>\n";
+                    
+                    result += "</div>\n";
+                }
+            }
             result += "<button type=\"submit\"><i class=\"fa fa-search\"></i></button>\n";
             result += "</form>\n";
             result += "</div>\n";
@@ -2968,6 +2992,28 @@ output+="return " + returntype + ";\n}\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
             result += "int errors = 0;\n";
+            result += "HashMap<String,String> results = new HashMap<>();\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "String _" + r.column_name.ToLower() + " = req.getParameter(\"" + r.column_name.ToLower() + "\")\n";
+                    result += "if (_" + r.column_name.ToLower() + ".isEmpty()){\n";
+                    result += "_" + r.column_name.ToLower() + " = \"\";\n";
+                    result += "}\n";
+                }
+            }
+
+            result += "int " + name.ToLower() + "count=0;\n";
+            result += "int page_number=1;\n";
+            result += "int recordsPerPage = 20;\n";
+            result += "try {\n";
+            result += "page_number = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "_page\"));\n";
+            result += "} catch (Exception e){\n";
+            result += "page_number=1;\n";
+            result += "}\n";
+            result += "session.setAttribute(\"" + name.ToLower() + "_page_number\",page_number);\n";
+            result += "int offset=(page_number-1)*(page_size);\n";
             result += "String search_term = req.getParameter(\"search\");\n";
             result += "if (search_term==null){\n";
             result += "search_term =\"\";\n";
@@ -2979,7 +3025,27 @@ output+="return " + returntype + ";\n}\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "try {\n";
-            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(20,0,search_term";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    //grab a list of the parents, assign them to the already existing static variable
+                    result += "List<"+parts[0]+"> all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                    //set them to the req attribute
+                    result +=  "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
+                }
+            }
+            result += name.ToLower() + "_count = " + name.ToLower() + "DAO.get" + name + "Count(search_term";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
+            result += ");\n";
+            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(recordsPerPage,offset,search_term";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -2993,6 +3059,9 @@ output+="return " + returntype + ";\n}\n";
             result += name.ToLower() + "s = new ArrayList<>();\n";
 
             result += "}\n";
+            result += "req.setAttribute(\"noOfPages\", total_pages);\n";
+            result += "req.setAttribute(\"currentPage\", page_number);";
+
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/all-" + name + "s.jsp\").forward(req,resp);\n";
