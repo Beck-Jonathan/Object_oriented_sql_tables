@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -1760,11 +1761,12 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOUpdate(); //rturns ""
             result += genJavaDelete(); //returns ""
             result += genJavaunDelete(); //returns ""
-            result += genJavaDAOFooter(); //work
+            result += genJavaDAOCount();
             result += genJavaDAOFileRead();  //done
             result += genJavaDAOFileWrite(); //pending
             result += genJavaDAOSQLFileWrite();
-            
+            result += genJavaDAOFooter(); //work
+
             return result;
         }
         /// <summary>
@@ -1863,8 +1865,16 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += ") throws SQLException;\n";
-            
-            
+
+            //gen count
+            result += "int get" + name + "Count(String Search_term";
+            foreach (Column r in columns) {
+                if (r.foreign_key != "") {
+                    result += ", String " + r.column_name;
+                }
+            }
+            result += ") throws SQLException;\n";
+
             //file read
             result += "List<" + name + "> read" + name + "sFromFile(File uploadedFile) throws Exception;\n";
             //add batch
@@ -2005,8 +2015,8 @@ output+="return " + returntype + ";\n}\n";
             result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_by_all_" + name + "(?,?,?)}\")) {\n" +
                 "statement.setInt(1,limit)\n;" +
                 "statement.setInt(2,offset);\n" +
-                 "statement.setString(2,search);\n";
-            int count = 3;
+                 "statement.setString(3,search);\n";
+            int count = 4;
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -2016,7 +2026,7 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
-            result += "while (resultSet.next()) {";
+            result += "while (resultSet.next()) {\n";
             foreach (Column r in columns)
             {
 
@@ -2078,7 +2088,7 @@ output+="return " + returntype + ";\n}\n";
                 result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_select_distinct_and_active_" + name + "_for_dropdown" + "()}\")) {\n";
 
                 result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
-                result += "while (resultSet.next()) {";
+                result += "while (resultSet.next()) {\n";
                 foreach (Column r in columns)
                 {
                     if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
@@ -2190,7 +2200,7 @@ output+="return " + returntype + ";\n}\n";
                         "statement.setInt(2,limit)\n;" +
                         "statement.setInt(3,offset);\n";
                     result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
-                    result += "while (resultSet.next()) {";
+                    result += "while (resultSet.next()) {\n";
                     foreach (Column r in columns)
                     {
 
@@ -2424,7 +2434,46 @@ output+="return " + returntype + ";\n}\n";
             result += "\n";
             return result;
         }
+        private string genJavaDAOCount() {
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
+            string comma = "";
+            string nullValue = "";
+            
+            result = result + "public int get" + name + "Count(String Search_term";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
+            }
 
+            result += ") {\n";
+            result = result + "int result =0;\n";
+            result += "try (Connection connection = getConnection()) { \n";
+            result += "if (connection != null) {\n";
+            result += "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_count_by_all_" + name + "(?,?,?)}\")) {\n";
+            result += "statement.setString(1,Search_term);\n";
+            int count = 2;
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + "," + r.column_name + ");\n";
+                    count++;
+                }
+            }
+            result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
+            result += "while (resultSet.next()) {\n";
+            result += "result = resultSet.getInt(1);\n";
+            result+="\n}\n}\n}\n";
+            result += "} catch (SQLException e) {\n";
+            result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
+            result += "}\n";
+            result += "return result;\n}\n";
+            return result;
+
+        }
         private string genJavaDAOAddBatch() {
             string result = "";
             string comma = "";
@@ -2858,6 +2907,59 @@ output+="return " + returntype + ";\n}\n";
             result += "</div>\n";
             result += "</div>\n";
             result += "</div>\n";
+            result += "<%--For displaying Previous link except for the 1st page --%>\n";
+            result += "<c:if test=\"${currentPage != 1}\">\n";
+            result += "<form action=\"all-"+name+"s\" method=\"get\">\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "<input type=\"hidden\" name=\"" + r.column_name.ToLower() + "\" value=\"${" + r.column_name.ToLower() + "}\">\n";
+
+                }
+            }
+            result += "<input type=\"hidden\" name=\"page\" value=\"${currentPage-1}\">\n";
+            result += "<br/><br/>\n";
+            result += "<input type=\"submit\" value=\"Previous Page\" />\n";
+            result += "</form>\n";
+            result += "</c:if>\n";
+            result += "<%--For displaying Page numbers.\n";
+            result += "The when condition does not display a link for the current page--%>";
+            result += "<form action=\"all-"+name+"s\" method=\"get\" >";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "<input type=\"hidden\" name=\"" + r.column_name.ToLower() + "\" value=\"${" + r.column_name.ToLower() + "}\">\n";
+
+                }
+            }
+            result += "Select a page :\n";
+            result += "<select name=\"page\" onchange=\"this.form.submit()\">\n";
+            result += "<c:forEach var=\"i\" begin=\"1\" end=\"${noOfPages}\">\n";
+            result += "<option value=${i}  ${currentPage == i ? ' selected' : ''} >${i}</option>\n";
+            result += "</c:forEach>\n";
+            result += "</select>\n";
+            result += "<br/><br/>\n";
+            result += "<input type=\"submit\" value=\"Submit\" />\n";
+            result += "</form>\n";
+            result += "<%--For displaying Next link --%>\n";
+            result += "<c:if test=\"${currentPage lt noOfPages}\">\n";
+            result += "<form action=\"all-Transactions\" method=\"get\">\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    result += "<input type=\"hidden\" name=\"" + r.column_name.ToLower() + "\" value=\"${" + r.column_name.ToLower() + "}\">\n";
+
+                }
+            }
+            result += "<input type=\"hidden\" name=\"page\" value=\"${currentPage+1}\">\n";
+            result += "<br/><br/>\n";
+            result += "<input type=\"submit\" value=\"Next Page\" />\n";
+            result += "</form>\n";
+            result += "</c:if>\n";
+            
             result += "<div id=\"dialog\" title=\"Confirmation Required\">\n";
             result += "Are you sure about this?\n";
             result += "</div>\n";
@@ -3006,7 +3108,7 @@ output+="return " + returntype + ";\n}\n";
 
             result += "int " + name.ToLower() + "count=0;\n";
             result += "int page_number=1;\n";
-            result += "int recordsPerPage = 20;\n";
+            result += "int page_size = 20;\n";
             result += "try {\n";
             result += "page_number = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "_page\"));\n";
             result += "} catch (Exception e){\n";
@@ -3059,6 +3161,7 @@ output+="return " + returntype + ";\n}\n";
             result += name.ToLower() + "s = new ArrayList<>();\n";
 
             result += "}\n";
+            result += "int total_pages = (suggestion_count/page_size)+1;\n";
             result += "req.setAttribute(\"noOfPages\", total_pages);\n";
             result += "req.setAttribute(\"currentPage\", page_number);";
 
@@ -5851,7 +5954,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Override\n";
             if (hasVM)
             {
-                result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset, String serach_term";
+                result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset, String search_term";
                 foreach (Column r in columns)
                 {
                     if (r.references != "")
@@ -6241,16 +6344,39 @@ output+="return " + returntype + ";\n}\n";
         private string genJavaDAOFakeCount()
         {
             string result = "@Override\n";
-            result += "public int get" + name + "Count() throws SQLException{\n";
-            if (hasVM)
+            result += "public int get" + name + "Count(String Search_term";
+            foreach (Column r in columns)
             {
-                result += "return " + name.ToLower() + "VMs.size();\n";
+                if (r.references != "")
+                {
+                    result += ", " + r.data_type.toJavaDataType() + " " + r.column_name;
+                }
             }
-            else
+
+            result += ") throws SQLException {\n";
+            result += "List<" + name + "_VM> results = new ArrayList<>();\n";
+            result += "for (" + name + "_VM " + name.ToLower() + " : " + name.ToLower() + "VMs){\n";
+            result += "if (";
+            string andand = "";
+            foreach (Column r in columns)
             {
-                result += "return " + name.ToLower() + "VMs.size();\n";
+                if (r.references != "")
+                {
+                    result += andand + "(" + name.ToLower() + ".get" + r.column_name + "()!=null||" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
+                    andand = "&&";
+                }
             }
-            result += "}\n";
+
+            result += "){\n";
+            result += "if (Search_term.isEmpty() ";
+            foreach (Column r in columns)
+            {
+                result += "|| " + name.ToLower() + ".get" + r.column_name + "().contains(Search_term)";
+            }
+            result += "){\n";
+            result += "results.add(" + name.ToLower() + ");\n";
+            result += "}\n}\n}\n";
+            result += "return results.count();\n}\n";
             return result;
 
         }

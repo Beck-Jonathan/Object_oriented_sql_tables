@@ -91,5 +91,10 @@ namespace Data_Objects
         {
             throw new NotImplementedException();
         }
+
+        public string gen_count()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

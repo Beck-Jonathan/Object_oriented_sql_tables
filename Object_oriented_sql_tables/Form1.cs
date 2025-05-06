@@ -367,6 +367,20 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+                //if selected, add a function that counts the number of records
+                if (true)
+                {
+                    s = t.gen_count();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "sql", "Stored_Procedures");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
                 //if selected, add a space for adding sample data
                 if (true)
                 {

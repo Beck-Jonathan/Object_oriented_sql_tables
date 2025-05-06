@@ -150,5 +150,11 @@ namespace Data_Objects
         /// </summary>
         /// <returns> generates a string comment box followed by specified SQL language insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields. </returns>
         String gen_sample_space();
+        /// <summary>       
+        /// generates a string comment box followed by a specified SQL language select count() statement that allows filtering by each <see cref="Column"/> of this table, excluding auto-increment fields.. 
+        /// Jonathan Beck
+        /// </summary>
+        /// generates a string comment box followed by a specified SQL language select count() statement that allows filtering by each <see cref="Column"/> of this table, excluding auto-increment fields.. 
+        String gen_count();
     }
 }

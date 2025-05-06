@@ -982,5 +982,79 @@ namespace Data_Objects
             result += "*******************************/\n";
             return result;
         }
+
+        public string gen_count()
+        {
+            int count = 0;
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_retrieve_By_All);
+            string firstLine = "DROP PROCEDURE IF EXISTS sp_count_by_all_" + name + ";\n"
+                + "DELIMITER $$\n";
+            string secondLine = "CREATE PROCEDURE sp_count_by_all_" + name + "(\n" +
+                
+                "serach_param nvarchar(100)\n";
+            foreach (Column t in columns)
+            {
+
+                if (t.foreign_key != "")
+                {
+                    if (count == 0)
+                    {
+                        secondLine += ",";
+                    }
+                    secondLine += "\n" + t.column_name + "_param " + t.data_type + t.length_text + ",\n";
+                }
+            }
+            secondLine += ")" + "\n";
+            String function_text = firstLine + secondLine;
+            function_text += "begin \n SELECT \n";
+            function_text += "count(*)\n";
+            function_text = function_text + "\n FROM " + name + "\n";
+            
+            String comma = "";
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    if (count == 0)
+                    {
+                        comma = "WHERE\n(\n";
+                    }
+
+                    else
+                    {
+                        comma = "and\n(\n";
+                    }
+                    function_text += comma;
+                    if (r.data_type == "int")
+                    {
+                        function_text += "case when \n" + r.column_name + "_param =0 then 1=1\n";
+                    }
+                    else
+                    {
+                        function_text += "case when \n" + r.column_name + "_param =\'\' then 1=1\n";
+                    }
+
+                    function_text += "else " + name + "." + r.column_name + "=" + r.column_name + "_param\n";
+                    function_text += "end\n)\n";
+                    count++;
+                }
+            }
+            function_text += "and\n";
+            function_text += "case \n";
+            function_text += "when search_param=\"\" then 0=0\n";
+            function_text += "when search param!=0 then ";
+            string or = "";
+            foreach (Column r in columns)
+            {
+                function_text += or + name + "." + r.column_name + " LIKE CONCAT('%',search_param,'%')";
+                or = " OR ";
+            }
+
+            
+            function_text += "\n ;\n END $$ \n DELIMITER ;\n";
+            String full_text = comment_text + function_text;
+            return full_text;
+        }
     }
 }

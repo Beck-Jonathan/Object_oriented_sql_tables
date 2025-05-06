@@ -796,5 +796,10 @@ namespace Data_Objects
             result += "*******************************/\n";
             return result;
         }
+
+        public string gen_count()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
