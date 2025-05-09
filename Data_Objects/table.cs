@@ -4056,8 +4056,14 @@ output+="return " + returntype + ";\n}\n";
         {
             //to start the js file
             string result = "$(document).ready(function() {\n";
-            result += "";
-            result += "";
+            result += "let submitbutton = document.getElementById(\"submitButton\")";
+            result += "submitbutton.disabled=true;";
+            result += "let total_errors=0;\n";
+            foreach (Column r in columns) {
+                if (!r.identity.Equals("Y") && !r.identity.Equals("y") && r.default_value.Equals("")) {
+                    result += "let " + r.column_name + "_error=0;\n";
+                }
+            }
             result += "";
             //to make the submit button
             result += "";
@@ -4074,6 +4080,7 @@ output+="return " + returntype + ";\n}\n";
                     result += "var " + jsname + "= document.getElementById(\"" + fieldname + "\");\n";
                     result += jsname + ".value=\'\';\n";
                     result += jsname + ".addEventListener(\'keyup',function(){\n";
+                    result += jsname+".value = "+jsname + ".value.trim();\n";
                     //if for numeric check
                     if (r.length == 0)
                     {
@@ -4087,11 +4094,28 @@ output+="return " + returntype + ";\n}\n";
                     //good input
                     result += "$(" + jsname + ").addClass(\"ui-state-highlight\");\n";
                     result += "$(" + jsname + ").removeClass(\"ui-state-error\");\n";
+                    result += r.column_name + "_error=0;";
                     //bad input
                     result += "}\n else {\n";
                     result += "$(" + jsname + ").removeClass(\"ui-state-highlight\");\n";
                     result += "$(" + jsname + ").addClass(\"ui-state-error\");\n";
-                    result += "}\n}\n);\n";
+                    result += r.column_name + "_error=0;";
+                    result += "}\n";
+                    result += "total_errors = ";
+                    string plus = "";
+                    foreach (Column s in columns) {
+                        result += plus + r.column_name + "_error";
+                        plus = "+ ";
+                    }
+                    result += ";\n";
+                    result += "if (total_errors ==0){\n";
+                    result += "submitbutton.disabled=false;\n";
+                    result += "} else {\n";
+                    result += "submitbutton.disabled=false;\n";
+                    result += "}\n";
+
+
+                    result +=    "}\n);\n";
                 }
             }
             // to end the js file
