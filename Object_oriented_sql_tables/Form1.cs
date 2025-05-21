@@ -781,11 +781,26 @@ namespace Object_oriented_sql_tables
                 if (true)
                 {
                     //change to these setting 35
-                    s = t.genDataAccessFakes();
+                    s = t.genJavaDataAccessFakes();
 
                     try
                     {
-                        file_write.fileWrite(s, t.name, "fakes", "fakes");
+                        file_write.fileWrite(s, t.name, "Javafakes", "fakes");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true)
+                {
+                    //change to these setting 35
+                    s = t.genCSharpDataAccessFakes();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharpfakes", "fakes");
 
                     }
                     catch (Exception ex)

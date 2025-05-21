@@ -3986,6 +3986,18 @@ output+="return " + returntype + ";\n}\n";
 
             return result;
         }
+
+        private string usingStatements(string objectname, string projectName)
+        {
+            string result = "\n";
+            result = "using DataObjects;\n";
+            result += "using iDataAccessLayer";
+
+
+            result += "namespace DataAccessFakes\n{";
+
+            return result;
+        }
         /// <summary>
         /// Generates the standard access level control statements for the Java Servlet. 
         /// Jonathan Beck
@@ -4554,7 +4566,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 result += createColumnTests(r);
             }
-            result += testCompareTo();
+            result += testJavaCompareTo();
             result += "\n}\n";
             return result;
         }
@@ -4572,14 +4584,14 @@ output+="return " + returntype + ";\n}\n";
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result += testObjectSet(fk_table);
+                    result += testJavaObjectSet(fk_table);
                 }
             }
             foreach (foreignKey key in data_tables.all_foreignKey)
             {
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
-                    result += testListObjectSet(key.mainTable);
+                    result += testJavaListObjectSet(key.mainTable);
                 }
             }
             //result += testVMCompareTo();
@@ -4593,32 +4605,32 @@ output+="return " + returntype + ";\n}\n";
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
                 
-                result += testTooShort(r);  //done
+                result += testJavaTooShort(r);  //done
                 result += testTooLong(r); //done
-                result += testStringSet(r); //done
+                result += testJavaStringSet(r); //done
             }
             if (r.data_type.toCSharpDataType().Equals("int"))
             {
-                result += testIntTooSmall(r); //done
-                result += testIntTooBig(r); // done
-                result += testIntSet(r); //done
+                result += testJavaIntTooSmall(r); //done
+                result += testJavaIntTooBig(r); // done
+                result += testJavaIntSet(r); //done
             }
             if (r.data_type.Equals("decimal"))
             {
-                result += testDecimalTooSmall(r); //done
-                result += testDecimalTooBig(r); // done
-                result += testDecimalSet(r); //done
+                result += testJavaDecimalTooSmall(r); //done
+                result += testJavaDecimalTooBig(r); // done
+                result += testJavaDecimalSet(r); //done
             }
             if (r.data_type.toCSharpDataType().Equals("bool"))
             {
-                result += testBoolSetFalse(r); //done
-                result += testBoolSetTrue(r); //done
+                result += testJavaBoolSetFalse(r); //done
+                result += testJavaBoolSetTrue(r); //done
             }
             if (r.data_type.Equals("datetime"))
             {
-                result += testDatetimeTooSmall(r); //done
-                result += testDatetimeTooBig(r); // done
-                result += testDatetimeSet(r); //done
+                result += testJavaDatetimeTooSmall(r); //done
+                result += testJavaDatetimeTooBig(r); // done
+                result += testJavaDatetimeSet(r); //done
             }
 
             return result;
@@ -5289,7 +5301,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testTooShort(Column r)
+        private string testJavaTooShort(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
             result += "@Test\n";
@@ -5318,7 +5330,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testIntTooBig(Column r)
+        private string testJavaIntTooBig(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
@@ -5329,7 +5341,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testIntTooSmall(Column r)
+        private string testJavaIntTooSmall(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
@@ -5339,7 +5351,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
-        private string testIntSet(Column r)
+        private string testJavaIntSet(Column r)
         {
 
             int numberToTest = rand.Next(1, 10000);
@@ -5354,7 +5366,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testDecimalTooBig(Column r)
+        private string testJavaDecimalTooBig(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
@@ -5365,7 +5377,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testDecimalTooSmall(Column r)
+        private string testJavaDecimalTooSmall(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
             result += "@Test\n";
@@ -5375,7 +5387,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
-        private string testDecimalSet(Column r)
+        private string testJavaDecimalSet(Column r)
         {
 
             int numberToTest = rand.Next(1, 10000);
@@ -5390,7 +5402,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testDatetimeTooBig(Column r)
+        private string testJavaDatetimeTooBig(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
             result += "@Test\n";
@@ -5403,7 +5415,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testDatetimeTooSmall(Column r)
+        private string testJavaDatetimeTooSmall(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
             result += "@Test\n";
@@ -5416,7 +5428,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
-        private string testDatetimeSet(Column r)
+        private string testJavaDatetimeSet(Column r)
         {
             _ = rand.Next(1, 10000);
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
@@ -5433,7 +5445,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testStringSet(Column r)
+        private string testJavaStringSet(Column r)
         {
 
             String dummy = "";
@@ -5456,7 +5468,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testBoolSetFalse(Column r)
+        private string testJavaBoolSetFalse(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
             result += "@Test\n";
@@ -5468,7 +5480,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testBoolSetTrue(Column r)
+        private string testJavaBoolSetTrue(Column r)
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "@Test\n";
@@ -5481,7 +5493,7 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string testObjectSet(string objectname)
+        private string testJavaObjectSet(string objectname)
         {
 
             string result = "@Test\n";
@@ -5493,7 +5505,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testListObjectSet(string objectname)
+        private string testJavaListObjectSet(string objectname)
         {
 
             string result = "@Test\n";
@@ -5505,7 +5517,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testCompareTo()
+        private string testJavaCompareTo()
         {
             string result = "";
             bool hasDateTime = false;
@@ -5604,7 +5616,7 @@ output+="return " + returntype + ";\n}\n";
             return dummy;
         }
 
-        public string genDataAccessFakes()
+        public string genJavaDataAccessFakes()
         {
             string result = "";
             result += genJavaDAOFakeHeader(settings.database_name);   //done, needs javadoccomment
@@ -5624,13 +5636,570 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOFakeFileRead();
             result += genJavaDAODuplicateKey(); // not done
             result += genJavaDAOExceptionKey();
-            result += genJavaDAOFooter(); // done, needs javadoccomment
-            
-            
+            result += genJavaDAOFooter(); // done, needs javadoccomment          
+            return result;
+
+        }
+
+        public string genCSharpDataAccessFakes()
+        {
+            string result = "";
+            result += genCSharpAccessorFakeHeader(settings.database_name);  //done
+            result += genCSharpAccessorFakeCreate();      //done
+            result += genCSharpAccessorFakeAddBatch();// done
+            result += genCSharpAccessorFakeretrieveByKey();// done
+            result += genCSharpAccessorFakeRetriveActive(); //not done
+            result += genCSharpAccessorFakeretrieveAll();// done
+            result += genCSharpAccessorFakeretrieveDistinct(); //not done
+            result += genCSharpAccessorFakeRetriveByFK();//not done
+            result += genCSharpAccessorFakeUpdate(); //not done
+            result += genCSharpAccessorFakeDelete(); //not done
+            result += genCSharpAccessorFakeUnDelete();//not done
+            result += genCSharpAccessorFakeDeactivate(); //not done
+            result += genCSharpAccessorFakeCount(); // done
+            result += genCSharpAccessorFakeFileWrite();//not done
+            result += genCSharpAccessorFakeFileRead();//not done
+            result += genCSharpAccessorDuplicateKey(); // done
+            result += genCSharpAccessorExceptionKey();// done
+            result += genCSharpAccessorFooter();          // done
+            return result;
+
+        }
+
+        private string genCSharpAccessorFakeHeader(string databasename) {
+            int x = 0;
+            string result = "";
+            int numberOfFakes = rand.Next(4, 6);
+            hasVM = false;
+            foreach (Column r in columns)
+            {
+                if (!r.references.Equals(""))
+                {
+                    hasVM = true;
+                    break;
+                }
+            }
+
+            result += usingStatements(name, databasename);
+            result += "\npublic class " + name + "AccessorFake : i" + name + "Accessor\n{\n";
+            if (hasVM)
+            {
+                result += "private  List<" + name + "_VM> " + name.ToLower() + "VMs;\n";
+            }
+            else
+            {
+                result += "private  List<" + name + "> " + name.ToLower() + "s;\n";
+            }
+            result += "public " + name + "AccessorFake(){\n";
+            if (hasVM)
+            {
+                result += name.ToLower() + "VMs = new List<"+name+">();\n";
+            }
+            else
+            {
+                result += name.ToLower() + "s = new List<"+name+">();\n";
+            }
+
+            //generate non keyed data
+            if (!hasVM)
+            {
+                for (int i = 0; i < numberOfFakes; i++)
+                {
+                    result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
+                    string comma = "";
+                    foreach (Column r in columns)
+                    {
+                        if (r.data_type.toCSharpDataType().Equals("string"))
+                        {
+                            int reletiveLength = 0;
+                            if (r.default_value.ToLower().Contains("uuid"))
+                            {
+                                reletiveLength = 0;
+                            }
+                            else
+                            {
+                                reletiveLength = 8 - r.length;
+                            }
+                            string randomtext = "\"" + generateRandomString(r, reletiveLength) + "\"";
+                            result += comma + randomtext;
+                        }
+                        else if (r.data_type.toCSharpDataType().Equals("bool"))
+                        {
+                            int flip = rand.Next(0, 2);
+                            if (flip == 0)
+                            {
+                                result += comma + "true";
+                            }
+                            else
+                            {
+                                result += comma + "false";
+                            }
+                        }
+                        else if (r.data_type.toCSharpDataType().Equals("int"))
+                        {
+                            result += comma + rand.Next(10, 70);
+                        }
+                        else if (r.data_type.Equals("decimal"))
+                        {
+                            double toAdd = rand.Next(1000, 7000) / 100d;
+                            result += comma + toAdd.ToString();
+                        }
+                        else
+                        {
+                            result += comma + "new " + r.data_type + "()";
+                        }
+                        comma = ", ";
+                    }
+                    result += ");\n";
+                    x++;
+                }
+            }
+            else
+                for (int l = 0; l < 3; l++)
+                {
+                    {
+                        for (int j = 0; j < columns.Count; j++)
+                        {
+                            if (columns[j].references != "")
+                            {
+                                if (columns[j].data_type.toCSharpDataType().Equals("string"))
+                                {
+
+                                    string randomtext = "\"" + generateRandomString(columns[j], 8 - columns[j].length) + "\"";
+                                    if (columns[j].default_value.ToLower().Contains("uuid)"))
+                                    {
+                                        randomtext = "\"" + generateRandomString(columns[j], 0) + "\"";
+                                    }
+                                    for (int i = 0; i < numberOfFakes; i++)
+                                    {
+                                        result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
+                                        string comma = "";
+                                        for (int k = 0; k < columns.Count; k++)
+                                        {
+                                            if (columns[k].data_type.toCSharpDataType().Equals("string"))
+                                            {
+                                                if (j == k)
+                                                {
+                                                    result += comma + randomtext;
+                                                }
+                                                else
+                                                {
+                                                    string newrandomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
+                                                    if (columns[k].default_value.ToLower().Contains("uuid"))
+                                                    {
+                                                        newrandomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
+
+                                                    }
+
+                                                    result += comma + newrandomtext;
+
+                                                }
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("bool"))
+                                            {
+                                                int flip = rand.Next(0, 2);
+                                                if (flip == 0)
+                                                {
+                                                    result += comma + "true";
+                                                }
+                                                else
+                                                {
+                                                    result += comma + "false";
+                                                }
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("int"))
+                                            {
+                                                result += comma + rand.Next(10, 70);
+                                            }
+                                            else if (columns[k].data_type.Equals("decimal"))
+                                            {
+                                                double toAdd = rand.Next(1000, 7000) / 100d;
+                                                result += comma + toAdd.ToString();
+                                            }
+                                            else
+                                            {
+                                                result += comma + "new " + columns[k].data_type + "()";
+                                            }
+                                            comma = ", ";
+                                        }
+                                        result += ");\n";
+                                        x++;
+                                    }
+                                }
+
+                                else if (columns[j].data_type.toCSharpDataType().Equals("int"))
+                                {
+                                    int randInt = rand.Next(10, 70);
+                                    for (int i = 0; i < numberOfFakes; i++)
+                                    {
+                                        result += name + " " + name.ToLower() + x.ToString() + " = new " + name + "(";
+                                        string comma = "";
+                                        for (int k = 0; k < columns.Count; k++)
+                                        {
+                                            if (columns[k].data_type.toCSharpDataType().Equals("string"))
+                                            {
+
+                                                string randomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
+                                                if (columns[k].default_value.ToLower().Contains("uuid"))
+                                                {
+                                                    randomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
+
+                                                }
+                                                result += comma + randomtext;
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("bool"))
+                                            {
+                                                int flip = rand.Next(0, 2);
+                                                if (flip == 0)
+                                                {
+                                                    result += comma + "true";
+                                                }
+                                                else
+                                                {
+                                                    result += comma + "false";
+                                                }
+                                            }
+                                            else if (columns[k].data_type.toCSharpDataType().Equals("int"))
+                                            {
+                                                if (k == j)
+                                                {
+                                                    result += comma + randInt;
+                                                }
+                                                else { result += comma + rand.Next(10, 70); }
+                                            }
+                                            else if (columns[k].data_type.Equals("decimal"))
+                                            {
+                                                double toAdd = rand.Next(1000, 7000) / 100d;
+                                                result += comma + toAdd.ToString();
+                                            }
+                                            else
+                                            {
+                                                result += comma + "new " + columns[k].data_type + "()";
+                                            }
+                                            comma = ", ";
+                                        }
+                                        result += ");\n";
+                                        x++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            numberOfFakes = x;
+            //logic for vm goes here
+            if (hasVM)
+            {
+                for (int i = 0; i < numberOfFakes; i++)
+                {
+                    result += name + "_VM " + name.ToLower() + "_VM" + i.ToString() + "= new " + name + "_VM(" + name.ToLower() + i.ToString() + ");\n";
+                }
+                for (int i = 0; i < numberOfFakes; i++)
+                {
+                    result += name.ToLower() + "VMs.Add(" + name.ToLower() + "_VM" + i.ToString() + ");\n";
+                }
+            }
+
+            else
+            {
+                for (int i = 0; i < numberOfFakes; i++)
+                {
+                    result += name.ToLower() + "s.Add(" + name.ToLower() + i.ToString() + ");\n";
+                }
+            }
+            String VM = "";
+            if (hasVM)
+            {
+                VM = "VM";
+            }
+            result += name.ToLower() + VM + "s.Sort((" + name.ToLower() + "1, " + name.ToLower() + "2) => " + name.ToLower() + "1." + columns[0].column_name + ".CompareTo(" + name.ToLower() + "2." + columns[0].column_name + "));\n";
+            result += "}\n";
 
             return result;
 
         }
+        private string genCSharpAccessorFakeCreate()
+        {
+            string result = "";
+           
+            result += "public int add(" + name + " _" + name.ToLower() + ")  {\n";
+            result += "if (duplicateKey(_" + name.ToLower() + ")){\n";
+            result += "return 0;\n";
+            result += "}\n";
+            result += "if (exceptionKey(_" + name.ToLower() + ")){\n";
+            result += "throw new SQLException(\"error\");\n";
+            result += "}\n";
+
+            if (hasVM)
+            {
+                result += "int size = " + name.ToLower() + "VMs.Count();\n";
+            }
+            else
+            {
+                result += "int size = " + name.ToLower() + "s.Count();\n";
+            }
+            if (hasVM)
+            {
+                result += name + "_VM " + name.ToLower() + "_VM = new " + name + "_VM(_" + name.ToLower() + ");\n";
+                result += name.ToLower() + "s.add(" + name.ToLower() + "_VM);\n";
+            }
+            else
+            {
+                result += name.ToLower() + "s.add(_" + name.ToLower() + ");\n";
+            }
+            result += "int newsize = " + name.ToLower() + "s.size();\n";
+            result += "return newsize-size;\n";
+            result += "}\n";
+
+            return result;
+
+        }
+        private string genCSharpAccessorFakeAddBatch()
+        {
+            string result = "public int addBatchOf" + name + "s(List<" + name + "> _" + name.ToLower() + "s){\n";
+            result += "int result = 0;\n";
+            result += "foreach (" + name + " " + name.ToLower() + " in _" + name.ToLower() + "s) {\n";
+            result += name.ToLower() + "VMs.Add(" + name.ToLower() + ");\n";
+            result += "result ++;\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+
+            return result;
+
+        }
+        private string genCSharpAccessorFakeretrieveByKey()
+        {
+            string result = "";
+            string type;
+            if (hasVM)
+            {
+                type = name + "_VM";
+            }
+            else
+            {
+                type = name;
+            }
+            
+
+            result += "public " + type + " get" + name + "ByPrimaryKey(" + type + " _" + name.ToLower() + ") {\n";
+            result += type + " result = null;\n";
+            result += "foreach (" + type + " " + name.ToLower() + " in " + name.ToLower() + "s) {\n";
+            result += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    result += andand + name.ToLower() + "." + r.column_name + ".Equals(_" + name.ToLower() + "." + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            result += "){\n";
+            result += "result = " + name.ToLower() + ";\n";
+            result += "break;\n}\n";
+            result += "}\n";
+            result += "if (result == null){\n";
+            result += "throw new Exception(\"" + name + " not found\");\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string genCSharpAccessorFakeRetriveActive()
+        {
+            return "";
+
+        }
+
+        private string genCSharpAccessorFakeretrieveAll() {
+            string result = "";
+            
+            if (hasVM)
+            {
+                result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset, String search_term";
+                foreach (Column r in columns)
+                {
+                    if (r.references != "")
+                    {
+                        result += ", " + r.data_type.toJavaDataType() + " " + r.column_name;
+                    }
+                }
+
+                result += ")  {\n";
+                result += "List<" + name + "_VM> results = new List<>("+name+");\n";
+                result += "foreach (" + name + "_VM " + name.ToLower() + " in " + name.ToLower() + "VMs){\n";
+                result += "if (";
+                string andand = "";
+                foreach (Column r in columns)
+                {
+                    if (r.references != "")
+                    {
+                        result += andand + "(" + name.ToLower() + "." + r.column_name + "!=null||" + name.ToLower() + "." + r.column_name + ".Equals(" + r.column_name + "))\n";
+                        andand = "&&";
+                    }
+                }
+
+                result += "){\n";
+                result += "if (search_term.Equals(\"\") ";
+                foreach (Column r in columns)
+                {
+                    result += "|| " + name.ToLower() + "." + r.column_name + ".Contains(search_term)";
+                }
+                result += "){\n";
+                result += "results.Add(" + name.ToLower() + ");\n";
+                result += "}\n}\n}\n";
+                result += "return results;\n}\n";
+
+            }
+            else
+            {
+                result += "public List <" + name + "> getAll" + name + "(int limit, int offset, String search_term)  {\n";
+                result += "List<" + name + "> results = new List<"+name+">();\n";
+                result += "foreach (" + name + " " + name.ToLower() + " in " + name.ToLower() + "s){\n";
+                result += "if (search_term.Equals(\"\") ";
+                foreach (Column r in columns)
+                {
+                    result += "|| " + name.ToLower() + "." + r.column_name + ".Contains(search_term)";
+                }
+                result += "){\n";
+                result += "results.Add(" + name.ToLower() + ");\n";
+                result += "}\n}\n";
+
+                result += "return results;\n";
+                result += "}\n";
+            }
+
+            return result;
+
+        }
+        private string genCSharpAccessorFakeretrieveDistinct()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeRetriveByFK()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeUpdate()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeDelete()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeUnDelete()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeDeactivate()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeCount()
+        {
+            string result = "\n";
+            result += "public int get" + name + "Count(String Search_term";
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
+                    result += ", " + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+
+            result += ") {\n";
+            result += "List<" + name + "_VM> results = new List<"+name+">();\n";
+            result += "foreach (" + name + "_VM " + name.ToLower() + " in " + name.ToLower() + "VMs){\n";
+            result += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
+                    result += andand + "(" + name.ToLower() + "." + r.column_name + "!=null||" + name.ToLower() + "." + r.column_name + ".Equals(" + r.column_name + "))\n";
+                    andand = "&&";
+                }
+            }
+
+            result += "){\n";
+            result += "if (Search_term.Equals(\"\") ";
+            foreach (Column r in columns)
+            {
+                result += "|| " + name.ToLower() + "." + r.column_name + ".Contains(Search_term)";
+            }
+            result += "){\n";
+            result += "results.Add(" + name.ToLower() + ");\n";
+            result += "}\n}\n}\n";
+            result += "return results.Count;\n}\n";
+            return result;
+
+        }
+        private string genCSharpAccessorFakeFileWrite()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorFakeFileRead()
+        {
+            return "";
+
+        }
+        private string genCSharpAccessorDuplicateKey()
+        {
+            string result = "";
+            result += "private bool duplicateKey(" + name + " _" + name.ToLower() + "){\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "return _" + name.ToLower() + "." + r.column_name + ".Equals(\"DUPLICATE\");\n";
+                    result += "}\n";
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return result;
+
+        }
+        private string genCSharpAccessorExceptionKey()
+        {
+            string result = "";
+            result += "private bool exceptionKey(" + name + " _" + name.ToLower() + "){\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0 && r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "return _" + name.ToLower() + "." + r.column_name + ".Equals(\"EXCEPTION\");\n";
+                    result += "}\n";
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+            return result;
+
+        }
+        private string genCSharpAccessorFooter()
+        {
+            string result = "\n}\n}\n";
+            return result;
+
+        }
+
 
         private string genJavaDAOFakeHeader(string databasename)
         {
