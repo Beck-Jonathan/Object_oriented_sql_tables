@@ -5648,17 +5648,17 @@ output+="return " + returntype + ";\n}\n";
             result += genCSharpAccessorFakeCreate();      //done
             result += genCSharpAccessorFakeAddBatch();// done
             result += genCSharpAccessorFakeretrieveByKey();// done
-            result += genCSharpAccessorFakeRetriveActive(); //not done
+            result += genCSharpAccessorFakeRetriveActive(); // done
             result += genCSharpAccessorFakeretrieveAll();// done
             result += genCSharpAccessorFakeretrieveDistinct(); //not done
             result += genCSharpAccessorFakeRetriveByFK();//not done
-            result += genCSharpAccessorFakeUpdate(); //not done
-            result += genCSharpAccessorFakeDelete(); //not done
-            result += genCSharpAccessorFakeUnDelete();//not done
-            result += genCSharpAccessorFakeDeactivate(); //not done
+            result += genCSharpAccessorFakeUpdate(); // done
+            result += genCSharpAccessorFakeDelete(); // done
+            result += genCSharpAccessorFakeUnDelete();// done
+            result += genCSharpAccessorFakeDeactivate(); // done
             result += genCSharpAccessorFakeCount(); // done
-            result += genCSharpAccessorFakeFileWrite();//not done
-            result += genCSharpAccessorFakeFileRead();//not done
+            result += genCSharpAccessorFakeFileWrite();// done
+            result += genCSharpAccessorFakeFileRead();// done
             result += genCSharpAccessorDuplicateKey(); // done
             result += genCSharpAccessorExceptionKey();// done
             result += genCSharpAccessorFooter();          // done
@@ -6009,7 +6009,18 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genCSharpAccessorFakeRetriveActive()
         {
-            return "";
+            string vmTag = "";
+            if (hasVM) { vmTag = "_VM"; }
+            string result = "\n";
+
+            result += "public List<" + name + vmTag + "> getActive" + name + "() {\n";
+            result += "List<" + name + vmTag + "> results = new List<"+name+">();\n";
+            result += "foreach (" + name + vmTag + " " + name.ToLower() + " int " + name.ToLower() + vmTag + "s){\n";
+            result += "if (" + name.ToLower() + ".Is_Active){\n";
+            result += "results.Add(" + name.ToLower() + ");\n";
+            result += "}\n}\n";
+            result += "return results;\n}\n";
+            return result;
 
         }
 
@@ -6086,22 +6097,195 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genCSharpAccessorFakeUpdate()
         {
-            return "";
+            string VMTag = "";
+            if (hasVM)
+            {
+                VMTag = "_VM";
+            }
+            string results = "\n";
+            results += "public int update" + "(" + name + " old" + name + ", " + name + " new" + name + ") {\n";
+
+            results += "int location =-1;\n";
+            results += "if (duplicateKey(old" + name + ")){\n";
+            results += "return 0;\n";
+            results += "}\n";
+            results += "if (exceptionKey(old" + name + ")){\n";
+            results += "throw new Exception(\"error\");\n";
+            results += "}\n";
+            results += "for (int i=0;i<" + name.ToLower() + VMTag.Replace("_", "") + "s.Count;i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + VMTag.Replace("_", "") + "s[i]." + r.column_name + ".Equals(old" + name + "." + r.column_name + "" + ")){\n";
+                    andand = "&&";
+                }
+            }
+
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new Exception();\n";
+            results += "}\n";
+            if (hasVM)
+            {
+                results += name + "_VM updated = new " + name + "_VM(new" + name + ");\n";
+                results += name.ToLower() + VMTag.Replace("_", "") + "s.set(location,updated);\n";
+            }
+            else
+            {
+                results += name.ToLower() + VMTag.Replace("_", "") + "s.[location]= new" + name + ";\n";
+            }
+            results += "return 1;\n}\n";
+            return results;
 
         }
         private string genCSharpAccessorFakeDelete()
         {
-            return "";
+            string results = "\n";
+            results += "public int delete" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += comma + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+            results += ") {\n";
+            if (hasVM)
+            {
+                results += "int size = " + name.ToLower() + "VMs.Count;\n";
+            }
+            else
+            {
+                results += "int size = " + name.ToLower() + "s.Count;\n";
+            }
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() + "VMs.Count;i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + "VMs[i]." + r.column_name + ".Equals(" + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            results += "){\n";
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new SQLException();\n";
+            results += "}\n";
+            results += name.ToLower() + "VMs.RemoveAt(location);\n";
+            if (hasVM)
+            {
+                results += "int newsize = " + name.ToLower() + "VMs.Count;\n";
+            }
+            else
+            {
+                results += "int newsize = " + name.ToLower() + "s.Count;\n";
+            }
+            results += "return size-newsize;\n}\n";
+            return results;
 
         }
         private string genCSharpAccessorFakeUnDelete()
         {
-            return "";
+            string results = "@\n";
+            results += "public int undelete" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += comma + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+            results += ") {\n";
+
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() + "VMs.Count;i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + "VMs[i]." + r.column_name + ".Equals(" + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            results += "){\n";
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new Exception(\"Unable To Find " + name + ".\");\n";
+            results += "}\n";
+            results += "if(!" + name.ToLower() + "VMs[location].Is_Active){\n";
+            results += name.ToLower() + "VMs.[location].Is_Active=true;\n";
+            results += "return 1;\n";
+            results += "}\n";
+            results += "else {\n";
+            results += "return 0;\n";
+            results += "}\n";
+            results += "}\n";
+            return results;
 
         }
         private string genCSharpAccessorFakeDeactivate()
         {
-            return "";
+            string results = "\n";
+            results += "public int deactivate" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += comma + r.data_type.toCSharpDataType() + " " + r.column_name;
+                }
+            }
+            results += ") {\n";
+
+            results += "int location =-1;\n";
+            results += "for (int i=0;i<" + name.ToLower() + "VMs.Count;i++){\n";
+            results += "if (";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    results += andand + name.ToLower() + "VMs[i]." + r.column_name + ".Equals(" + r.column_name + ")";
+                    andand = "&&";
+                }
+            }
+            results += "){\n";
+            results += "location =i;\n";
+            results += "break;\n";
+            results += "}\n";
+            results += "}\n";
+            results += "if (location==-1){\n";
+            results += "throw new Exception(\"Unable To Find " + name + ".\");\n";
+            results += "}\n";
+            results += "if(" + name.ToLower() + "VMs.[location].Is_Active()){\n";
+            results += name.ToLower() + "VMs.[location].Is_Active=false;\n";
+            results += "return 1;\n";
+            results += "}\n";
+            results += "else {\n";
+            results += "return 0;\n";
+            results += "}\n";
+            results += "}\n";
+            return results;
 
         }
         private string genCSharpAccessorFakeCount()
@@ -6145,12 +6329,19 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genCSharpAccessorFakeFileWrite()
         {
-            return "";
+            string result = "public int write" + name + "ToFile(List<" + name + "> _" + name + "s, String path) {\n";
+            result += "return _" + name + "s.Count;\n";
+            result += "}\n";
+            return result;
 
         }
         private string genCSharpAccessorFakeFileRead()
         {
-            return "";
+            string result = "public List<" + name + "> read" + name + "sFromFile(FileStream uploadedFile) {\n";
+            result += "return " + name.ToLower() + "VMs;\n";
+            result += "}\n";
+
+            return result;
 
         }
         private string genCSharpAccessorDuplicateKey()
