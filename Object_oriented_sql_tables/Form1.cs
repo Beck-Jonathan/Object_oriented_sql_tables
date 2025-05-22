@@ -455,7 +455,7 @@ namespace Object_oriented_sql_tables
                 }
                 if (true)
                 {
-                    s = t.gen_DataObject();
+                    s = t.gen_CSharpDataObject();
                     alloutput += s + "\n";
                     try
                     {

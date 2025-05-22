@@ -538,10 +538,12 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string representing c# data object </returns>
-        public String gen_DataObject()
+        public String gen_CSharpDataObject()
         {
             _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpDataObject);
             string output = "public class " + name + "\n{\n";
+            output += genCSharpConstructor();
+
             int count = 0;
             foreach (Column r in columns)
             {
@@ -553,7 +555,10 @@ namespace Data_Objects
                 }
                 if (r.length != 0)
                 {
-                    DataAnnotationLength = "[StringLength(" + r.length + ")]\n";
+                    DataAnnotationLength = "[MaxLength(" + r.length + "),MinLength(3)]\n";
+                }
+                else {
+                    DataAnnotationLength = "[Range(0, 100)]\n";
                 }
                 String DataAnnotationDisplayName = "[Display(Name = \"" + r.column_name.bracketStrip() + "\")]\n";
                 String add = "public " + r.data_type.toCSharpDataType() + " " + r.column_name.bracketStrip() + "{ set; get; }\n";
@@ -587,6 +592,51 @@ namespace Data_Objects
                 output += "}\n";
             }
             return output;
+        }
+        private string genCSharpConstructor() {
+            //default
+            string defaultConstructor = "\npublic " + name + "(){}\n";
+            //param
+            string ParamConsctructor = "\npublic " + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                ParamConsctructor += comma + r.data_type.toCSharpDataType() + " " + r.column_name.ToLower();
+                comma = ", ";
+            }
+            ParamConsctructor += ") {\n";
+            foreach (Column r in columns)
+            {
+                ParamConsctructor += "\n" + r.column_name + " = " + r.column_name.ToLower() + ";";
+            }
+            ParamConsctructor += "\n}\n";
+
+            //param2
+
+            string ParamConstructor2 = "\npublic " + name + "(";
+            comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    ParamConstructor2 = ParamConstructor2 + comma + r.data_type.toCSharpDataType() + " " + r.column_name.ToLower();
+                    comma = ", ";
+                }
+            }
+
+            ParamConstructor2 += ") {\n";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+                    ParamConstructor2 +=  "\n." + r.column_name + " = " + r.column_name.ToLower() + ";";
+                }
+            }
+            ParamConstructor2 += "\n}\n";
+
+            string result = defaultConstructor + ParamConsctructor + ParamConstructor2;
+            return result;
         }
         //Not implemented
         public String gen_functions()
