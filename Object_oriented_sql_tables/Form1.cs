@@ -754,7 +754,7 @@ namespace Object_oriented_sql_tables
 
                 if (true)
                 {    //change to these settings 34
-                    s = t.createModelTests();
+                    s = t.createJavaModelTests();
                     alloutput += s + "\n";
                     try
                     {
@@ -767,7 +767,7 @@ namespace Object_oriented_sql_tables
                 }
                 if (true)
                 {    //change to these settings 34
-                    s = t.createModelVMTests();
+                    s = t.createJavaModelVMTests();
                     alloutput += s + "\n";
                     try
                     {

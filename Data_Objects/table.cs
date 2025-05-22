@@ -4547,35 +4547,242 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
+        public string createCSharpModelTests()
+        {
+            string result = "";
+            result += testCSharpModelInitialize(); //not done
+
+            result += testCSharpDefaultConstructor();  //not done
+            result += testCSharpParameterizedConstructor();  //not done
+            result += testCSharpKeyedParameterizedConstructor();  //not done
+
+            //result += testJavaVMDefaultConstructor();
+            //result += testVMParameterizedConstructor();
+            foreach (Column r in columns)
+            {
+                result += createCSharpColumnTests(r);  //not done
+            }
+            result += testCSharpCompareTo(); //not done 
+            result += "\n}\n";
+            return result;
+        }
+
+        public string createCSharpModelVMTests()
+        {
+            string result = "";
+            result += testCSharpVMInitialize(); //not done
+            result += testCSharpVMDefaultConstructor();//not done
+            result += testCSharpVMParameterizedConstructors(); //not done
+
+            foreach (Column r in columns)
+            {
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += testCSharpObjectSet(fk_table); //not done
+                }
+            }
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    result += testCSharpListObjectSet(key.mainTable); //not done
+                }
+            }
+            //result += testVMCompareTo();
+            result += "\n}\n";
+            return result;
+        }
+        private string createCSharpColumnTests(Column r)
+        {
+            string result = "";
+
+            if (r.data_type.toCSharpDataType().Equals("string"))
+            {
+
+                result += testCSharpTooShort(r);  //not done
+                result += testCSharpTooLong(r); //not done
+                result += testCSharpStringSet(r); //not done
+            }
+            if (r.data_type.toCSharpDataType().Equals("int"))
+            {
+                result += testCSharpIntTooSmall(r); //not done
+                result += testCSharpIntTooBig(r); // not done
+                result += testCSharpIntSet(r); //not done
+            }
+            if (r.data_type.Equals("decimal"))
+            {
+                result += testCSharpDecimalTooSmall(r); //not done
+                result += testCSharpDecimalTooBig(r); // not done
+                result += testCSharpDecimalSet(r); //not done
+            }
+            if (r.data_type.toCSharpDataType().Equals("bool"))
+            {
+                result += testCSharpBoolSetFalse(r); //not done
+                result += testCSharpBoolSetTrue(r); //not done
+            }
+            if (r.data_type.Equals("datetime"))
+            {
+                result += testCSharpDatetimeTooSmall(r); //not done
+                result += testCSharpDatetimeTooBig(r); // not done
+                result += testCSharpDatetimeSet(r); //not done
+            }
+
+            return result;
+
+        }
+
+        private string testCSharpModelInitialize() {
+            return "";
+        
+        }
+        private string testCSharpDefaultConstructor()
+        {
+            return "";
+
+        }
+        private string testCSharpParameterizedConstructor()
+        {
+            return "";
+
+        }
+        private string testCSharpKeyedParameterizedConstructor()
+        {
+            return "";
+
+        }
+        private string testCSharpCompareTo()
+        {
+            return "";
+
+        }
+        private string testCSharpVMInitialize()
+        {
+            return "";
+
+        }
+        private string testCSharpVMDefaultConstructor()
+        {
+            return "";
+
+        }
+        private string testCSharpVMParameterizedConstructors()
+        {
+            return "";
+
+        }
+        private string testCSharpObjectSet(string fk_table)
+        {
+            return "";
+
+        }
+        private string testCSharpListObjectSet(string fk_table)
+        {
+            return "";
+
+        }
+        private string testCSharpTooShort(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpTooLong(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpStringSet(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpIntTooSmall(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpIntTooBig(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpIntSet(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpDecimalTooSmall(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpDecimalTooBig(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpDecimalSet(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpBoolSetFalse(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpBoolSetTrue(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpDatetimeTooSmall(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpDatetimeTooBig(Column r)
+        {
+            return "";
+
+        }
+        private string testCSharpDatetimeSet(Column r)
+        {
+            return "";
+
+        }
+
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public string createModelTests()
+        public string createJavaModelTests()
         {
             string result = "";
-            result += testInitialize(); //done
+            result += testJavaModelInitialize(); //done
             
-            result += testDefaultConstructor();
-            result += testParameterizedConstructor();
-            result += testKeyedParameterizedConstructor();
+            result += testJavaDefaultConstructor();
+            result += testJavaParameterizedConstructor();
+            result += testJavaKeyedParameterizedConstructor();
 
-            //result += testVMDefaultConstructor();
+            //result += testJavaVMDefaultConstructor();
             //result += testVMParameterizedConstructor();
             foreach (Column r in columns)
             {
-                result += createColumnTests(r);
+                result += createJavaColumnTests(r);
             }
             result += testJavaCompareTo();
             result += "\n}\n";
             return result;
         }
-        public string createModelVMTests()
+        public string createJavaModelVMTests()
         {
             string result = "";
-            result += testVMInitialize(); //done
-            result += testVMDefaultConstructor();
-            result += testVMParameterizedConstructors();
+            result += testJavaVMInitialize(); //done
+            result += testJavaVMDefaultConstructor();
+            result += testJavaVMParameterizedConstructors();
 
             foreach (Column r in columns)
             {
@@ -4598,7 +4805,7 @@ output+="return " + returntype + ";\n}\n";
             result += "\n}\n";
             return result;
         }
-        private string createColumnTests(Column r)
+        private string createJavaColumnTests(Column r)
         {
             string result = "";
 
@@ -4606,7 +4813,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 
                 result += testJavaTooShort(r);  //done
-                result += testTooLong(r); //done
+                result += testJavaTooLong(r); //done
                 result += testJavaStringSet(r); //done
             }
             if (r.data_type.toCSharpDataType().Equals("int"))
@@ -4636,7 +4843,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testInitialize()
+        private string testJavaModelInitialize()
         {
             string result = "";
             result += "import org.junit.jupiter.api.AfterEach;\n";
@@ -4659,7 +4866,7 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string testVMInitialize()
+        private string testJavaVMInitialize()
         {
             string result = "";
             result += "import org.junit.jupiter.api.AfterEach;\n";
@@ -4682,7 +4889,7 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string testParameterizedConstructor()
+        private string testJavaParameterizedConstructor()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
             result += "@Test\n";
@@ -4812,7 +5019,7 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string testDefaultConstructor()
+        private string testJavaDefaultConstructor()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.DefaultConstructor, this);
              result += "@Test\n";
@@ -4841,7 +5048,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testVMDefaultConstructor()
+        private string testJavaVMDefaultConstructor()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
             result += "@Test\n"; ;
@@ -4891,7 +5098,7 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string testKeyedParameterizedConstructor()
+        private string testJavaKeyedParameterizedConstructor()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
             result += "@Test\n";
@@ -5016,7 +5223,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testVMParameterizedConstructors()
+        private string testJavaVMParameterizedConstructors()
         {
             string result = "";
             bool hasParent = false;
@@ -5315,7 +5522,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string testTooLong(Column r)
+        private string testJavaTooLong(Column r)
         {
 
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
