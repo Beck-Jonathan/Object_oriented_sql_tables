@@ -542,7 +542,7 @@ namespace Data_Objects
         {
             _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpDataObject);
             string output = "public class " + name + "\n{\n";
-            output += genCSharpConstructor();
+            
 
             int count = 0;
             foreach (Column r in columns)
@@ -591,6 +591,7 @@ namespace Data_Objects
                 }
                 output += "}\n";
             }
+            output += genCSharpConstructor();
             return output;
         }
         private string genCSharpConstructor() {
@@ -4598,6 +4599,129 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
+        public string genCSharpManagerTests() {
+            String result = "";
+            String header = genManagerTestHeader();
+            String AddGood = genManagerTestAddCanAdd();
+            String AddFail = genManagerTestAddCanFail()
+            String DeleteGood = genManagerTestDeleteCanDelete();
+            String DeleteFail = genManagerTestDeleteCanFail();
+            String unDeleteGood = genManagerTestUnDeleteCanUndelete();
+            String unDeleteFail = genManagerTestUnDeleteCanFail();
+            String retrieveByPKGood = genManagerTestRetreiveByPKCanWork();
+            String retrieveByPKFail = genManagerTestRetreiveByPKCanFail();
+            String retrieveByFKGood = genManagerGetByFKCanWork();
+            String retrieveByFKFail = genManagerGetByFKCanFail();
+            String RetrieveAllGood = genManagerTestGetAllCanWork();
+            String RetrieveAllfail = genManagerTestGetAllCanFail();
+            String UpdateGood = genManagerTestUpdateCanWork();
+            String UpdateFail = genManagerTestUpdateCanFail();            
+            String batchAddCanWork = genManagerTestBatchAddCanWork();
+            String batchAddFail = genManagerTestBatchAddCanFail();
+            //String dropdown = genManagerDropDown();
+            String footer = "\n}\n";
+            result = result
+                + header
+                + AddGood + AddFail
+                + DeleteGood + DeleteFail
+                + unDeleteGood + unDeleteFail
+                + retrieveByPKGood + retrieveByPKFail
+                + retrieveByFKGood + retrieveByFKFail
+                + RetrieveAllGood + RetrieveAllfail
+                + UpdateGood  + UpdateFail                
+                + batchAddCanWork + batchAddFail
+                + footer
+                ;
+            return result;
+
+        }
+
+        private string genManagerTestHeader() {
+
+            return "";
+        }
+        private string genManagerTestAddCanAdd()
+        {
+
+            return "";
+        }
+        private string genManagerTestAddCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerTestDeleteCanDelete()
+        {
+            return "";
+
+        }
+        private string genManagerTestDeleteCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerTestUnDeleteCanUndelete()
+        {
+            return "";
+
+        }
+        private string genManagerTestUnDeleteCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerTestRetreiveByPKCanWork()
+        {
+            return "";
+
+        }
+        private string genManagerTestRetreiveByPKCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerGetByFKCanWork()
+        {
+            return "";
+
+        }
+        private string genManagerGetByFKCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerTestGetAllCanWork()
+        {
+
+            return "";
+        }
+        private string genManagerTestGetAllCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerTestUpdateCanWork()
+        {
+
+            return "";
+        }
+        private string genManagerTestUpdateCanFail()
+        {
+            return "";
+
+        }
+        private string genManagerTestBatchAddCanWork()
+        {
+            return "";
+
+        }
+        private string genManagerTestBatchAddCanFail()
+        {
+
+            return "";
+        }
+        
+
         public string createCSharpModelTests()
         {
             string result = "";
@@ -4614,6 +4738,7 @@ output+="return " + returntype + ";\n}\n";
                 result += createCSharpColumnTests(r);  // done
             }
             result += testCSharpCompareTo(); //not done 
+            result += genCSharpValidationMethod();
             result += "\n}\n";
             return result;
         }
@@ -4693,6 +4818,7 @@ output+="return " + returntype + ";\n}\n";
             result += "using System.Text;\n";
             result += "using System.Threading.Tasks;\n";
             result += "using DataObjects;\n";
+            result += "using System.ComponentModel.DataAnnotations;\n";
             result += "\n";
             result += "namespace DataObjectTests\n";
             
@@ -5605,6 +5731,20 @@ output+="return " + returntype + ";\n}\n";
 
             return result;
 
+        }
+
+        private string genCSharpValidationMethod() {
+            string result = "private IList<ValidationResult> ValidateModel(object model)\n";
+            result += "{\b";
+            result += "var validationResults = new List<ValidationResult>();\n";
+            result += "var ctx = new ValidationContext(model, null, null);\n";
+            result += "Validator.TryValidateObject(model, ctx, validationResults, true);\n";
+            result += "return validationResults;\n";
+            result += "}\n";
+            
+            return result;
+        
+        
         }
 
         /// <summary>

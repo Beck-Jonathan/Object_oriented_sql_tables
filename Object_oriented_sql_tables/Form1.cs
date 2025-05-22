@@ -767,6 +767,19 @@ namespace Object_oriented_sql_tables
                 }
                 if (true)
                 {    //change to these settings 34
+                    s = t.genCSharpManagerTests();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharpTests", "CSharpManager");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true)
+                {    //change to these settings 34
                     s = t.createJavaModelVMTests();
                     alloutput += s + "\n";
                     try
