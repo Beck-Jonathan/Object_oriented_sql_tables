@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
+using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.XPath;
@@ -4550,17 +4551,17 @@ output+="return " + returntype + ";\n}\n";
         public string createCSharpModelTests()
         {
             string result = "";
-            result += testCSharpModelInitialize(); //not done
+            result += testCSharpModelInitialize(); // done
 
-            result += testCSharpDefaultConstructor();  //not done
-            result += testCSharpParameterizedConstructor();  //not done
-            result += testCSharpKeyedParameterizedConstructor();  //not done
+            result += testCSharpDefaultConstructor();  // done
+            result += testCSharpParameterizedConstructor();  // done
+            result += testCSharpKeyedParameterizedConstructor();  // done
 
             //result += testJavaVMDefaultConstructor();
             //result += testVMParameterizedConstructor();
             foreach (Column r in columns)
             {
-                result += createCSharpColumnTests(r);  //not done
+                result += createCSharpColumnTests(r);  // done
             }
             result += testCSharpCompareTo(); //not done 
             result += "\n}\n";
@@ -4570,9 +4571,9 @@ output+="return " + returntype + ";\n}\n";
         public string createCSharpModelVMTests()
         {
             string result = "";
-            result += testCSharpVMInitialize(); //not done
-            result += testCSharpVMDefaultConstructor();//not done
-            result += testCSharpVMParameterizedConstructors(); //not done
+            result += testCSharpVMInitialize(); // done
+            result += testCSharpVMDefaultConstructor();// done
+            result += testCSharpVMParameterizedConstructors(); // done
 
             foreach (Column r in columns)
             {
@@ -4581,14 +4582,14 @@ output+="return " + returntype + ";\n}\n";
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
                     string fk_name = parts[1];
-                    result += testCSharpObjectSet(fk_table); //not done
+                    result += testCSharpObjectSet(fk_table); // done
                 }
             }
             foreach (foreignKey key in data_tables.all_foreignKey)
             {
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
-                    result += testCSharpListObjectSet(key.mainTable); //not done
+                    result += testCSharpListObjectSet(key.mainTable); // done
                 }
             }
             //result += testVMCompareTo();
@@ -4602,32 +4603,32 @@ output+="return " + returntype + ";\n}\n";
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
 
-                result += testCSharpTooShort(r);  //not done
-                result += testCSharpTooLong(r); //not done
-                result += testCSharpStringSet(r); //not done
+                result += testCSharpTooShort(r);  // done
+                result += testCSharpTooLong(r); // done
+                result += testCSharpStringSet(r); // done
             }
             if (r.data_type.toCSharpDataType().Equals("int"))
             {
-                result += testCSharpIntTooSmall(r); //not done
-                result += testCSharpIntTooBig(r); // not done
-                result += testCSharpIntSet(r); //not done
+                result += testCSharpIntTooSmall(r); // done
+                result += testCSharpIntTooBig(r); //  done
+                result += testCSharpIntSet(r); // done
             }
             if (r.data_type.Equals("decimal"))
             {
-                result += testCSharpDecimalTooSmall(r); //not done
-                result += testCSharpDecimalTooBig(r); // not done
-                result += testCSharpDecimalSet(r); //not done
+                result += testCSharpDecimalTooSmall(r); // done
+                result += testCSharpDecimalTooBig(r); //  done
+                result += testCSharpDecimalSet(r); // done
             }
             if (r.data_type.toCSharpDataType().Equals("bool"))
             {
-                result += testCSharpBoolSetFalse(r); //not done
-                result += testCSharpBoolSetTrue(r); //not done
+                result += testCSharpBoolSetFalse(r); // done
+                result += testCSharpBoolSetTrue(r); // done
             }
             if (r.data_type.Equals("datetime"))
             {
-                result += testCSharpDatetimeTooSmall(r); //not done
-                result += testCSharpDatetimeTooBig(r); // not done
-                result += testCSharpDatetimeSet(r); //not done
+                result += testCSharpDatetimeTooSmall(r); // done
+                result += testCSharpDatetimeTooBig(r); //  done
+                result += testCSharpDatetimeSet(r); // done
             }
 
             return result;
@@ -4635,22 +4636,317 @@ output+="return " + returntype + ";\n}\n";
         }
 
         private string testCSharpModelInitialize() {
-            return "";
+            string result = "";
+            result += "using System;\n";
+            result += "using System.Collections.Generic;\n";
+            result += "using System.Linq;\n";
+            result += "using System.Text;\n";
+            result += "using System.Threading.Tasks;\n";
+            result += "using DataObjects;\n";
+            result += "\n";
+            result += "namespace DataObjectTests\n";
+            
+            result += "{\n";
+            result += "[TestClass]\n";
+
+            result += "public class "+name+"Tests\n";
+            result += "{\n";
+            result += name + " _" + name.ToLower() + ";\n";
+            result += "[TestInitialize]\n";
+            result += "public void setup() {\n";
+            result += name+" _"+name.ToLower()+" = new "+name+"();\n";
+            result += "}\n";
+            result += "[TestCleanup]\n";
+            result += "public void tearDown() {";
+            result += "_"+name.ToLower() + "= null;\n";
+            result += "}\n";
+            return result;
         
         }
+        
         private string testCSharpDefaultConstructor()
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.DefaultConstructor, this);
+            result += "[TestMethod]\n";
+            result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
+            result += name + " _" + name.ToLower() + "= new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "Assert.IsNull(_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "Assert.IsFalse(_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "Assert.assertNull(_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else
+                {
+                    result += "Assert.assertNull(_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+            }
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpParameterizedConstructor()
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+            result += "[TestMethod]\n";
+            //generate random values for each
+            ArrayList array = new ArrayList(columns.Count + 1);
+
+            foreach (Column r in columns)
+            {
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    if (r.default_value.ToLower().Contains("uuid"))
+                    {
+                        _ = array.Add(generateRandomString(r, 0));
+                    }
+                    else
+                    {
+                        _ = array.Add(generateRandomString(r, -2));
+                    }
+
+                    _ = Task.Delay(1);
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    _ = array.Add(true);
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    _ = array.Add(rand.Next(0, 10000));
+                    _ = Task.Delay(1);
+                }
+                else if (r.data_type.Equals("decimal"))
+                {
+                    double toAdd = rand.Next(0, 10000) / 100.0;
+                    _ = array.Add(toAdd);
+                    _ = Task.Delay(1);
+                }
+                else if (r.data_type.ToLower().Contains("date"))
+                {
+                    int year = rand.Next(2015, 2027);
+                    int month = rand.Next(1, 11);
+                    int day = rand.Next(1, 28);
+                    DateTime toAdd = new DateTime(year, month, day);
+                    _ = array.Add(toAdd);
+                    _ = Task.Delay(1);
+                }
+                else
+                {
+                    _ = array.Add(null);
+                }
+                _ = Task.Delay(5);
+
+            }
+
+            //method signature
+            result += "public void test" + name + "ParameterizedConstructorSetsAllVariables(){\n";
+            //constructor
+            result += name + " _" + name.ToLower() + "= new " + name + "(\n";
+            //assing a value to each variable
+            string comma = "";
+            int i = 0;
+            foreach (Column r in columns)
+            {
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += comma + "\"" + array[i] + "\"";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += comma + array[i];
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += comma + array[i];
+                }
+                else if (r.data_type.Equals("decimal"))
+                {
+                    result += comma + array[i];
+                }
+                else if (r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += comma + array[i];
+                }
+                else
+                {
+                    result += comma + "new " + r.data_type + "()\n";
+                }
+                comma = ",\n ";
+
+                i++;
+            }
+            result += "\n);\n";
+            i = 0;
+            //test each variable
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "Assert.AreEqual(\"" + array[i] + "\",_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "Assert.AreEqual(" + array[i] + ",_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else if (r.data_type.Equals("decimal"))
+                {
+                    result += "Assert.AreEqual(" + array[i] + ",_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                else if (r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += "Assert.AreEqual(" + array[i] + ",_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+
+                else
+                {
+                    result += "Assert.AreEqual(new " + r.data_type + "(),_" + name.ToLower() + "." + r.column_name + ");\n";
+                }
+                i++;
+
+            }
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpKeyedParameterizedConstructor()
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+            result += "[TestMethod]\n";
+            //generate random values for each
+            ArrayList array = new ArrayList(columns.Count + 1);
+
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        if (r.default_value.ToLower().Contains("uuid"))
+                        {
+                            _ = array.Add(generateRandomString(r, 0));
+
+                        }
+                        else
+                        {
+                            _ = array.Add(generateRandomString(r, -2));
+                        }
+
+                        _ = Task.Delay(1);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        _ = array.Add(true);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        _ = array.Add(rand.Next(0, 10000));
+                        _ = Task.Delay(1);
+                    }
+                    else
+                    {
+                        _ = array.Add(null);
+                    }
+                    _ = Task.Delay(5);
+                }
+            }
+
+            //method signature
+            result += "public void test" + name + "KeyedParameterizedConstructorSetsKeyedVariables(){\n";
+            //constructor
+            result += name + " _" + name.ToLower() + "= new " + name + "(\n";
+            //assing a value to each variable
+            string comma = "";
+            int i = 0;
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += comma + "\"" + array[i] + "\"";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else
+                    {
+                        result += comma + "new " + r.data_type + "()\n";
+                    }
+                    comma = ",\n ";
+
+                    i++;
+                }
+            }
+            result += "\n);\n";
+            i = 0;
+            //test each variable
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
+                {
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "Assert.AreEqual(\"" + array[i] + "\",_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "Assert.IsTrue(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "Assert.AreEqual(" + array[i] + ",_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    else
+                    {
+                        result += "Assert.AreEqual(new " + r.data_type + "(),_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    i++;
+                }
+                else
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "Assert.IsFalse(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                    else
+                    {
+                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    }
+                }
+            }
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpCompareTo()
@@ -4660,97 +4956,588 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testCSharpVMInitialize()
         {
-            return "";
+            string result = "";
+            result += "using System;\n";
+            result += "using System.Collections.Generic;\n";
+            result += "using System.Linq;\n";
+            result += "using System.Text;\n";
+            result += "using System.Threading.Tasks;\n";
+            result += "using DataObjects;\n";
+            result += "\n";
+            result += "namespace DataObjectTests\n";
+            
+            result += "{\n";
+            result += "[TestClass]\n";
+
+            result += "public class " + name + "VMTests\n";
+            result += "{\n";
+            result += name + "VM _" + name.ToLower() + ";\n";
+            result += "[TestInitialize]\n";
+            result += "public void setup() {\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
+            result += "}\n";
+            result += "[TestCleanup]\n";
+            result += "public void tearDown() {";
+            result += "_" + name.ToLower() + "= null;\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpVMDefaultConstructor()
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+            result += "@Test\n"; ;
+            result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
+            result += name + "_VM _" + name.ToLower() + "VM= new " + name + "_VM();\n";
+            foreach (Column r in columns)
+            {
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "Assert.AreEqual(_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "Assert.IsFalse(_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "Assert.AreEqual(_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                }
+                else
+                {
+                    result += "Assert.AreEqual(_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                }
+            }
+            foreach (Column r in columns)
+            {
+
+                if (r.references != null && r.references != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    string fk_name = parts[1];
+                    result += "Assert.IsNull(_" + name.ToLower() + "VM." + fk_table + ");\n";
+                }
+            }
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    string child_table = key.mainTable;
+
+                    result += "Assert.IsNull(_" + name.ToLower() + "VM." + child_table + "s);\n";
+                }
+            }
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpVMParameterizedConstructors()
         {
-            return "";
+            string result = "";
+            bool hasParent = false;
+            bool hasChild = false;
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
+                    hasParent = true;
+
+                }
+            }
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    hasChild = true;
+                }
+            }
+
+            for (int j = 0; j < 3; j++)
+            {
+
+                //testing can set as super
+
+                //generate random values for each
+                ArrayList array = new ArrayList(columns.Count + 1);
+                bool hasdate = false;
+
+                foreach (Column r in columns)
+                {
+                    if (r.column_name.ToLower().Contains("date"))
+                    {
+                        hasdate = true;
+                        break;
+                    }
+                }
+
+                foreach (Column r in columns)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        if (r.default_value.ToLower().Contains("uuid"))
+                        {
+                            array.Add(generateRandomString(r, 0));
+                        }
+                        else
+                        {
+                            array.Add(generateRandomString(r, -2));
+
+                        }
+
+                        _ = Task.Delay(1);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        _ = array.Add(true);
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        _ = array.Add(rand.Next(0, 10000));
+                        _ = Task.Delay(1);
+                    }
+                    else if (r.data_type.Equals("decimal"))
+                    {
+                        double toAdd = rand.Next(0, 10000) / 100.0;
+                        _ = array.Add(toAdd);
+                        _ = Task.Delay(1);
+                    }
+                    else if (r.data_type.ToLower().Contains("date"))
+                    {
+                        int year = rand.Next(2015, 2027);
+                        int month = rand.Next(1, 11);
+                        int day = rand.Next(1, 28);
+                        int hour = rand.Next(1, 23);
+                        int minute = rand.Next(1, 55);
+                        int second = rand.Next(2, 45);
+                        DateTime toAdd = new DateTime(year, month, day, hour, minute, second);
+                        _ = array.Add(toAdd);
+                        _ = Task.Delay(1);
+                    }
+                    else
+                    {
+                        _ = array.Add(null);
+                    }
+                    _ = Task.Delay(5);
+                }
+                //method signature
+                result += "\n";
+                result += commentBox.genJavaTestJavaDoc(JavaTestType.ParamartizedConstructor, this);
+                result += "[TestMethod]\n";
+                switch (j)
+                {
+
+                    case 0:
+                        result += "public void testSuper" + name + "ParameterizedVMConstructorSetsAllVariables()";
+                        break;
+                    case 1:
+                        if (hasParent)
+                        {
+                            result += "public void testSuper" + name + "ParameterizedVMConstructorSetsAllVariablesAndParent()";
+                        }
+                        break;
+                    case 2:
+                        if (hasChild)
+                        {
+                            result += "public void testSuper" + name + "ParameterizedVMConstructorSetsAllVariablesAndChildren()";
+                        }
+                        break;
+
+                }
+               
+                result += "{\n";
+                if (hasdate)
+                {
+                    DateTime today = DateTime.Today;
+                    result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
+                    result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
+                    
+                }
+                //constructor
+                result += name + " _" + name.ToLower() + "= new " + name + "(\n";
+                //assing a value to each variable
+                string comma = "";
+                int i = 0;
+                foreach (Column r in columns)
+                {
+
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += comma + "\"" + array[i] + "\"";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.Equals("decimal"))
+                    {
+                        result += comma + array[i];
+                    }
+                    else if (r.data_type.ToLower().Contains("date"))
+                    {
+                        result += comma + "DateTime.ParseExact(\"" + array[i] + "\")";
+                    }
+                    else
+                    {
+                        result += comma + "new " + r.data_type + "()";
+                    }
+                    comma = ",\n ";
+
+                    i++;
+                }
+                result += "\n);\n";
+                switch (j)
+                {
+                    case 0:
+                        result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower() + ");\n";
+                        break;
+                    case 1:
+                        foreach (Column r in columns)
+                        {
+                            if (r.references != "")
+                            {
+                                string[] parts = r.references.Split('.');
+                                string fk_table = parts[0];
+                                string fk_name = parts[1];
+                                result += fk_table + " _" + fk_table.ToLower() + " = new " + fk_table + "();\n";
+                            }
+                        }
+                        result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower();
+                        foreach (Column r in columns)
+                        {
+                            if (r.references != "")
+                            {
+                                string[] parts = r.references.Split('.');
+                                string fk_table = parts[0];
+                                string fk_name = parts[1];
+                                result += ", _" + fk_table.ToLower();
+                            }
+                        }
+                        result += ");\n";
+                        break;
+                    case 2:
+                        foreach (foreignKey key in data_tables.all_foreignKey)
+                        {
+
+                            if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                            {
+
+                                string fk_table = key.mainTable;
+
+                                result += "List<" + fk_table + "> _" + fk_table.ToLower() + "s = new ArrayList<>();\n";
+                            }
+                        }
+                        result += "_" + name.ToLower() + "VM = new " + name + "_VM(_" + name.ToLower();
+                        foreach (foreignKey key in data_tables.all_foreignKey)
+                        {
+
+                            if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                            {
+
+                                string fk_table = key.mainTable;
+
+                                result += ", " + fk_table.ToLower() + "s";
+                            }
+                        }
+                        result += ");\n";
+                        break;
+                }
+                i = 0;
+                //test each variable
+                foreach (Column r in columns)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "Assert.AreEqual(\"" + array[i] + "\",_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "Assert.IsTrue(_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "Assert.AreEqual(" + array[i] + ",_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.Equals("decimal"))
+                    {
+                        result += "Assert.AreEqual(" + array[i] + ",_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                    }
+                    else if (r.data_type.ToLower().Contains("date"))
+                    {
+                        result += "Assert.AreEqual(df.parse(\"" + array[i] + "\"),_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                    }
+
+                    else
+                    {
+                        result += "Assert.AreEqual(new " + r.data_type + "(),_" + name.ToLower() + "VM." + r.column_name + ");\n";
+                    }
+                    i++;
+                }
+                switch (j)
+                {
+                    case 0: break;
+                    case 1:
+                        foreach (Column k in columns)
+                        {
+                            if (k.references != "")
+                            {
+                                string[] parts = k.references.Split('.');
+                                string fk_table = parts[0];
+                                string fk_name = parts[1];
+                                result += "Assert.AreEqual(_" + fk_table.ToLower() + " ,_" + name.ToLower() + "VM." + fk_table + ");\n";
+
+                            }
+                        }
+                        break;
+                    case 2:
+                        foreach (foreignKey key in data_tables.all_foreignKey)
+                        {
+                            if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                            {
+
+                                string fk_table = key.mainTable;
+
+                                result += "Assert.AreEqual(_" + fk_table.ToLower() + "s,_" + name.ToLower() + "VM." + fk_table + "s);\n";
+
+                            }
+                        }
+                        break;
+                }
+
+                result += "}\n";
+
+            }
+
+            return result;
 
         }
-        private string testCSharpObjectSet(string fk_table)
+
+
+        private string testCSharpObjectSet(string objectname)
         {
-            return "";
+            string result = "[TestMethod]\n";
+            result += "public void testSet" + objectname + "Sets" + objectname + "(){\n";
+            result += objectname + " _" + objectname.ToLower() + " = new " + objectname + "();\n";
+            result += "_" + name.ToLower() + "VM." + objectname + "= _" + objectname.ToLower() + ";\n";
+            result += "Assert.AreEqual(_" + objectname.ToLower() + ",_" + name.ToLower() + "VM." + objectname + ");\n";
+            result += "}\n";
+            return result;
+
 
         }
-        private string testCSharpListObjectSet(string fk_table)
+        private string testCSharpListObjectSet(string objectname)
         {
-            return "";
+            string result = "[TestMethod]\n";
+            result += "public void testSet" + objectname + "sSets" + objectname + "s(){\n";
+            result += "List<" + objectname + "> _" + objectname.ToLower() + "s = new List<" + objectname + ">();\n";
+            result += "_" + name.ToLower() + "VM." + objectname + "s = _" + objectname.ToLower() + "s;\n";
+            result += "Assert.AreEqual(_" + objectname.ToLower() + "s,_" + name.ToLower() + "VM.get" + objectname + "s());\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpTooShort(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void  test" + name + "ThrowsArgumentOutOfRangeExceptionIf" + r.column_name + "TooShort(){\n";
+            result += "String " + r.column_name + " = \"";
+            String dummy = generateRandomString(r, 2 - r.length);
+            result += dummy; ;
+            result += "\";\n";
+            result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpTooLong(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooLong(){\n";
+            result += "String " + r.column_name + " = \"";
+            String dummy = generateRandomString(r, +2);
+            result += dummy;
+            result += "\";\n";
+            result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpStringSet(Column r)
         {
-            return "";
+            String dummy = "";
+
+            if (r.default_value.ToLower().Contains("uuid"))
+            {
+                dummy = generateRandomString(r, 0);
+            }
+            else
+            {
+                dummy = generateRandomString(r, -2);
+            }
+
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
+            result += "[TestMethod]\n";
+            result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
+            result += "String " + r.column_name + " = \"" + dummy + "\";\n";
+            result += "_" + name.ToLower() + "." + r.column_name +" = " + r.column_name + ";\n";
+            result += "Assert.AreEqual(" + r.column_name + ",_" + name.ToLower() + "." + r.column_name + ");\n";
+            result += "}\n";
+            return result;
+
 
         }
         private string testCSharpIntTooSmall(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
+            result += "int " + r.column_name + " = -1;\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "}\n";
+            return result;
+            
 
         }
         private string testCSharpIntTooBig(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
+            result += "int " + r.column_name + " = 10001;\n";
+            result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpIntSet(Column r)
         {
-            return "";
+            int numberToTest = rand.Next(1, 10000);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
+            result += "[TestMethod]\n";
+            result += "public void test" + name + "Sets" + r.column_name + "(){\n";
+            result += "int " + r.column_name + " = " + numberToTest + ";\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "Assert.AreEqual(" + r.column_name + ", _" + name.ToLower() + "." + r.column_name + ");\n";
+            result += "}\n";
+
+            return result;
 
         }
         private string testCSharpDecimalTooSmall(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
+            result += "double " + r.column_name + " = -1;\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpDecimalTooBig(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
+            result += "double " + r.column_name + " = 10001;\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpDecimalSet(Column r)
         {
-            return "";
+            int numberToTest = rand.Next(1, 10000);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
+            result += "[TestMethod]\n";
+            
+            result += "public void test" + name + "Sets" + r.column_name + "(){\n";
+            result += "double " + r.column_name + " = " + numberToTest + ";\n";
+            result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
+            result += "Assert.AreEqual(" + r.column_name + ", _" + name.ToLower() + "." + r.column_name + ");\n";
+            result += "}\n";
+
+            return result;
 
         }
         private string testCSharpBoolSetFalse(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
+            result += "[TestMethod]\n";
+            result += "public void test" + name + "Sets" + r.column_name + "asFalse(){\n";
+            result += "boolean status = false;\n";
+            result += "_" + name.ToLower() + "." + r.column_name + "= status;\n";
+            result += "Assert.IsFalse( _" + name.ToLower() + "." + r.column_name + ");\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpBoolSetTrue(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
+            result += "[TestMethod]\n";
+            result += "public void test" + name + "Sets" + r.column_name + "asTrue(){\n";
+            result += "boolean status = true;\n";
+            result += "_" + name.ToLower() + "." + r.column_name + "= status;\n";
+            result += "Assert.IsTrue( _" + name.ToLower() + "." + r.column_name + ");\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpDatetimeTooSmall(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall() throws ParseException{\n";
+            result += "String strDate = \"03/03/1990\";\n";
+            result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpDatetimeTooBig(Column r)
         {
-            return "";
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
+            result += "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig() throws ParseException{\n";
+            result += "String strDate = \"01/01/2190\";\n";            
+            result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
+            result += "}\n";
+            return result;
 
         }
         private string testCSharpDatetimeSet(Column r)
         {
-            return "";
+            
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
+            result += "[TestMethod]\n";
+            
+            result += "public void test" + name + "Sets" + r.column_name + "() throws ParseException{\n";
+            DateTime today = DateTime.Today;
+            result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
+
+            result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
+            result += "Assert.AreEqual(date, _" + name.ToLower() + "." + r.column_name + ");\n";
+            result += "}\n";
+
+            return result;
 
         }
 
