@@ -758,7 +758,7 @@ namespace Object_oriented_sql_tables
                     alloutput += s + "\n";
                     try
                     {
-                        file_write.fileWrite(s, t.name, "tests", "tests");
+                        file_write.fileWrite(s, t.name, "Javatests", "tests");
                     }
                     catch (Exception ex)
                     {
@@ -771,7 +771,33 @@ namespace Object_oriented_sql_tables
                     alloutput += s + "\n";
                     try
                     {
-                        file_write.fileWrite(s, t.name + "VM", "tests", "tests");
+                        file_write.fileWrite(s, t.name + "VM", "Javatests", "tests");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true)
+                {    //change to these settings 34
+                    s = t.createCSharpModelTests();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharpTests", "tests");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true)
+                {    //change to these settings 34
+                    s = t.createCSharpModelVMTests();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name + "VM", "CSharpTests", "tests");
                     }
                     catch (Exception ex)
                     {

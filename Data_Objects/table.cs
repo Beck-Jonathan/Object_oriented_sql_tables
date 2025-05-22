@@ -4654,7 +4654,7 @@ output+="return " + returntype + ";\n}\n";
             result += name + " _" + name.ToLower() + ";\n";
             result += "[TestInitialize]\n";
             result += "public void setup() {\n";
-            result += name+" _"+name.ToLower()+" = new "+name+"();\n";
+            result += " _"+name.ToLower()+" = new "+name+"();\n";
             result += "}\n";
             result += "[TestCleanup]\n";
             result += "public void tearDown() {";
@@ -4682,11 +4682,11 @@ output+="return " + returntype + ";\n}\n";
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
                 {
-                    result += "Assert.assertNull(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ",0);\n";
                 }
                 else
                 {
-                    result += "Assert.assertNull(_" + name.ToLower() + "." + r.column_name + ");\n";
+                    result += "Assert.IsNull(_" + name.ToLower() + "." + r.column_name + ");\n";
                 }
             }
             result += "}\n";
@@ -4929,7 +4929,7 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                        result += "Assert.IsNull(_" + name.ToLower() + "." + r.column_name + ");\n";
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
                     {
@@ -4937,11 +4937,11 @@ output+="return " + returntype + ";\n}\n";
                     }
                     else if (r.data_type.toCSharpDataType().Equals("int"))
                     {
-                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ",0);\n";
                     }
                     else
                     {
-                        result += "Assert.AreEqual(_" + name.ToLower() + "." + r.column_name + ");\n";
+                        result += "Assert.IsNull(_" + name.ToLower() + "." + r.column_name + ");\n";
                     }
                 }
             }
@@ -4974,7 +4974,7 @@ output+="return " + returntype + ";\n}\n";
             result += name + "VM _" + name.ToLower() + ";\n";
             result += "[TestInitialize]\n";
             result += "public void setup() {\n";
-            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
+            result +=  " _" + name.ToLower() + " = new " + name + "();\n";
             result += "}\n";
             result += "[TestCleanup]\n";
             result += "public void tearDown() {";
@@ -5344,13 +5344,15 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void  test" + name + "ThrowsArgumentOutOfRangeExceptionIf" + r.column_name + "TooShort(){\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void  test" + name + "FailsValidationIf" + r.column_name + "TooShort(){\n";
             result += "String " + r.column_name + " = \"";
             String dummy = generateRandomString(r, 2 - r.length);
             result += dummy; ;
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
+            result += "var lstErrors = ValidateModel(_"+name.ToLower()+");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\""+r.column_name+"\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -5359,13 +5361,15 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooLong(){\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void  test" + name + "FailsValidationIf" + r.column_name + "TooLong(){\n";
             result += "String " + r.column_name + " = \"";
             String dummy = generateRandomString(r, +2);
             result += dummy;
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -5398,10 +5402,12 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooSmall(){\n";
             result += "int " + r.column_name + " = -1;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
             
@@ -5411,10 +5417,12 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooBig(){\n";
             result += "int " + r.column_name + " = 10001;\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -5437,10 +5445,12 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooSmall(){\n";
             result += "double " + r.column_name + " = -1;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -5449,10 +5459,12 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig(){\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooBig(){\n";
             result += "double " + r.column_name + " = 10001;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -5500,11 +5512,13 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall() throws ParseException{\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooSmall() throws ParseException{\n";
             result += "String strDate = \"03/03/1990\";\n";
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -5513,11 +5527,13 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
-            result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig() throws ParseException{\n";
+            //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
+            result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooBig() throws ParseException{\n";
             result += "String strDate = \"01/01/2190\";\n";            
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
