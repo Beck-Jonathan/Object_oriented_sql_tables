@@ -4600,26 +4600,28 @@ output+="return " + returntype + ";\n}\n";
         }
 
         public string genCSharpManagerTests() {
-            String result = "";
-            String header = genManagerTestHeader();
-            String AddGood = genManagerTestAddCanAdd();
-            String AddFail = genManagerTestAddCanFail();
-            String DeleteGood = genManagerTestDeleteCanDelete();
-            String DeleteFail = genManagerTestDeleteCanFail();
-            String unDeleteGood = genManagerTestUnDeleteCanUndelete();
-            String unDeleteFail = genManagerTestUnDeleteCanFail();
-            String retrieveByPKGood = genManagerTestRetreiveByPKCanWork();
-            String retrieveByPKFail = genManagerTestRetreiveByPKCanFail();
-            String retrieveByFKGood = genManagerGetByFKCanWork();
-            String retrieveByFKFail = genManagerGetByFKCanFail();
-            String RetrieveAllGood = genManagerTestGetAllCanWork();
-            String RetrieveAllfail = genManagerTestGetAllCanFail();
-            String UpdateGood = genManagerTestUpdateCanWork();
-            String UpdateFail = genManagerTestUpdateCanFail();            
-            String batchAddCanWork = genManagerTestBatchAddCanWork();
-            String batchAddFail = genManagerTestBatchAddCanFail();
+            string result = "";
+            string header = genManagerTestHeader();
+            string AddGood = genManagerTestAddCanAdd();
+            string AddFail = genManagerTestAddCanFail();
+            string DeleteGood = genManagerTestDeleteCanDelete();
+            string DeleteFail = genManagerTestDeleteCanFail();
+            string unDeleteGood = genManagerTestUnDeleteCanUndelete();
+            string unDeleteFail = genManagerTestUnDeleteCanFail();
+            string retrieveByPKGood = genManagerTestRetreiveByPKCanWork();
+            string retrieveByPKFail = genManagerTestRetreiveByPKCanFail();
+            string retrieveByFKGood = genManagerGetByFKCanWork();
+            string retrieveByFKFail = genManagerGetByFKCanFail();
+            string RetrieveAllGood = genManagerTestGetAllCanWork();
+            string RetreiveAllFilter = genManagerTestGetAllCanFilter();
+            string RetrieveAllfail = genManagerTestGetAllCanFail();
+            string UpdateGood = genManagerTestUpdateCanWork();
+            string UpdateFail = genManagerTestUpdateCanFail();
+            string batchAddCanWork = genManagerTestBatchAddCanWork();
+            string batchAddFail = genManagerTestBatchAddCanFail();
+            string ValidationMethod = genCSharpValidationMethod();
             //String dropdown = genManagerDropDown();
-            String footer = "\n}\n";
+            string footer = "\n}\n";
             result = result
                 + header
                 + AddGood + AddFail
@@ -4627,10 +4629,10 @@ output+="return " + returntype + ";\n}\n";
                 + unDeleteGood + unDeleteFail
                 + retrieveByPKGood + retrieveByPKFail
                 + retrieveByFKGood + retrieveByFKFail
-                + RetrieveAllGood + RetrieveAllfail
+                + RetrieveAllGood + RetrieveAllfail + RetreiveAllFilter
                 + UpdateGood  + UpdateFail                
                 + batchAddCanWork + batchAddFail
-                + footer
+                + ValidationMethod+footer
                 ;
             return result;
 
@@ -4638,89 +4640,619 @@ output+="return " + returntype + ";\n}\n";
 
         private string genManagerTestHeader() {
 
-            return "";
+            string result = "";
+            result += "using System;\n";
+            result += "using System.Collections.Generic;\n";
+            result += "using System.Linq;\n";
+            result += "using System.Text;\n";
+            result += "using System.Threading.Tasks;\n";
+            result += "using DataObjects;\n";
+            result += "using System.ComponentModel.DataAnnotations;\n";
+            result += "\n";
+            result += "namespace LogicLayerTests\n";
+
+            result += "{\n";
+            result += "[TestClass]\n";
+
+            result += "public class " + name + "ManagerTests\n";
+            result += "{\n";
+            result += name + "Manager _" + name.ToLower() + "Manager;\n";
+            result += "[TestInitialize]\n";
+            result += "public void setup() {\n";
+            result += " _" + name.ToLower() + "Manager = new " + name + "Manager();\n";
+            result += "}\n";
+            result += "[TestCleanup]\n";
+            result += "public void tearDown() {";
+            result += "_" + name.ToLower() + "Manager = null;\n";
+            result += "}\n";
+            return result;
         }
         private string genManagerTestAddCanAdd()
         {
+            string result = "[TestMethod]";
+            result += "public void TestAdd"+name+"CanAdd(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;";
+            result += "int actual = 0;";
+            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "_"+name.ToLower()+"."+r.column_name+" = \"TestValue\";\n";
 
-            return "";
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Add();\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
         }
         private string genManagerTestAddCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestAdd"+name+"CanFail(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;";
+            result += "int actual = 0;";
+            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "_"+name.ToLower()+"."+r.column_name+" = \"TestValue\";\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Add(_"+name.ToLower()+");\n";
+            result += "//assert - Nothing To do\n";
+            result += "";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestDeleteCanDelete()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestDelete"+name+"CanDelete(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;";
+            result += "int actual = 0;";
+            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = \"TestValue\";\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+            
+               
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Delete(_" + name.ToLower() + ");\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestDeleteCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestDelete"+name+"CanFail(){\n";
+            result += "//arange\n";
+            result += "int expected = 1;";
+            result += "int actual = 0;";
+            result += name + "_" + name.ToLower() + " = new " + name + "();\n";          
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Delete(_" + name.ToLower() + ");\n"; 
+            result += "\n";
+            result += "//assert -- nothing to do\n";
+            result += "\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestUnDeleteCanUndelete()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestUnDelete"+name+"CanUnDelete(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;";
+            result += "int actual = 0;";
+            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = \"TestValue\";\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "_" + name.ToLower() + "." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.UnDelete(_" + name.ToLower() + ");\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestUnDeleteCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestUnDelete"+name+"CanFail(){\n";
+            result += "//arange\n";
+            result += "int expected = 1;";
+            result += "int actual = 0;";
+            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.UnDelete(_" + name.ToLower() + ");\n";
+            result += "\n";
+            result += "//assert -- nothing to do\n";
+            result += "\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestRetreiveByPKCanWork()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestRetreive"+name+"ByPKCanRetreiveByPK(){\n";
+            result += "//arrage\n";
+            
+            result += name+" expected = new "+name+"();\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "expected." + r.column_name + " = \"TestValue\";\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "expected." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "expected." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "expected." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "expected." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+            result += name+ " actual = new "+name+"();\n";
+            
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "actual." + r.column_name + " = \"TestValue\";\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "actual." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "actual." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "actual." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "actual." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.GetByPK(actual);\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
+            
 
         }
         private string genManagerTestRetreiveByPKCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestRetreive" + name + "ByPKCanRetreiveByFail(){\n";
+            result += "public void Test";
+            result += "//arrage\n";
+            result += name + " expected = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "expected." + r.column_name + " = \"TestValue\";\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "expected." + r.column_name + " = 406;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "expected." + r.column_name + " = true;\n";
+
+                    }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "expected." + r.column_name + " = new DateTime();\n";
+
+                    }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "expected." + r.column_name + " = 12.12m;\n";
+
+                    }
+                }
+            }
+            result += name + " actual = new " + name + "();\n";           
+
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.GetByPK(actual);\n";
+            result += "//assert -- nothing to do\n";
+            result += "\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerGetByFKCanWork()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestRetreive" + name + "ByFKCanRetreiveByFK(){\n";
+            result += "//arrage\n";
+            result += "";
+            result += "//act\n";
+            result += "";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerGetByFKCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestRetreive" + name + "ByFKCanFail(){\n";
+            result += "public void Test";
+            result += "//arrage\n";
+            result += "";
+            result += "//act\n";
+            result += "";
+            result += "//assert -- nothing to do\n";
+            result += "";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestGetAllCanWork()
         {
 
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestRetreiveAll" + name + "CanWork(){\n";
+            result += "//arrage\n";
+            result += "int expected = 4;\n";
+            result += "int actual =0;\n";
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.GetAll(0,-1,\"\");\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
+        }
+
+        private string genManagerTestGetAllCanFilter()
+        {
+            string result = "";
+            foreach (foreignKey key in data_tables.all_foreignKey)
+            {
+                if (key.referenceTable.ToLower().Equals(name.ToLower()))
+                {
+                    result += "[TestMethod]";
+                    result += "public void TestRetreiveAll" + name + "CanFilterBy"+key.referenceTable+"(){\n";
+                    result += "//arrage\n";
+                    result += "int expected = 4;\n";
+                    result += "int actual =0;\n";
+                    result += "//act\n";
+                    result += "actual =  _" + name.ToLower() + "Manager.GetAll(0,-1,\"\");\n";
+                    result += "//assert\n";
+                    result += "Assert.AreEqual(expected,actual);\n";
+                    result += "}\n";
+                }
+            }
+            return result;
         }
         private string genManagerTestGetAllCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestRetreiveAll" + name + "CanFail(){\n";
+            result += "//arrage\n";
+            result += "int expected = 4;\n";
+            result += "int actual =0;\n";
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.GetAll(-1,-1,\"\");\n";
+            result += "//assert -- nothing to do\n";
+            result += "\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestUpdateCanWork()
         {
 
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestUpdate"+name+"CanUpdate(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " old"+name+" = new " + name + "();\n";
+            result += name + " new" + name + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+                
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "old"+name+"." + r.column_name + " = \"TestValue\";\n";
+                    result += "new" + name + "." + r.column_name + " = \"TestValue1\";\n";
+
+                }
+                    if (r.data_type.toCSharpDataType().Equals("int"))
+                    {
+                        result += "old" + name + "." + r.column_name + " = 406;\n";
+                    result += "new" + name + "." + r.column_name + " = 407;\n";
+
+                }
+                    if (r.data_type.toCSharpDataType().Equals("bool"))
+                    {
+                        result += "old" + name + "." + r.column_name + " = true;\n";
+                    result += "new" + name + "." + r.column_name + " = false;\n";
+
+                }
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                    {
+                        result += "old" + name + "." + r.column_name + " = new DateTime();\n";
+                    result += "new" + name + "." + r.column_name + " = true;\n";
+
+                }
+
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                    {
+                        result += "old" + name + "." + r.column_name + " = 12.12m;\n";
+                    result += "new" + name + "." + r.column_name + " = 12.13m;\n";
+
+                }
+                
+            }
+            result += "";
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.update(old"+name+",new"+name+");\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result; ;
         }
         private string genManagerTestUpdateCanFail()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestUpdate" + name + "CanFail(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " old" + name + " = new " + name + "();\n";
+            result += name + " new" + name + " = new " + name + "();\n";
+            foreach (Column r in columns)
+            {
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "old" + name + "." + r.column_name + " = \"TestValue\";\n";
+                    
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "old" + name + "." + r.column_name + " = 406;\n";
+                    
+
+                }
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "old" + name + "." + r.column_name + " = true;\n";
+                    
+
+                }
+                if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                {
+                    result += "old" + name + "." + r.column_name + " = new DateTime();\n";
+                    
+
+                }
+
+                if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                {
+                    result += "old" + name + "." + r.column_name + " = 12.12m;\n";
+                   ;
+
+                }
+
+            }
+            result += "";
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.update(old" + name + ",new" + name + ");\n";
+            result += "//assert -- nothing to do\n";
+            result += "";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestBatchAddCanWork()
         {
-            return "";
+            string result = "[TestMethod]";
+            result += "public void TestAddBatch"+name+"CanWork(){\n";
+            result += "//arrage\n";
+            result += "";
+            result += "//act\n";
+            result += "";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
 
         }
         private string genManagerTestBatchAddCanFail()
         {
 
-            return "";
+            string result = "[TestMethod]";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestAddBatch" + name + "CanFail(){\n";
+            result += "//arrage\n";
+            result += "";
+            result += "//act\n";
+            result += "";
+            result += "//assert -- nothing to do\n";
+            result += "";
+            result += "}\n";
+            return result;
         }
         
+
+
 
         public string createCSharpModelTests()
         {
@@ -5527,7 +6059,8 @@ output+="return " + returntype + ";\n}\n";
             result += dummy; ;
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
-            result += "var lstErrors = ValidateModel(_"+name.ToLower()+");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_"+name.ToLower()+",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\""+r.column_name+"\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5544,7 +6077,8 @@ output+="return " + returntype + ";\n}\n";
             result += dummy;
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5582,7 +6116,8 @@ output+="return " + returntype + ";\n}\n";
             result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooSmall(){\n";
             result += "int " + r.column_name + " = -1;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5597,7 +6132,8 @@ output+="return " + returntype + ";\n}\n";
             result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooBig(){\n";
             result += "int " + r.column_name + " = 10001;\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5625,7 +6161,8 @@ output+="return " + returntype + ";\n}\n";
             result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooSmall(){\n";
             result += "double " + r.column_name + " = -1;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5639,7 +6176,8 @@ output+="return " + returntype + ";\n}\n";
             result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooBig(){\n";
             result += "double " + r.column_name + " = 10001;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5693,7 +6231,8 @@ output+="return " + returntype + ";\n}\n";
             result += "String strDate = \"03/03/1990\";\n";
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5708,7 +6247,8 @@ output+="return " + returntype + ";\n}\n";
             result += "String strDate = \"01/01/2190\";\n";            
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ");\n";
+            result += "bool result = false;";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -5734,11 +6274,11 @@ output+="return " + returntype + ";\n}\n";
         }
 
         private string genCSharpValidationMethod() {
-            string result = "private IList<ValidationResult> ValidateModel(object model)\n";
+            string result = "private IList<ValidationResult> ValidateModel(object model, bool result)\n";
             result += "{\b";
             result += "var validationResults = new List<ValidationResult>();\n";
             result += "var ctx = new ValidationContext(model, null, null);\n";
-            result += "Validator.TryValidateObject(model, ctx, validationResults, true);\n";
+            result += "result = Validator.TryValidateObject(model, ctx, validationResults, true);\n";
             result += "return validationResults;\n";
             result += "}\n";
             
