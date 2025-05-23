@@ -218,20 +218,21 @@ namespace Data_Objects
         /// <returns>A string that represents the data access layer interface in c# </returns>
         public String gen_ThingMananger()
         {
-            String result = "";
-            String header = genManagerHeader();
-            String Add = genManagerAdd();
-            String Delete = genManagerDelete();
-            String unDelete = genManagerUnDelete();
-            String retrieveByPK = genManagerPK();
-            String retrieveByFK = genManagerFK();
-            String RetrieveAll = genManagerAll();
-            String Update = genManagerUpdate();
-            String fileWrite = genManagerFileWrite();
-            String fileRead = genManagerFileRead();
-            String batchAdd = genManagerBatchAdd();
+            string result = "";
+            string header = genManagerHeader();
+            string Add = genManagerAdd();
+            string Delete = genManagerDelete();
+            string unDelete = genManagerUnDelete();
+            string retrieveByPK = genManagerPK();
+            string retrieveByFK = genManagerFK();
+            string RetrieveAll = genManagerAll();
+            string Update = genManagerUpdate();
+            string fileWrite = genManagerFileWrite();
+            string fileRead = genManagerFileRead();
+            string batchAdd = genManagerBatchAdd();
+            string validator = genCSharpValidationMethod();
             //String dropdown = genManagerDropDown();
-            String footer = "\n}\n";
+            string footer = "\n}\n";
             result = result
                 + header
                 + Add
@@ -244,6 +245,7 @@ namespace Data_Objects
                 + fileWrite
                 + fileRead
                 + batchAdd
+                + validator
                 // + dropdown
                 + footer
                 ;
@@ -286,12 +288,16 @@ namespace Data_Objects
             String result = "\n";
             result = result + "public bool Add" + name + "(" + name + " " + "_" + name + "){\n";
             result += "bool result = false;;\n";
+            result += "bool isValid = false;\n";
+            result += "ValidateModel(_" + name + ",isValid);\n";
+            result += "if (isValid){\n";
             result += "try\n{";
             result = result + "result = (1 == _" + name.firstCharLower() + "Accessor.insert" + name + "(_" + name + "));\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
             result = result + "throw new ApplicationException(\"" + name + " not added\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
@@ -370,7 +376,8 @@ namespace Data_Objects
         /// <returns>A logic layer retrieve by PK method, in c#. </returns>
         private string genManagerPK()
         {
-            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_By_PK); string retrieveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
+            string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_By_PK);
+            string retrieveThing = "public " + name + " get" + name + "ByPrimaryKey(string " + name + "ID){\n";
             retrieveThing = retrieveThing + name + " result =null ;\n";
             retrieveThing += "try{\n";
             retrieveThing = retrieveThing + "result = _" + name.ToLower() + "Accessor.select" + name + "ByPrimaryKey(" + name + "ID);\n";
@@ -522,6 +529,11 @@ namespace Data_Objects
             string comment = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_Update);
             string updateThing = "public int update" + name + "( " + name + " old" + name + ", " + name + " new" + name + "){\n";
             updateThing += "int result =0 ;\n";
+            updateThing += "bool oldIsValid = false;\n";
+            updateThing += "bool newIsValid = false;\n";
+            updateThing += "ValidateModel(old" + name + ",oldIsValid);\n";
+            updateThing += "ValidateModel(new" + name + ",newIsValid);\n";
+            updateThing += "if (oldIsValid&&newIsValid){\n";
             updateThing += "try{\n";
             updateThing = updateThing + "result = _" + name.ToLower() + "Accessor.update" + name + "(old" + name + ", new" + name + ");\n";
             updateThing += "if (result == 0){\n";
@@ -530,6 +542,7 @@ namespace Data_Objects
             updateThing += "}\n";
             updateThing += "catch (Exception ex){\n";
             updateThing += "throw ex;\n";
+            updateThing += "}\n";
             updateThing += "}\n";
             updateThing += "return result;\n}\n";
             return comment + updateThing;
