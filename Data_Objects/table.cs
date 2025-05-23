@@ -289,7 +289,7 @@ namespace Data_Objects
             result = result + "public bool Add" + name + "(" + name + " " + "_" + name + "){\n";
             result += "bool result = false;;\n";
             result += "bool isValid = false;\n";
-            result += "ValidateModel(_" + name + ",isValid);\n";
+            result += "ValidateModel(_" + name + ",ref isValid);\n";
             result += "if (isValid){\n";
             result += "try\n{";
             result = result + "result = (1 == _" + name.firstCharLower() + "Accessor.insert" + name + "(_" + name + "));\n";
@@ -531,8 +531,8 @@ namespace Data_Objects
             updateThing += "int result =0 ;\n";
             updateThing += "bool oldIsValid = false;\n";
             updateThing += "bool newIsValid = false;\n";
-            updateThing += "ValidateModel(old" + name + ",oldIsValid);\n";
-            updateThing += "ValidateModel(new" + name + ",newIsValid);\n";
+            updateThing += "ValidateModel(old" + name + ",ref oldIsValid);\n";
+            updateThing += "ValidateModel(new" + name + ",ref newIsValid);\n";
             updateThing += "if (oldIsValid&&newIsValid){\n";
             updateThing += "try{\n";
             updateThing = updateThing + "result = _" + name.ToLower() + "Accessor.update" + name + "(old" + name + ", new" + name + ");\n";
@@ -4687,57 +4687,9 @@ output+="return " + returntype + ";\n}\n";
             string result = "[TestMethod]\n";
             result += "public void TestAdd"+name+"CanAdd(){\n";
             result += "//arrage\n";
-            result += "int expected = 1;";
-            result += "int actual = 0;";
-            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
-            foreach (Column r in columns)
-            {
-                if (r.increment == 0)
-                {
-                    if (r.data_type.toCSharpDataType().Equals("string"))
-                    {
-                        result += "_"+name.ToLower()+"."+r.column_name+" = \"TestValue\";\n";
-
-                    }
-                    if (r.data_type.toCSharpDataType().Equals("int"))
-                    {
-                        result += "_" + name.ToLower() + "." + r.column_name + " = 406;\n";
-
-                    }
-                    if (r.data_type.toCSharpDataType().Equals("bool"))
-                    {
-                        result += "_" + name.ToLower() + "." + r.column_name + " = true;\n";
-
-                    }
-                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
-                    {
-                        result += "_" + name.ToLower() + "." + r.column_name + " = new DateTime();\n";
-
-                    }
-
-                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
-                    {
-                        result += "_" + name.ToLower() + "." + r.column_name + " = 12.12m;\n";
-
-                    }
-                }
-            }
-            result += "//act\n";
-            result += "actual =  _" + name.ToLower() + "Manager.Add();\n";
-            result += "//assert\n";
-            result += "Assert.AreEqual(expected,actual);\n";
-            result += "}\n";
-            return result;
-        }
-        private string genManagerTestAddCanFail()
-        {
-            string result = "[TestMethod]\n";
-            result += "[ExpectedException(typeof(ApplicationException))]\n";
-            result += "public void TestAdd"+name+"CanFail(){\n";
-            result += "//arrage\n";
-            result += "int expected = 1;";
-            result += "int actual = 0;";
-            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -4772,6 +4724,22 @@ output+="return " + returntype + ";\n}\n";
             }
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.Add(_"+name.ToLower()+");\n";
+            result += "//assert\n";
+            result += "Assert.AreEqual(expected,actual);\n";
+            result += "}\n";
+            return result;
+        }
+        private string genManagerTestAddCanFail()
+        {
+            string result = "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
+            result += "public void TestAdd"+name+"CanFail(){\n";
+            result += "//arrage\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";            
+            result += "//act\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Add(_"+name.ToLower()+");\n";
             result += "//assert - Nothing To do\n";
             result += "";
             result += "}\n";
@@ -4783,9 +4751,9 @@ output+="return " + returntype + ";\n}\n";
             string result = "[TestMethod]\n";
             result += "public void TestDelete"+name+"CanDelete(){\n";
             result += "//arrage\n";
-            result += "int expected = 1;";
-            result += "int actual = 0;";
-            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
@@ -4834,9 +4802,9 @@ output+="return " + returntype + ";\n}\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestDelete"+name+"CanFail(){\n";
             result += "//arange\n";
-            result += "int expected = 1;";
-            result += "int actual = 0;";
-            result += name + "_" + name.ToLower() + " = new " + name + "();\n";          
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";          
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.Delete(_" + name.ToLower() + ");\n"; 
             result += "\n";
@@ -4851,9 +4819,9 @@ output+="return " + returntype + ";\n}\n";
             string result = "[TestMethod]\n";
             result += "public void TestUnDelete"+name+"CanUnDelete(){\n";
             result += "//arrage\n";
-            result += "int expected = 1;";
-            result += "int actual = 0;";
-            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
@@ -4901,9 +4869,9 @@ output+="return " + returntype + ";\n}\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestUnDelete"+name+"CanFail(){\n";
             result += "//arange\n";
-            result += "int expected = 1;";
-            result += "int actual = 0;";
-            result += name + "_" + name.ToLower() + " = new " + name + "();\n";
+            result += "int expected = 1;\n";
+            result += "int actual = 0;\n";
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.UnDelete(_" + name.ToLower() + ");\n";
             result += "\n";
@@ -6079,7 +6047,7 @@ output+="return " + returntype + ";\n}\n";
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_"+name.ToLower()+",result);\n";
+            result += "var lstErrors = ValidateModel(_"+name.ToLower()+",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\""+r.column_name+"\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6097,7 +6065,7 @@ output+="return " + returntype + ";\n}\n";
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6136,7 +6104,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int " + r.column_name + " = -1;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6152,7 +6120,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int " + r.column_name + " = 10001;\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6181,7 +6149,7 @@ output+="return " + returntype + ";\n}\n";
             result += "double " + r.column_name + " = -1;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6196,7 +6164,7 @@ output+="return " + returntype + ";\n}\n";
             result += "double " + r.column_name + " = 10001;\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6251,7 +6219,7 @@ output+="return " + returntype + ";\n}\n";
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6267,7 +6235,7 @@ output+="return " + returntype + ";\n}\n";
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",result);\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
@@ -6293,7 +6261,7 @@ output+="return " + returntype + ";\n}\n";
         }
 
         private string genCSharpValidationMethod() {
-            string result = "private IList<ValidationResult> ValidateModel(object model, bool result)\n";
+            string result = "private IList<ValidationResult> ValidateModel(object model, ref bool result)\n";
             result += "{\b";
             result += "var validationResults = new List<ValidationResult>();\n";
             result += "var ctx = new ValidationContext(model, null, null);\n";
