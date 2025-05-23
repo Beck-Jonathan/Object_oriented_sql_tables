@@ -4660,6 +4660,8 @@ output+="return " + returntype + ";\n}\n";
             result += "using System.Text;\n";
             result += "using System.Threading.Tasks;\n";
             result += "using DataObjects;\n";
+            result += "using LogicLayer;\n";
+            result += "using DataAccessFakes;\n";
             result += "using System.ComponentModel.DataAnnotations;\n";
             result += "\n";
             result += "namespace LogicLayerTests\n";
@@ -4672,7 +4674,7 @@ output+="return " + returntype + ";\n}\n";
             result += name + "Manager _" + name.ToLower() + "Manager;\n";
             result += "[TestInitialize]\n";
             result += "public void setup() {\n";
-            result += " _" + name.ToLower() + "Manager = new " + name + "Manager();\n";
+            result += " _" + name.ToLower() + "Manager = new " + name + "Manager(new "+name+"AccessorFake());\n";
             result += "}\n";
             result += "[TestCleanup]\n";
             result += "public void tearDown() {";
@@ -4682,7 +4684,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestAddCanAdd()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestAdd"+name+"CanAdd(){\n";
             result += "//arrage\n";
             result += "int expected = 1;";
@@ -4729,7 +4731,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestAddCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestAdd"+name+"CanFail(){\n";
             result += "//arrage\n";
@@ -4778,7 +4780,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestDeleteCanDelete()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestDelete"+name+"CanDelete(){\n";
             result += "//arrage\n";
             result += "int expected = 1;";
@@ -4828,7 +4830,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestDeleteCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestDelete"+name+"CanFail(){\n";
             result += "//arange\n";
@@ -4846,7 +4848,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestUnDeleteCanUndelete()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestUnDelete"+name+"CanUnDelete(){\n";
             result += "//arrage\n";
             result += "int expected = 1;";
@@ -4895,7 +4897,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestUnDeleteCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestUnDelete"+name+"CanFail(){\n";
             result += "//arange\n";
@@ -4913,7 +4915,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestRetreiveByPKCanWork()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestRetreive"+name+"ByPKCanRetreiveByPK(){\n";
             result += "//arrage\n";
             
@@ -4988,7 +4990,10 @@ output+="return " + returntype + ";\n}\n";
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.GetByPK(actual);\n";
             result += "//assert\n";
-            result += "Assert.AreEqual(expected,actual);\n";
+            foreach (Column r in columns) {
+                result += "Assert.AreEqual(expected."+r.column_name+",actual."+r.column_name+");\n";
+            }
+            
             result += "}\n";
             return result;
             
@@ -4996,9 +5001,10 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestRetreiveByPKCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
+            result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestRetreive" + name + "ByPKCanRetreiveByFail(){\n";
-            result += "public void Test";
+            
             result += "//arrage\n";
             result += name + " expected = new " + name + "();\n";
             foreach (Column r in columns)
@@ -5045,7 +5051,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerGetByFKCanWork()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestRetreive" + name + "ByFKCanRetreiveByFK(){\n";
             result += "//arrage\n";
             result += "";
@@ -5059,7 +5065,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerGetByFKCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestRetreive" + name + "ByFKCanFail(){\n";
             result += "public void Test";
             result += "//arrage\n";
@@ -5075,13 +5081,13 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestGetAllCanWork()
         {
 
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestRetreiveAll" + name + "CanWork(){\n";
             result += "//arrage\n";
             result += "int expected = 4;\n";
             result += "int actual =0;\n";
             result += "//act\n";
-            result += "actual =  _" + name.ToLower() + "Manager.GetAll(0,-1,\"\");\n";
+            result += "actual =  _" + name.ToLower() + "Manager.GetAll(0,-1,\"\").Count;\n";
             result += "//assert\n";
             result += "Assert.AreEqual(expected,actual);\n";
             result += "}\n";
@@ -5095,7 +5101,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
-                    result += "[TestMethod]";
+                    result += "[TestMethod]\n";
                     result += "public void TestRetreiveAll" + name + "CanFilterBy"+key.referenceTable+"(){\n";
                     result += "//arrage\n";
                     result += "int expected = 4;\n";
@@ -5111,7 +5117,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestGetAllCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestRetreiveAll" + name + "CanFail(){\n";
             result += "//arrage\n";
@@ -5128,7 +5134,7 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestUpdateCanWork()
         {
 
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestUpdate"+name+"CanUpdate(){\n";
             result += "//arrage\n";
             result += "int expected = 1;\n";
@@ -5181,7 +5187,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestUpdateCanFail()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestUpdate" + name + "CanFail(){\n";
             result += "//arrage\n";
@@ -5236,7 +5242,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string genManagerTestBatchAddCanWork()
         {
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "public void TestAddBatch"+name+"CanWork(){\n";
             result += "//arrage\n";
             result += "";
@@ -5251,7 +5257,7 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestBatchAddCanFail()
         {
 
-            string result = "[TestMethod]";
+            string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestAddBatch" + name + "CanFail(){\n";
             result += "//arrage\n";
