@@ -112,34 +112,404 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that represents the data access layer  in c# </returns>
-        public String gen_ThingAccessor()
+        public String gen_ThingCharpDatabaseAccessor()
         {
 
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
 
-            string header = genAccessorClassHeader();
+            string header = gencCSharpDatabaseAccessorClassHeader();
 
-            string addThing = genAccessorAdd();
+            string addThing = genCharpDatabaseAccessorAdd();
 
-            string selectThingbyPK = genAccessorretrieveByKey();
+            string selectThingbyPK = genCharpDatabaseAccessorretrieveByKey();
 
-            string selectallThing = genAccessorretrieveAll();
+            string selectallThing = genCharpDatabaseAccessorretrieveAll();
 
-            string selectbyFK = genAccessorretrievefk();
+            string selectbyFK = genCharpDatabaseAccessorretrievefk();
 
-            string updateThing = genAccessorUpdate();
+            string updateThing = genCharpDatabaseAccessorUpdate();
 
-            string deleteThing = genAccessorDelete();
+            string deleteThing = genCharpDatabaseAccessorDelete();
 
-            string undeleteThing = genAccessorUndelete();
-            string distinctThing = genAccessorDistinct();
-            string writeThing = genAccessorWrite();
-            string readThing = genAccessorRead();
-            string addBatchThing = genAccessorBatchAdd();
+            string undeleteThing = genCharpDatabaseAccessorUndelete();
+            string distinctThing = genCharpDatabaseAccessorDistinct();
+            string writeThing = genCharpDatabaseAccessorWrite();
+            string readThing = genCharpDatabaseAccessorRead();
+            string addBatchThing = genCSharpDatabaseAccessorBatchAdd();
             string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ addBatchThing + "}\n\n";
             //good
             return output;
         }
+        public String gen_ThingCharpFileAccessor()
+        {
+
+            string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
+
+            string header = gencCSharpFileAccessorClassHeader();  //done
+             
+            string addThing = genCharpFileAccessorAdd();    //done
+
+            string selectThingbyPK = genCharpFileAccessorretrieveByKey();   //done
+
+            string selectallThing = genCharpFileAccessorretrieveAll();  //done
+
+            string selectbyFK = genCharpFileAccessorretrievefk();
+             
+            string updateThing = genCharpFileAccessorUpdate(); //done
+
+            string deleteThing = genCharpFileAccessorDelete(); //done
+
+            string undeleteThing = genCharpFileAccessorUndelete(); //done
+            string distinctThing = genCharpFileAccessorDistinct();
+            string writeThing = genCharpFileAccessorWrite(); //done
+            string readThing = genCharpFileAccessorRead();
+            string addBatchThing = genCSharpFileAccessorBatchAdd(); //done
+            string output = comment + header + readThing + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + writeThing  + addBatchThing + "}\n}\n";
+            //good
+            return output;
+        }
+
+        private string gencCSharpFileAccessorClassHeader() {
+            string result = "using DataObjects;\n";
+            result += "using iDataAccessLayer;\n";
+            result += "\n";
+            result += "namespace DataAccessLayer{\n\n";
+            result += "public class "+name+"Accessor : I"+name+"Accessor\n{\n";
+            result += "private List<"+name+"> "+name.ToLower()+"s;\n";
+            
+            return result;
+        
+        }
+        private string genCharpFileAccessorAdd()
+        {
+            string result = "public int add"+name+"("+name+ " _"+name.ToLower()+")\n{\n";
+            result += "if (" + name.ToLower() + "s ==null)\n{\n";
+            result += "getAll" + name + "s();\n";
+            result += "}\n";
+            result += name.ToLower() + "s.Add(_" + name.ToLower() + ");\n";
+            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";\n";
+            result += "try{\n";
+            result += "using (StreamWriter w = File.AppendText(filePath))\n";
+            result += "{\n";
+            result += "w.WriteLine(";
+            string plus = "";
+            foreach (Column r in columns) {
+                result += plus+" _" + name.ToLower() + "." + r.column_name ;
+                    plus = "+\"\\t\"+";
+            }
+            result += ");\n";
+            result += "}\n";
+            result += "}\n";
+            result += "catch (Exception)\n";
+            result += "{\n";
+            result += "throw new ApplicationException(\"unable to append to file\");\n";
+            result += "}\n";
+            result += "return 1;\n";
+            result += "}\n";
+
+            return result;
+
+        }
+        private string genCharpFileAccessorretrieveByKey()
+        {
+            string firstLetter = name.Substring(0, 1).ToLower();
+            string result = "public "+name+ " select"+name+"ByPrimaryKey("+name+" "+name.ToLower()+")\n{\n";
+            result +=name+ " _"+name.ToLower()+" = null;\n";
+            result += "try\n{\n";
+            result += "foreach (" + name + " " + firstLetter + " in " + name.ToLower() + "s)\n{\n";
+            result += "if(";
+            string andand = "";
+            foreach (Column r in columns) {
+                if (r.primary_key == 'y' || r.primary_key == 'Y') {
+                    result += andand+ firstLetter + "." + r.column_name + ".Equals(" + name.ToLower() + "." + r.column_name + ")";
+                    andand = " && ";
+                }
+            }
+            result += ")\n{\n";
+            result += "_"+name.ToLower()+ " = new "+name+"("+firstLetter+");\n";
+            result += "break;";
+            result += "}\n";
+            result += "}\n";
+            result += "if (_"+name.ToLower()+" ==null)\n{\n";
+            result += "throw new ApplicationException(\"unable to find "+name+"\");";
+            result += "}\n";
+            result += "}\n";
+            result += "catch (Exception ex)";
+            result += "{\n";
+            result += "throw new ApplicationException(\"Unable to find "+name+"\", ex);";
+            result += "}\n";
+            result += "return _"+name.ToLower()+";\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string genCharpFileAccessorretrieveAll()
+        {
+            string firstLetter = name.Substring(0, 1).ToLower();
+            int fkCount = 0;
+            string result = "public List<" + name + "> SelectAll" + name + "(int offset, int limit";
+            foreach (Column r in columns) {
+                if (r.references != "") {
+                    string[] parts = r.references.Split('.');
+                    string fk_table = parts[0];
+                    
+                    result += ",string " + fk_table.ToLower();
+                    fkCount++;
+                }
+            }
+            result += ")\n{\n";
+            result += "List<" + name + "> result = new List<" + name + ">();\n";
+            result += "if ("+name.ToLower()+"s ==null)\n{\n";
+            result += "getAll"+name+"s();\n";
+            result += "}\n";
+            result += "foreach (" + name + " " + firstLetter + " in " + name.ToLower() + "s)\n{";
+            string andand = "";
+            if (fkCount == 0)
+            {                
+                result += "result.Add("+firstLetter+";\n";
+
+            }
+            else {
+                result += "if (";
+                foreach (Column r in columns) {
+                    if (r.references != "") {
+                        string[] parts = r.references.Split('.');
+                        string fk_table = parts[0];
+                        result += andand + firstLetter + "." + r.column_name + ".Equals(" +fk_table.ToLower()+")";
+                        andand = "&&";
+                    }
+                }
+                result += ")\n{result.Add(" + firstLetter + ");\n";
+                result += "}\n";
+
+            }
+            result += "}";
+            result += "for (int i = 0; i < offset; i++)\n";
+            result += "{\n";
+            result += "result.RemoveAt(0);";
+            result += "}\n";
+            result += "if (limit >0)\n";
+            result += "{\n";
+            result += "for (int i = limit; i < result.Count; i++)";
+            result += "{\n";
+            result += "result.RemoveAt(limit);";
+            result += "}\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+
+            return result;
+
+        }
+        private string genCharpFileAccessorretrievefk()
+        {
+            string result = "";
+
+            return result;
+
+        }
+        private string genCharpFileAccessorUpdate()
+        {
+            string result = "public int update"+name+"("+name+" old"+name+", "+name+" new"+name+")\n{\n";
+            result += "int result = 0;\n";
+            result += "try\n";
+            result += "{\n";
+            result += "result += delete"+name+"(old"+name+");\n";
+            result += "if (result != 1)";
+            result += "{\n";
+            result += "throw new ApplicationException(\"unable to delete "+name.ToLower() + "\");\n";
+            result += "}\n";
+            result += "result += add"+name+"(new"+name+");";
+            result += "if (result != 2)";
+            result += "{\n";
+            result += "throw new ApplicationException(\"unable to add " + name.ToLower() + "\");\n";
+            result += "}\n";
+            result += "}\n";
+            result += "catch (Exception ex) {\n";
+            result += "throw new ApplicationException(\"unable to update "+name.ToLower()+"\", ex);\n";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+
+
+            return result;
+
+        }
+        private string genCharpFileAccessorDelete()
+        {
+            string firstLetter = name.Substring(0, 1).ToLower();
+            string result = "public int delete" + name + "(" + name + " " + name.ToLower() + ")\n{\n";
+            result += "int result=0;\n";
+            result += "try\n{\n";
+            result += "foreach (" + name + " " + firstLetter + " in " + name.ToLower() + "s)\n{\n";
+            result += "if(";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y')
+                {
+                    result += andand + firstLetter + "." + r.column_name + ".Equals(" + name.ToLower() + "." + r.column_name + ")";
+                    andand = " && ";
+                }
+            }
+            result += ")\n{\n";
+            result += name.ToLower() + "s.Remove(" + firstLetter + ");\n";
+            result += "result=1;\n";
+            result += "break;";
+            result += "}\n";
+            result += "}\n";
+            result += "if (result==0)\n{\n";
+            result += "throw new ApplicationException(\"unable to delete " + name + "\");";
+            result += "}\n";
+            result += "}\n";
+            result += "catch (Exception ex)";
+            result += "{\n";
+            result += "throw new ApplicationException(\"Unable to delete " + name + "\", ex);";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string genCharpFileAccessorUndelete()
+        {
+            string firstLetter = name.Substring(0, 1).ToLower();
+            string result = "public int undelete" + name + "(" + name + " " + name.ToLower() + ")\n{\n";
+            result += "int result=0;\n";
+            result += "try\n{\n";
+            result += "foreach (" + name + " " + firstLetter + " in " + name.ToLower() + "s)\n{\n";
+            result += "if(";
+            string andand = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y')
+                {
+                    result += andand + firstLetter + "." + r.column_name + ".Equals(" + name.ToLower() + "." + r.column_name + ")";
+                    andand = " && ";
+                }
+            }
+            result += ")\n{\n";
+            result += firstLetter + ".isActive=true;\n";
+            result += "result=1;\n";
+            result += "break;";
+            result += "}\n";
+            result += "}\n";
+            result += "if (result==0)\n{\n";
+            result += "throw new ApplicationException(\"unable to undelete " + name + "\");";
+            result += "}\n";
+            result += "}\n";
+            result += "catch (Exception ex)";
+            result += "{\n";
+            result += "throw new ApplicationException(\"Unable to undelete " + name + "\", ex);";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string genCharpFileAccessorDistinct()
+        {
+            string result = "";
+
+            return result;
+
+        }
+        private string genCharpFileAccessorWrite()
+        {
+            string result = "private bool rewriteDataFile(List<"+name+"> "+name+"s)\n";
+            result += "{\n";
+            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";\n";
+            result += "try\n";
+            result += "{\n";
+            result += "StreamWriter fileBuddy = new StreamWriter(filePath);";
+            result += "foreach ("+name+" _"+name.ToLower()+" in "+name+"s)\n";
+            result += "{\n";
+            result += "fileBuddy.WriteLine(";
+            string tabplus = "";
+            foreach (Column r in columns) {
+                result += tabplus+"_"+name.ToLower()+"."+r.column_name+"\n";
+                 tabplus = "+\"\t\" +";
+            }
+            result += ");\n";
+            result += "}\n";
+            result += "fileBuddy.Close();\n";
+            result += "}\n";
+            result += "catch (Exception)";
+            result += "{\n";
+            result += "return false;\n";
+            result += "}\n";
+            result += "return true;\n";
+            result += "}\n";
+            
+
+            return result;
+
+        }
+        private string genCharpFileAccessorRead()
+        {
+            string result = "private void getAll"+name+"s()\n";
+            result += "{\n";
+            result += name.ToLower()+"s = new List<"+name+">();\n";
+            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";";
+            result += "try\n";
+            result += "{\n";
+            result += "StreamReader fileReader = new StreamReader(filePath);\n";
+            result += "char[] separator = { '\t' };\n";
+            result += "while (fileReader.EndOfStream == false)\n";
+            result += "{\n";
+            result += "string line = fileReader.ReadLine();\n";
+            result += "string[] parts;\n";
+            result += "if (line.Length > 3)\n";
+            result += "{\n";
+            result += "parts = line.Split(separator);\n";
+            result += "if (parts.Count() > "+(columns.Count-1)+")  //are all model parts present\n";
+            result += "{\n"; //pick eahc part
+            result += "}\n";
+            result += "}\n";
+            result += "}\n";
+            result += "fileReader.Close();\n";
+            result += "if ("+name.ToLower()+"s == null || "+name.ToLower()+"s.Count == 0)\n";
+            result += "{\n";
+            result += "throw new Exception(\"Unable to load "+name.ToLower()+"s\");\n";
+            result += "}\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result += "throw new ApplicationException(\""+name+"s not found\", ex);\n";
+            result += "}\n";
+            string orderBy = ".OrderBy(o => o.";
+            result += name.ToLower()+"s = "+name.ToLower()+"s";
+            foreach (Column r in columns) {
+                result += orderBy + r.column_name + ")";
+                orderBy = ".ThenBy( o => o.";
+            }
+            result += ".ToList();\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string genCSharpFileAccessorBatchAdd()
+        {
+            string result = "";
+            string firstLetter = name.Substring(0, 1).ToLower();
+            result += "public int AddBatchOf" + name + "(List<" + name + "> _"+name.ToLower()+"s)\n{\n";
+            result += "int result=0;";
+            result += "try\n{\n";
+            result += "foreach (" + name + " " + firstLetter + " in _" + name.ToLower() + "s){\n";
+            result += "result += add" + name + "(" + firstLetter + ");\n";
+            result += "}\n";
+            result += " }catch (Exception ex)\n";
+            result += "{\n";
+            result += "throw new ApplicationException(\"unable to append to file\",ex);";
+            result += "}\n";
+            result += "return result;\n";
+            result += "}\n";
+            return result;
+
+        }
+       
+
+
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
         /// generates a logic layer interface for c#
@@ -663,7 +1033,7 @@ namespace Data_Objects
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for the header of the data access layer </returns>
-        private string genAccessorClassHeader()
+        private string gencCSharpDatabaseAccessorClassHeader()
         {
             _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpAccessor);
             string header = "public class " + name + "Accessor : I" + name + "Accessor {\n";
@@ -758,7 +1128,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for adding to the database </returns>
-        private string genAccessorAdd()
+        private string genCharpDatabaseAccessorAdd()
         {
             string createThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Add);
             createThing += "\npublic int add" + name + "(" + name + " _" + name.ToLower();
@@ -793,7 +1163,7 @@ output+="return " + returntype + ";\n}\n";
             return createThing;
         }
 
-        private string genAccessorBatchAdd() {
+        private string genCSharpDatabaseAccessorBatchAdd() {
             string createThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Add);
             createThing += "\npublic int addBatchOf" + name + "(List<" + name + "> _" + name.ToLower();
             createThing += "s){\n";
@@ -834,7 +1204,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for retreiving by PK from the database </returns>
-        private string genAccessorretrieveByKey()
+        private string genCharpDatabaseAccessorretrieveByKey()
         {
             string retrieveThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_retrieve_By_PK);
             int count = 0;
@@ -912,7 +1282,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for retreving all from the database 
-        private string genAccessorretrieveAll()
+        private string genCharpDatabaseAccessorretrieveAll()
         {
             string retrieveAllThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Manager_retrieve_All_Two_Param);
             retrieveAllThing += "\npublic List<" + name + "> selectAll" + name + "(int limit, int offset";
@@ -992,7 +1362,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for retereiving by FK from the database
-        private string genAccessorretrievefk()
+        private string genCharpDatabaseAccessorretrievefk()
         {
             string retrieveAllThing = "";
             foreach (Column q in columns)
@@ -1061,7 +1431,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for updating a record on the database
-        private string genAccessorUpdate()
+        private string genCharpDatabaseAccessorUpdate()
         {
             string updateThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Update);
             updateThing += "\npublic int update" + name + "(";
@@ -1104,7 +1474,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for deleting from the database
-        private string genAccessorDelete()
+        private string genCharpDatabaseAccessorDelete()
         {
             string deleteThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Delete);
             deleteThing += "\npublic int delete" + name + "(" + name + " _" + name.ToLower() + "){\n";
@@ -1131,7 +1501,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is c# code for undeleting from the database
-        private string genAccessorUndelete()
+        private string genCharpDatabaseAccessorUndelete()
         {
             string deleteThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Undelete);
             deleteThing = deleteThing + "\n public int undelete" + name + "(" + name + " _" + name.ToLower() + "){\n";
@@ -1155,7 +1525,7 @@ output+="return " + returntype + ";\n}\n";
             return deleteThing;
         }
         //Generates the get distinct for drop downs componoent of the accessor
-        private string genAccessorDistinct()
+        private string genCharpDatabaseAccessorDistinct()
         {
             string retrieveAllThing = "";
             List<foreignKey> all_foreignKey = data_tables.all_foreignKey;
@@ -1183,7 +1553,7 @@ output+="return " + returntype + ";\n}\n";
             }
             return retrieveAllThing;
         }
-        private string genAccessorWrite() {
+        private string genCharpDatabaseAccessorWrite() {
             string result = "public int write" + name + "sToFile(List<"+name+"> "+name+"s,string path){\n";
             result += "int result=0;\n";
             result += "try\n{";
@@ -1209,7 +1579,7 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        private string genAccessorRead() {
+        private string genCharpDatabaseAccessorRead() {
             string result = "public List<"+name+"> read"+name+"sFromFile(string path){\n";
             result += "List<name> " + name + "s = new List<" + name + ">();\n";
             result += "try\n{";

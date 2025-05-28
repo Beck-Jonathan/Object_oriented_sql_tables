@@ -415,11 +415,25 @@ namespace Object_oriented_sql_tables
                 //needs to be these settings 13
                 if (true)
                 {
-                    s = t.gen_ThingAccessor();
+                    s = t.gen_ThingCharpDatabaseAccessor();
                     alloutput += s + "\n";
                     try
                     {
                         file_write.fileWrite(s, t.name, "CSharp", "Accessor");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                //needs to be these settings 1.5
+                if (true)
+                {
+                    s = t.gen_ThingCharpFileAccessor();
+                    alloutput += s + "\n";
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSharpFile", "Accessor");
                     }
                     catch (Exception ex)
                     {
