@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 namespace Data_Objects
 {
     public static class DataTypeConverter
@@ -14,11 +15,12 @@ namespace Data_Objects
         }
         public static string toCSharpDataType(this string sqlDataType)
         {
-            string result = sqlDataType.Replace("[", "").Replace("]", "");
+            string result = sqlDataType.Replace("[", "").Replace("]", "").ToLower();
             if (result.Contains("varchar")) { result = "string"; }
-            if (result == "bit") { result = "bool"; }
-            if (result == "tinyint") { result = "bool"; }
-            if (result == "Int" || sqlDataType == "Integer") { result = "int"; }
+            if (result.Contains( "bit")) { result = "bool"; }
+            if (result.Contains( "tinyint")) { result = "bool"; }
+            if (result.Contains( "Int") || sqlDataType == "Integer") { result = "int"; }
+            if (result.Contains("decimal")) { result = "decimal"; }
             if (String.Compare(result, "datetime", true) == 0) { result = "DateTime"; }
             return result;
         }

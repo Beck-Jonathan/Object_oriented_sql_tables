@@ -8,6 +8,7 @@ using System.Runtime.Remoting.Messaging;
 using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Xml.XPath;
 namespace Data_Objects
 {
@@ -102,8 +103,21 @@ namespace Data_Objects
             string fileWrite = "int write" + name + "sToFile(List<" + name + "> " + name + "s, string path);\n";
             string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
             string batchAdd = "int addBatchOf" + name + "(List<" + name + "> " + name.ToLower() + "s);\n";
+            string count = "int count" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    count += comma + r.data_type.toCSharpDataType() + " " + r.column_name;
+                    comma = ",";
+                }
+            }
+            count += ");\n";
+            string genTemplate = "FileStream get" + name + "TemplateFile();\n";
+            string export = "FileStream export" + name + "ToFile();\n";
 
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead+ batchAdd+"}\n\n";
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead+ batchAdd+count+genTemplate+export+"}\n\n";
             return output;
         }
         /// <summary>
@@ -136,7 +150,10 @@ namespace Data_Objects
             string writeThing = genCharpDatabaseAccessorWrite();
             string readThing = genCharpDatabaseAccessorRead();
             string addBatchThing = genCSharpDatabaseAccessorBatchAdd();
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ addBatchThing + "}\n\n";
+            string count = genCSharpDatabaseAccessorCount();
+            string template = genCSharpDatabaseAccessoTemplate();
+            string export = genCSharpDatabaseAccessorExport();
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ addBatchThing +count+template+export+ "}\n\n";
             //good
             return output;
         }
@@ -164,7 +181,10 @@ namespace Data_Objects
             string writeThing = genCharpFileAccessorWrite(); //done
             string readThing = genCharpFileAccessorRead();
             string addBatchThing = genCSharpFileAccessorBatchAdd(); //done
-            string output = comment + header + readThing + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + writeThing  + addBatchThing + "}\n}\n";
+            string count = genCSharpFileAccessorCount();
+            string template = genCSharpFileAccessoTemplate() ;
+            string export = genCSharpFileAccessorExport();
+            string output = comment + header + readThing + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + writeThing  + addBatchThing + count+export+template+"}\n}\n";
             //good
             return output;
         }
@@ -361,6 +381,10 @@ namespace Data_Objects
             result += "if (result==0)\n{\n";
             result += "throw new ApplicationException(\"unable to delete " + name + "\");";
             result += "}\n";
+            result += "else {\n";
+            result += "rewriteDataFile("+name.ToLower()+"s);\n";
+            result += "}\n";
+            result += "";
             result += "}\n";
             result += "catch (Exception ex)";
             result += "{\n";
@@ -421,7 +445,7 @@ namespace Data_Objects
             result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";\n";
             result += "try\n";
             result += "{\n";
-            result += "StreamWriter fileBuddy = new StreamWriter(filePath);";
+            result += "StreamWriter fileBuddy = new StreamWriter(filePath);\n";
             result += "foreach ("+name+" _"+name.ToLower()+" in "+name+"s)\n";
             result += "{\n";
             result += "fileBuddy.WriteLine(";
@@ -454,6 +478,8 @@ namespace Data_Objects
             result += "try\n";
             result += "{\n";
             result += "StreamReader fileReader = new StreamReader(filePath);\n";
+            result += "//the first line is heading data\n";
+            result += "fileReader.ReadLine();\n";
             result += "char[] separator = { '\t' };\n";
             result += "while (fileReader.EndOfStream == false)\n";
             result += "{\n";
@@ -463,7 +489,58 @@ namespace Data_Objects
             result += "{\n";
             result += "parts = line.Split(separator);\n";
             result += "if (parts.Count() > "+(columns.Count-1)+")  //are all model parts present\n";
-            result += "{\n"; //pick eahc part
+            result += "{\n"; //pick each part
+            int i = 0;
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    if (r.data_type.toCSharpDataType().ToLower().Equals("string"))
+                    {
+                        result += r.data_type.toCSharpDataType() + " " + r.column_name.ToLower() + "= parts[" + i + "];\n";
+
+                    }
+                    else if (r.data_type.toCSharpDataType().ToLower().Equals("bool"))
+                    {
+                        result += r.data_type.toCSharpDataType() + " " + r.column_name.ToLower() + "= Boolean.Parse(parts[" + i + "]);\n";
+
+                    }
+                    else if (r.data_type.toCSharpDataType().ToLower().Equals("int"))
+                    {
+                        result += r.data_type.toCSharpDataType() + " " + r.column_name.ToLower() + "= Int32.Parse(parts[" + i + "]);\n";
+
+                    }
+                    else if (r.data_type.toCSharpDataType().ToLower().Equals("DateTime"))
+                    {
+
+                        result += r.data_type.toCSharpDataType() + " " + r.column_name.ToLower() + "= DateTime.Parse(parts[" + i + "]);\n";
+                    }
+                    else if (r.data_type.toCSharpDataType().ToLower().Equals("decimal"))
+                    {
+
+                        result += r.data_type.toCSharpDataType() + " " + r.column_name.ToLower() + "= Decimal.Parse(parts[" + i + "]);\n";
+                    }
+
+                    else
+                    {
+                        result += r.data_type + " " + r.column_name.ToLower() + "=(" + r.data_type + ") parts[" + i + "];\n";
+                    }
+
+                        
+                    i++;
+                }
+            }
+            result += name + " " + name.ToLower() + " = new " + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                result += comma + r.column_name.ToLower();
+                comma = ", ";
+            }
+            result += ");\n";
+            result += name.ToLower()+"s.Add(" + name.ToLower() + ");\n";
+
+
             result += "}\n";
             result += "}\n";
             result += "}\n";
@@ -507,7 +584,40 @@ namespace Data_Objects
             return result;
 
         }
-       
+
+        private string genCSharpFileAccessorCount() {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
+        
+        }
+
+        private string genCSharpFileAccessoTemplate() {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
+        }
+
+        private string genCSharpFileAccessorExport() {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
+        }
 
 
         /// <summary>
@@ -575,8 +685,21 @@ namespace Data_Objects
             string fileWrite = "int write"+name+"sToFile(List<"+name+"> "+name+"s, string path);\n";
             string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
             string batchAdd = "int addBatchOf" + name + "(List<" + name + "> " + name.ToLower() + "s);\n";
+            string count = "int count" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    count += comma + r.data_type.toCSharpDataType() + " " + r.column_name;
+                    comma = ",";
+                }
+            }
+            count += ");\n";
+            string genTemplate = "FileStream get"+name+"TemplateFile();\n";
+            string export = "FileStream export" + name + "ToFile();\n";
 
-            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing+ fileRead+fileWrite+batchAdd+"}\n\n";
+            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing+ fileRead+fileWrite+batchAdd+count+genTemplate+export+"}\n\n";
             
             return output;
         }
@@ -601,6 +724,9 @@ namespace Data_Objects
             string fileRead = genManagerFileRead();
             string batchAdd = genManagerBatchAdd();
             string validator = genCSharpValidationMethod();
+            string genTempalte = genManagerTemplateFile();
+            string export = genManagerExport();
+            string count = genManagerCount();
             //String dropdown = genManagerDropDown();
             string footer = "\n}\n";
             result = result
@@ -616,6 +742,9 @@ namespace Data_Objects
                 + fileRead
                 + batchAdd
                 + validator
+                +genTempalte
+                + export
+                +count
                 // + dropdown
                 + footer
                 ;
@@ -859,7 +988,7 @@ namespace Data_Objects
             string result = "int write" + name + "sToFile(List<" + name + "> "+name+"s, string path){\n";
             result += "int result = 0;;\n";
             result += "try\n{";
-            result += "result = Accessor.write" + name + "sToFile(" + name + "s, path);\n";
+            result += "result = _"+name.ToLower()+"Accessor.write" + name + "sToFile(" + name + "s, path);\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
@@ -874,9 +1003,9 @@ namespace Data_Objects
         private string genManagerFileRead() {
             
             string result = "List<" + name + "> read" + name + "sFromFile(string path){\n";
-            result += "List<"+name+"> results = new List<>();\n";
+            result += "List<"+name+"> results = new List<"+name+">();\n";
             result += "try\n{";
-            result = result + "results = Accessor.read" + name + "sFromFile(string path));\n";
+            result = result + "results = _"+name.ToLower()+"Accessor.read" + name + "sFromFile(path);\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
@@ -916,6 +1045,86 @@ namespace Data_Objects
             updateThing += "}\n";
             updateThing += "return result;\n}\n";
             return comment + updateThing;
+        }
+
+        private string genManagerTemplateFile() {
+            String result = "\n";
+            result = result + "public FileStream get" + name + "TempalteFile(){\n";
+            result += "FileStream result = null;;\n";
+            
+            
+            result += "try\n{";
+            result = result + "result = "+name+"Accessor.get" + name + "TempalteFile();\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result = result + "throw new ApplicationException(\"" + name + " tempalte not generated\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            
+            result += "return result;\n";
+            result += "}\n";
+            result += "\n";
+            return  result;
+
+        }
+        private string genManagerExport() {
+            String result = "\n";
+            result = result + "public FileStream export" + name + "ToFile(){\n";
+            result += "FileStream result = null;;\n";
+
+
+            result += "try\n{";
+            result = result + "result = " + name + "Accessor.export" + name + "ToFile();\n";
+            result += "}\n";
+            result += "catch (Exception ex)\n";
+            result += "{\n";
+            result = result + "throw new ApplicationException(\"" + name + " export not generated\" + ex.InnerException.Message, ex);;\n";
+            result += "}\n";
+            
+            result += "return result;\n";
+            result += "}\n";
+            result += "\n";
+            return result;
+
+
+        }
+        private string genManagerCount() {
+            string retrieveAll = "";
+            retrieveAll = retrieveAll + "\npublic int count" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    retrieveAll += comma + r.data_type.toCSharpDataType() + " " + r.column_name;
+                    comma = ",";
+                }
+            }
+            retrieveAll += "){\n";
+            retrieveAll = retrieveAll + "int result =0;\n";
+            retrieveAll += "try{\n";
+            retrieveAll = retrieveAll + "result = _" + name.ToLower() + "Accessor.count" + name + "("; 
+            comma = ""; 
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    retrieveAll += comma +  r.column_name;
+                    comma = ",";
+                }
+            }
+            
+            retrieveAll += ");\n";
+            retrieveAll += "if (result == 0){\n";
+            retrieveAll = retrieveAll + "throw new ApplicationException(\"Unable to retrieve " + name + "s\" );\n";
+            retrieveAll += "}\n";
+            retrieveAll += "}\n";
+            retrieveAll += "catch (Exception ex){\n";
+            retrieveAll += "throw ex;\n";
+            retrieveAll += "}\n";
+            retrieveAll += "return result;\n}\n";
+            return retrieveAll;
+
         }
         /// Generates a c# data object with markup reflecting min and max length, etc.
         /// Jonathan Beck
@@ -1625,6 +1834,43 @@ output+="return " + returntype + ";\n}\n";
 
             return result;
 
+        }
+
+        private string genCSharpDatabaseAccessorCount()
+        {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
+
+        }
+
+        private string genCSharpDatabaseAccessoTemplate()
+        {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
+        }
+
+        private string genCSharpDatabaseAccessorExport()
+        {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
         }
 
         /// <summary>
