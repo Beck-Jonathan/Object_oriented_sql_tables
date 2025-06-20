@@ -967,6 +967,21 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+                if (true)
+                {
+                    //change to these setting 42
+                    s = t.genUseCases(count);
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "UseCases", "Text");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
 
                 count++;
             }

@@ -130,8 +130,18 @@
         ActivateCanFailWithKeyNotFound,
         DeleteCanDelete,
         DeleteCanFailIfIDNotExist
+    }
 
-
-
+    public enum UseCaseType
+    {
+        createThing,
+        RetreiveOneThing,
+        RetreiveAllThing,
+        FilterThing,
+        SearchThing,
+        UpdateThing,
+        DeleteThing,
+        DeactivateThing,
+        ActivateThing,
     }
 }

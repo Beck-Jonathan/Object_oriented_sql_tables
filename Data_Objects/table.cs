@@ -10996,5 +10996,183 @@ output+="return " + returntype + ";\n}\n";
             }
             return result;
         }
+
+        public string genUseCases(int outerLoop) {
+
+            string result = "";
+            int innerLoop = 1;
+            foreach (UseCaseType type in Enum.GetValues(typeof(UseCaseType))) {
+                result += genUsseCase(type, outerLoop, innerLoop);
+                innerLoop++;
+            }
+            return result;
+        }
+        public string genUsseCase(UseCaseType type, int outerLoop, int innerLoop)
+        {
+            string result = "";
+            string header = "<h2>UC"+outerLoop+"-"+innerLoop+" :"+type+" "+name+"</h2><br/>\n";
+            string description = "<p><b>Description</b> A user will be able to "+type+" "+name+" objects. <p><br/>\n";
+            string actors = "<p><b>Actors </b> The primary User </p><br/>";
+            string preConditions = "<b>Preconditions</b> <ul>\n";
+            preConditions += "<li>the user is logged in</li>\n";
+            switch (type)
+            {
+                case UseCaseType.ActivateThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " have already been deactiavted</li>\n";
+                    break;
+                case UseCaseType.DeactivateThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+                case UseCaseType.createThing:
+                    preConditions += "";
+                    break;
+                case UseCaseType.UpdateThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+                case UseCaseType.SearchThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+                case UseCaseType.RetreiveOneThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+                case UseCaseType.RetreiveAllThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+                case UseCaseType.FilterThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+                case UseCaseType.DeleteThing:
+                    preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
+                    preConditions += "<li>Some " + name + " are currently active</li>\n";
+                    break;
+            }
+            preConditions += "</ul>\n";
+            string postConditions = "<b>Preconditions</b> <ul>\n";
+            postConditions += "";
+            switch (type)
+            {
+                case UseCaseType.ActivateThing:
+                    postConditions += "<li>The selected "+name+ " will be activated</li>\n";
+                    
+                    break;
+                case UseCaseType.DeactivateThing:
+                    postConditions += "<li>The selected \"+name+ \" will be deactivated</li>\n";
+                    break;
+                case UseCaseType.createThing:
+                    postConditions += "<li>A "+name+" object will be added to the database</li>\n";
+                    break;
+                case UseCaseType.UpdateThing:
+                    postConditions += "<li>A record of a "+name+" object will be updated</li>\n";
+                    break;
+                case UseCaseType.SearchThing:
+                    postConditions += "<li>A list of "+name+" objects will be displayed that match the criteria.</li>\n";
+                    break;
+                case UseCaseType.RetreiveOneThing:
+                    postConditions += "<li>The details of a single "+name+" object will be displayed</li>\n";
+                    break;
+                case UseCaseType.RetreiveAllThing:
+                    postConditions += "<li>A list of " + name + " objects will be displayed.</li>\n";
+                    break;
+                case UseCaseType.FilterThing:
+                    postConditions += "<li>A list of " + name + " objects will be displayed that match the criteria</li>\n";
+                    break;
+                case UseCaseType.DeleteThing:
+                    postConditions += "<li>The selected \"+name+ \" will be deleted</li>\n";
+                    break;
+            }
+            string steps = "<ul>\n";
+            steps += "<li>The User will click the "+name+" Management icon on the top of the page</li>\n";
+            switch (type)
+            {
+                case UseCaseType.ActivateThing:
+                    steps += "<li>The user will click a button to view a list of deactived "+name+"s</li>\n";
+                    steps += "<li>The user will click \"activate\" on the appropriate record</li>\n";
+                    break;
+                case UseCaseType.DeactivateThing:
+                    steps += "<li>The user will click \"deactivate\" on the appropriate record</li>\n";
+                    break;
+                case UseCaseType.createThing:
+                    steps += "<li>The user will click the Add New "+name+" button</li>\n";
+                    steps += "<li>The user will insert valies into fields as needed</li>\n";
+                    steps += "<li>The user will click save.</li>\n";
+                    break;
+                case UseCaseType.UpdateThing:
+                    steps += "<li>The user will click on the \"view\" icon next to the appropriate record</li>\n";
+                    steps += "<li>A detailed view of the record will appear</li>\n";
+                    steps += "<li>The user will update fields as needed</li>\n";
+                    steps += "<li>The user will click save.</li>\n";
+                    break;
+                case UseCaseType.SearchThing:
+                    steps += "<li>The user will type in the search box on the page, then press enter</li>\n";
+                    steps += "<li>A List of records matching the search criteria will display</li>\n";
+                    break;
+                case UseCaseType.RetreiveOneThing:
+                    steps += "<li>The user will click on the \"view\" icon next to the appropriate record</li>\n";
+                    steps += "<li>A detailed view of the record will appear</li>\n";
+                    break;
+                case UseCaseType.RetreiveAllThing:
+                    
+                    break;
+                case UseCaseType.FilterThing:
+                    steps += "<li>The user will select from the drop downs on the top of the page, then press enter</li>\n";
+                    steps += "<li>A List of records matching the filter criteria will display</li>\n";
+                    break;
+                case UseCaseType.DeleteThing:
+                    steps += "<li>The user will click \"deactivate\" on the appropriate record</li>\n";
+                    steps += "<li>A warning box will appear, and the user will click the appropriate decision</li>\n";
+                    break;
+            }
+            steps += "<ul>\n";
+
+            string alternateFlow = "<b>Alternate Flows</b><ul>\n";
+            alternateFlow += "<li><b>Database Unavailable:</b> If the database is unavaialable, an error message will be diplsayed " +
+                "the user will be promoted to try again later.</li>\n";
+            switch (type)
+            {
+                case UseCaseType.createThing:
+                    alternateFlow += "<li><b>Invalid Data: </b> If invalid data is supplied, the form will be reloaded with error messages</li>\n";
+                    break;
+                case UseCaseType.RetreiveOneThing:
+                    alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
+                    break;
+                case UseCaseType.RetreiveAllThing:
+                    alternateFlow += "<li></li>\n";
+                    break;
+                case UseCaseType.FilterThing:
+                    alternateFlow += "<li><b>Zero Results:</b>If zero records match the filter, no records will be displayed, alongside an error message</li>\n";
+                    break;
+                case UseCaseType.SearchThing:
+                    alternateFlow += "<li><b>Zero Results:</b>If zero records match the filter, no records will be displayed, alongside an error message</li>\n";
+                    break;
+                case UseCaseType.UpdateThing:
+                    alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
+                    alternateFlow += "<li><b>Invalid Data: </b> If invalid data is supplied, the form will be reloaded with error messages</li>\n";
+
+                    break;
+                case UseCaseType.DeleteThing:
+                    alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
+
+                    break;
+                case UseCaseType.DeactivateThing:
+                    alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
+
+                    break;
+                case UseCaseType.ActivateThing:
+                    alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
+
+                    break;
+            }
+            alternateFlow += "</ul>\n";
+
+            result += header + description + actors + preConditions + postConditions + steps + alternateFlow;
+            return "";
+        }
     }
 }
