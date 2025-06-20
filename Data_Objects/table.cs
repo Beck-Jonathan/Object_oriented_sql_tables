@@ -11002,7 +11002,7 @@ output+="return " + returntype + ";\n}\n";
             string result = "";
             int innerLoop = 1;
             foreach (UseCaseType type in Enum.GetValues(typeof(UseCaseType))) {
-                result += genUsseCase(type, outerLoop, innerLoop);
+                result += genUsseCase(type, outerLoop+1, innerLoop);
                 innerLoop++;
             }
             return result;
@@ -11054,7 +11054,7 @@ output+="return " + returntype + ";\n}\n";
                     break;
             }
             preConditions += "</ul>\n";
-            string postConditions = "<b>Preconditions</b> <ul>\n";
+            string postConditions = "<b>Postconditions</b> <ul>\n";
             postConditions += "";
             switch (type)
             {
@@ -11087,7 +11087,8 @@ output+="return " + returntype + ";\n}\n";
                     postConditions += "<li>The selected \"+name+ \" will be deleted</li>\n";
                     break;
             }
-            string steps = "<ul>\n";
+            postConditions += "</ul>";
+            string steps = "<b>Steps:</b><ul>\n";
             steps += "<li>The User will click the "+name+" Management icon on the top of the page</li>\n";
             switch (type)
             {
@@ -11129,7 +11130,7 @@ output+="return " + returntype + ";\n}\n";
                     steps += "<li>A warning box will appear, and the user will click the appropriate decision</li>\n";
                     break;
             }
-            steps += "<ul>\n";
+            steps += "</ul>\n";
 
             string alternateFlow = "<b>Alternate Flows</b><ul>\n";
             alternateFlow += "<li><b>Database Unavailable:</b> If the database is unavaialable, an error message will be diplsayed " +
@@ -11143,7 +11144,7 @@ output+="return " + returntype + ";\n}\n";
                     alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
                     break;
                 case UseCaseType.RetreiveAllThing:
-                    alternateFlow += "<li></li>\n";
+                    
                     break;
                 case UseCaseType.FilterThing:
                     alternateFlow += "<li><b>Zero Results:</b>If zero records match the filter, no records will be displayed, alongside an error message</li>\n";
@@ -11172,7 +11173,7 @@ output+="return " + returntype + ";\n}\n";
             alternateFlow += "</ul>\n";
 
             result += header + description + actors + preConditions + postConditions + steps + alternateFlow;
-            return "";
+            return result;
         }
     }
 }
