@@ -532,7 +532,7 @@ namespace Data_Objects
             string secondLine = "CREATE PROCEDURE sp_retrieve_by_all_" + name + "(\n" +
                 "limit_param int ,\n " +
                 "offset_param int \n" +
-                "serach_param nvarchar(100)\n";
+                "search_param nvarchar(100)\n";
             foreach (Column t in columns)
             {
 
@@ -614,10 +614,10 @@ namespace Data_Objects
             function_text += "and\n";
             function_text += "case \n";
             function_text += "when search_param=\"\" then 0=0\n";
-            function_text += "when search param!=0 then ";
+            function_text += "when search_param!=0 then ";
             string or = "";
             foreach(Column r in columns) {
-                function_text += or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')";
+                function_text += or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')\n";
                 or = " OR ";
             }
 
@@ -991,7 +991,7 @@ namespace Data_Objects
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_count_by_all_" + name + "(\n" +
                 
-                "serach_param nvarchar(100)\n";
+                "search_param nvarchar(100)\n";
             foreach (Column t in columns)
             {
 
@@ -1043,11 +1043,11 @@ namespace Data_Objects
             function_text += "and\n";
             function_text += "case \n";
             function_text += "when search_param=\"\" then 0=0\n";
-            function_text += "when search param!=0 then ";
+            function_text += "when search_param!=0 then\n ";
             string or = "";
             foreach (Column r in columns)
             {
-                function_text += or + name + "." + r.column_name + " LIKE CONCAT('%',search_param,'%')";
+                function_text += or + name + "." + r.column_name + " LIKE CONCAT('%',search_param,'%')\n";
                 or = " OR ";
             }
 

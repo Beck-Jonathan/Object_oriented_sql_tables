@@ -132,6 +132,15 @@
         DeleteCanFailIfIDNotExist
     }
 
+    public enum ServletType { 
+        CreateServlet,
+        DeleteServlet,
+        ExportServlet,
+        UploadServlet,
+        ViewAllSErvlet,
+        ViewEditSErvlet 
+    
+    }
     public enum UseCaseType
     {
         createThing,

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics.Eventing.Reader;
 using System.Reflection;
 using System.Runtime.Remoting.Messaging;
 using System.Security.AccessControl;
@@ -3346,6 +3347,7 @@ output+="return " + returntype + ";\n}\n";
             result += importStatements(name, settings.database_name);
             //do get
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
+            result += genServletJavaDoc(ServletType.CreateServlet);
             result = result + "\n@WebServlet(\"/add" + name + "\")\n";
             result = result + "public class Add" + name + "Servlet extends HttpServlet{\n";
 
@@ -3456,7 +3458,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             //send it back
             result += "req.setAttribute(\"results\", results);\n";
-            result = result + "req.setAttribute(\"pageTitle\", \"Create a " + name + " \");\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "\n}\n}\n";
             //get_buttons
@@ -3549,11 +3551,11 @@ output+="return " + returntype + ";\n}\n";
                     {
                         if (r.default_value.ToLower().Contains("uuid") || r.increment != 0)
                         {
-                            result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\"> Details </a></td>";
+                            result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\"> Details </a></td>\n";
 
                         }
                         else {
-                            result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\">${fn:escapeXml(" + name.ToLower() + "." + name.ToLower() + "_ID)}</a></td>";
+                            result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\">${fn:escapeXml(" + name.ToLower() + "." + name.ToLower() + "_ID)}</a></td>\n";
                         }
                     }
                     else
@@ -3575,8 +3577,8 @@ output+="return " + returntype + ";\n}\n";
                 "\t\t\t\t\t\t</c:choose>\">\n" +
                 "<c:if test=\"${!" + name.ToLower() + ".is_active}\">un</c:if>Delete </a></td> \n";
             result += "<td>\n<div> \n";
-            result += "<button class=\"delButton\" href=\"${"+name.ToLower()+"."+name.ToLower()+"_ID\"} >Delete</button> </div>\n";
-            result += "<div style=\"display: none;\" id=\"" + name.ToLower()+"."+name.ToLower()+"_IDStatus></div>\n";
+            result += "<button class=\"delButton\" href=\"${"+name.ToLower()+"."+name.ToLower()+"_ID}\" >Delete</button> </div>\n";
+            result += "<div style=\"display: none;\" id=\"" + name.ToLower()+"."+name.ToLower()+"_IDStatus\"></div>\n";
 
             result += " </td>\n";
             result += "</tr>\n";
@@ -3745,7 +3747,7 @@ output+="return " + returntype + ";\n}\n";
             //get_buttons
             result += "<div class=\"align-items-center mt-0\">\n";
             result += "<div class=\"d-grid\">";
-            result = result + "<button class=\"btn btn-orange mb-0\" type=\"submit\">Create " + name + "  </button></div>\n";
+            result = result + "<button id=\"submitButton\" class=\"btn btn-orange mb-0\" type=\"submit\">Create " + name + "  </button></div>\n";
             result += "<c:if test=\"${not empty results.dbStatus}\"\n>";
             result += "<p>${results.dbStatus}</p>\n";
             result += "</c:if>\n";
@@ -3768,6 +3770,8 @@ output+="return " + returntype + ";\n}\n";
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewAll);
             //gen header
             result += importStatements(name, settings.database_name);
+            result += genServletJavaDoc(ServletType.ViewAllSErvlet);
+
             result += "@WebServlet(\"/all-" + name + "s\")\n";
             result += "public class All" + name + "sServlet extends HttpServlet {";
             result += initMethod();
@@ -3828,12 +3832,12 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += ");\n";
-            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(recordsPerPage,offset,search_term";
+            result = result + name.ToLower() + "s =" + name.ToLower() + "DAO.getAll" + name + "(page_size,offset,search_term";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                    result += ", " + r.column_name;
                 }
             }
 
@@ -3842,7 +3846,7 @@ output+="return " + returntype + ";\n}\n";
             result += name.ToLower() + "s = new ArrayList<>();\n";
 
             result += "}\n";
-            result += "int total_pages = (suggestion_count/page_size)+1;\n";
+            result += "int total_pages = ("+name.ToLower()+"_count/page_size)+1;\n";
             result += "req.setAttribute(\"noOfPages\", total_pages);\n";
             result += "req.setAttribute(\"currentPage\", page_number);";
 
@@ -3867,6 +3871,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
             result += importStatements(name, settings.database_name);
+            result += genServletJavaDoc(ServletType.DeleteServlet);
             result = result + "@WebServlet(\"/delete" + name.ToLower() + "\")\n";
             result = result + "public class Delete" + name + "Servlet extends HttpServlet {\n";
             result += initMethod();
@@ -3934,6 +3939,7 @@ output+="return " + returntype + ";\n}\n";
             result += importStatements(name, settings.database_name);
             //do get
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
+            result += genServletJavaDoc(ServletType.ViewEditSErvlet);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
             result = result + "public class Edit" + name + "Servlet extends HttpServlet{\n";
             foreach (Column r in columns)
@@ -3962,6 +3968,7 @@ output+="return " + returntype + ";\n}\n";
             result += "} catch (Exception e){\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
             result += "resp.sendRedirect(\"all-" + name.ToLower() + "s\");\n";
+            result += "return;\n";
             result += "}\n";
             result += "try{\n";
             result = result + name.ToLower() + "=" + name.ToLower() + "DAO.get" + name + "ByPrimaryKey(" + name.ToLower() + ");\n";
@@ -4087,7 +4094,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n}\n";
             result += "//standard\n";
             result += "req.setAttribute(\"results\", results);\n";
-            result = result + "req.setAttribute(\"pageTitle\", \"Edit a " + name + " \");\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Edit " + name + "\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n}\n";
             return result;
@@ -4203,7 +4210,7 @@ output+="return " + returntype + ";\n}\n";
             //get_buttons
             result += "<div class=\"align-items-center mt-0\">\n";
             result += "<div class=\"d-grid\">";
-            result = result + "<button class=\"btn btn-orange mb-0\" type=\"submit\">Edit " + name + " </button></div>\n";
+            result = result + "<button id=\"submitButton\" class=\"btn btn-orange mb-0\" type=\"submit\">Edit " + name + " </button></div>\n";
             result += "<c:if test=\"${not empty results.dbStatus}\"\n>";
             result += "<p>${results.dbStatus}</p>\n";
             result += "</c:if>\n";
@@ -4229,6 +4236,7 @@ output+="return " + returntype + ";\n}\n";
             //change comment box
             //settings
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
+            result += genServletJavaDoc(ServletType.UploadServlet);
             result = result + "\n@WebServlet(\"/upload" + name + "\")\n";
             result += "@MultipartConfig(\n";
             result += "fileSizeThreshold = 1024 * 1024, // 1 MB\n";
@@ -4253,7 +4261,7 @@ output+="return " + returntype + ";\n}\n";
             result += privLevelStatement();
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Upload " + name + "\");\n";
-            result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_"+name+".jsp\").forward(req, resp);\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/upload_"+name+".jsp\").forward(req, resp);\n";
             result += "}\n";
 
             //dopost
@@ -4288,7 +4296,7 @@ output+="return " + returntype + ";\n}\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
             result += "req.setAttribute(\"results\", results);\n";
             result += "req.setAttribute(\"pageTitle\", \"Upload a file \");\n";
-            result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_"+name.ToLower()+".jsp\").forward(req, resp);\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/upload_"+name.ToLower()+".jsp\").forward(req, resp);\n";
             result += "return;\n";
             result += "}\n"; //line 93
             result += "File uploadedFile = new File(uploadFilePath + File.separator + fileName);\n";
@@ -4299,7 +4307,7 @@ output+="return " + returntype + ";\n}\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
             result += "req.setAttribute(\"results\", results);\n";
             result += "req.setAttribute(\"pageTitle\", \"Upload a file \");\n";
-            result += "req.getRequestDispatcher(\"WEB-INF/Budget_App/upload_" + name.ToLower() + ".jsp\").forward(req, resp);\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/upload_" + name.ToLower() + ".jsp\").forward(req, resp);\n";
             result += "return;\n";
             result += "}\n"; //line 106
             result += "int new"+name.ToLower()+"s = 0;\n";
@@ -4339,6 +4347,7 @@ output+="return " + returntype + ";\n}\n";
             //change comment box
             //settings
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
+            result += genServletJavaDoc(ServletType.ExportServlet);
             result += "\n@WebServlet(\"/export" + name + "\")\n";
             result += "public class Export"+name+"Servlet extends HttpServlet {\n";
             result += "private i"+name+"DAO "+name.ToLower()+"DAO;\n";
@@ -4749,8 +4758,8 @@ output+="return " + returntype + ";\n}\n";
         {
             //to start the js file
             string result = "$(document).ready(function() {\n";
-            result += "let submitbutton = document.getElementById(\"submitButton\")";
-            result += "submitbutton.disabled=true;";
+            result += "let submitbutton = document.getElementById(\"submitButton\")\n";
+            result += "submitbutton.disabled=true;\n";
             result += "let total_errors=0;\n";
             foreach (Column r in columns) {
                 if (!r.identity.Equals("Y") && !r.identity.Equals("y") && r.default_value.Equals("")) {
@@ -4771,13 +4780,13 @@ output+="return " + returntype + ";\n}\n";
                     string jsname = r.column_name + "_input";
                     result += "// to clean the field, then set event listener for validating the input for " + r.column_name + "\n";
                     result += "var " + jsname + "= document.getElementById(\"" + fieldname + "\");\n";
-                    result += jsname + ".value=\'\';\n";
-                    result += jsname + ".addEventListener(\'keyup',function(){\n";
+                    
+                    result += jsname + ".addEventListener('blur',function(){\n";
                     result += jsname+".value = "+jsname + ".value.trim();\n";
                     //if for numeric check
                     if (r.length == 0)
                     {
-                        result += "if (" + jsname + ".value!=\"\"&& $.isNumeric(" + jsname + ".value){\n";
+                        result += "if (" + jsname + ".value!=\"\"&& $.isNumeric(" + jsname + ".value)){\n";
                     }
                     //if for varchar check
                     else
@@ -4792,7 +4801,7 @@ output+="return " + returntype + ";\n}\n";
                     result += "}\n else {\n";
                     result += "$(" + jsname + ").removeClass(\"ui-state-highlight\");\n";
                     result += "$(" + jsname + ").addClass(\"ui-state-error\");\n";
-                    result += r.column_name + "_error=0;";
+                    result += r.column_name + "_error=1;";
                     result += "}\n";
                     result += "total_errors = ";
                     string plus = "";
@@ -4804,7 +4813,7 @@ output+="return " + returntype + ";\n}\n";
                     result += "if (total_errors ==0){\n";
                     result += "submitbutton.disabled=false;\n";
                     result += "} else {\n";
-                    result += "submitbutton.disabled=false;\n";
+                    result += "submitbutton.disabled=true;\n";
                     result += "}\n";
 
 
@@ -4875,7 +4884,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             result += "});\n";
             result += "$(\"#dialog\").dialog(\"open\");";
-            result += " });";
+            result += " });\n})\n";
             
             return result;
         }
@@ -9361,7 +9370,7 @@ output+="return " + returntype + ";\n}\n";
             results += "}\n";
             results += "}\n";
             results += "if (location==-1){\n";
-            results += "throw new SQLException();\n";
+            results += "throw new SQLException(\"Unable To Find "+name+".\");\n";
             results += "}\n";
             results += name.ToLower() + "VMs.remove(location);\n";
             if (hasVM)
@@ -9808,8 +9817,10 @@ output+="return " + returntype + ";\n}\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
             result += "String redirect_link = response.getRedirectedUrl();\n";
-            result += "String desired_redirect = \"/"+settings.database_name+"_in\";\n";
+            result += "String desired_redirect = \""+settings.database_name+"_in\";\n";
             result += "assertEquals(desired_redirect,redirect_link);\n";
+            result += "session = request.getSession(false);\n";
+            result += "assertNull(session);\n";
             result += "}\n";
             return result;
         }
@@ -9839,8 +9850,10 @@ output+="return " + returntype + ";\n}\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
             result += "String redirect_link = response.getRedirectedUrl();\n";
-            result += "String desired_redirect = \"/" + settings.database_name + "_in\";\n";
+            result += "String desired_redirect = \"" + settings.database_name + "_in\";\n";
             result += "assertEquals(desired_redirect,redirect_link);\n";
+            result += "session = request.getSession(false);\n";
+            result += "assertNull(session);\n";
             result += "}\n";
             return result;
         }
@@ -9995,7 +10008,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Test\n";
             result += "public void testLoggedInUserCanSearch() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
-            result += "String searchTerm = \"\";n";
+            result += "String searchTerm = \"\";\n";
             result += "request.setParameter(\"search\",searchTerm);\n";
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
@@ -10012,7 +10025,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Test\n";
             result += "public void testLoggedInUserCanSearchAndReturnZero() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
-            result += "String searchTerm = \"\";n";
+            result += "String searchTerm = \"\";\n";
             result += "request.setParameter(\"search\",searchTerm);\n";
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
@@ -10997,12 +11010,173 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        public string genUseCases(int outerLoop) {
+        private string genServletJavaDoc(ServletType type) {
+            string result = "";
+            switch (type)
+            {
+                case ServletType.UploadServlet:
+                    result = uploadServletJavaDoc();
+                    break;
+                case ServletType.DeleteServlet:
+                    result = deleteServletJavaDoc();
+                    break;
+                case ServletType.ExportServlet:
+                    result = exportServletJavaDoc();
+                    break;
+                case ServletType.CreateServlet:
+                    result = createServletJavaDoc();
+                    break;
+                case ServletType.ViewAllSErvlet:
+                    result = viewAllServletJavaDoc();
+                    break;
+                case ServletType.ViewEditSErvlet:
+                    result = viewEditServletJavaDoc();
+                    break;
+            }
+
+            return result;
+
+        }
+        private string uploadServletJavaDoc() {
+            string result = "/**\n";
+            string header = " * Servlet implementation class Up;oad"+name+"Servlet" +"\n*\n";
+            header += "* <p>This servlet handles the addition of new {@link "+name+"} entries in the application.\n";
+            header += " * It is mapped to the URL pattern <code>/upload" + name + "</code>.</p>\n*\n";
+            string doGet = "* <p><strong>HTTP GET</strong>: Renders the form for adding a new "+name.ToLower()+". Access is restricted\n";
+            doGet += " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n*\n";
+            string doPost = "* <p><strong>HTTP POST</strong>: Processes form submissions for adding a new "+name.ToLower()+". Validates input,\n";
+            doPost += " * attempts insertion into the database via {@link "+name+"DAO}, and forwards back to the form view with\r\n";
+            doPost += " * success or error messages as necessary. Successful insertions redirect to the list of all " + name.ToLower() + "s.</p>\r\n*\n";
+            string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
+            access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on "+DateTime.Now.ToShortDateString()+"</p>\n*\n";
+            string see = " * @author Jonathan Beck\n";
+            see += " * @version 1.0\n";
+            see += " * @see com."+settings.owner_name+"."+settings.database_name+".models."+name+"\n";
+            see += " * @see com."+settings.owner_name+"."+settings.database_name+".data."+name+"DAO\n";
+            see += " * @see jakarta.servlet.http.HttpServlet\n";
+            result += header + doGet + doPost + access + created + see;
+            result += "*/\n";
+            return result; 
+        }
+        private string deleteServletJavaDoc()
+        {
+            string result = "/**\n";
+            string header = " * Servlet implementation class Add" + name + "Servlet" + "\n*\n";
+            header += "* <p>This servlet handles the deletion of  {@link " + name + "} entries in the application.\n";
+            header += " * It is mapped to the URL pattern <code>/delete" + name + "</code>.</p>\n*\n";
+            string doGet = " * <p><strong>HTTP GET</strong>: handles the request for deleting a"+name+ " via {@link "+name+"DAO}. Access is restricted\r\n " +
+                "* to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>";
+            string doPost = "";
+            string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
+            access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
+            string see = " * @author Jonathan Beck\n";
+            see += " * @version 1.0\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".models." + name + "\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".data." + name + "DAO\n";
+            see += " * @see jakarta.servlet.http.HttpServlet\n";
+            result += header + doGet + doPost + access + created + see;
+            result += "*/\n";
+            return result;
+        }
+        private string exportServletJavaDoc()
+        {
+            string result = "/**\n";
+            string header = " * Servlet implementation class Add" + name + "Servlet" + "\n*\n";
+            header += "* <p>This servlet handles the exporting of {@link " + name + "} entries in the application to csv.\n";
+            header += " * It is mapped to the URL pattern <code>/export" + name + "</code>.</p>\n*\n";
+            string doGet = "* <p><strong>HTTP GET</strong>: Creates a txt file of all  " + name.ToLower() + "s via {@link "+name+"DAO} and allows the users to download. Access is restricted\n";
+            doGet += " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n*\n";
+            string doPost = "*\n";
+            string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
+            access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
+            string see = " * @author Jonathan Beck\n";
+            see += " * @version 1.0\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".models." + name + "\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".data." + name + "DAO\n";
+            see += " * @see jakarta.servlet.http.HttpServlet\n";
+            result += header + doGet + doPost + access + created + see;
+            result += "*/\n";
+            return result;
+        }
+        private string createServletJavaDoc()
+        {
+            string result = "/**\n";
+            string header = " * Servlet implementation class Add" + name + "Servlet" + "\n*\n";
+            header += "* <p>This servlet handles the addition of new {@link " + name + "} entries in the application.\n";
+            header += " * It is mapped to the URL pattern <code>/add" + name + "</code>.</p>\n*\n";
+            string doGet = " * <p><strong>HTTP GET</strong>: Renders the form for adding a new "+name+". Access is restricted\r\n" +
+                " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n";
+            string doPost = " * <p><strong>HTTP POST</strong>: Processes form submissions for adding a new "+name+". Validates input,\r\n" +
+                " * attempts insertion into the database via {@link "+name+"DAO}, and forwards back to the form view with\r\n " +
+                "* success or error messages as necessary. Successful insertions redirect to the list of all "+name+".</p\n>";
+            string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
+            access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
+            string see = " * @author Jonathan Beck\n";
+            see += " * @version 1.0\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".models." + name + "\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".data." + name + "DAO\n";
+            see += " * @see jakarta.servlet.http.HttpServlet\n";
+            result += header + doGet + doPost + access + created + see;
+            result += "*/\n";
+            return result;
+        }
+        private string viewAllServletJavaDoc()
+        {
+            string result = "/**\n";
+            string header = " * Servlet implementation class All" + name + "Servlet" + "\n*\n";
+            header += "* <p>This servlet handles the viewing of all {@link " + name + "} entries in the application.\n";
+            header += " * It is mapped to the URL pattern <code>/all-" + name + "s</code>.</p>\n*\n";
+            string doGet = " * <p><strong>HTTP GET</strong>: Renders the table for viewing all " + name + "s from the database via {@link "+name+"DAO}. Allows earching and filtering by foreign keys. Access is restricted\r\n" +
+                " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>";
+            string doPost = "*\n";
+            string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
+            access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
+            string see = " * @author Jonathan Beck\n";
+            see += " * @version 1.0\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".models." + name + "\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".data." + name + "DAO\n";
+            see += " * @see jakarta.servlet.http.HttpServlet\n";
+            result += header + doGet + doPost + access + created + see;
+            result += "*/\n";
+            return result;
+        }
+        private string viewEditServletJavaDoc()
+        {
+            int x = 0;
+            string result = "/**\n";
+            string header = " * Servlet implementation class Edit" + name + "Servlet" + "\n*\n";
+            header += "* <p>This servlet handles the editing of {@link " + name + "} entries in the application.\n";
+            header += " * It is mapped to the URL pattern <code>/edit" + name + "</code>.</p>\n*\n";
+            string doGet = " * <p><strong>HTTP GET</strong>: Renders the table for viewing a single "+name+"s. Allows editing of appropriate fields. Access is restricted\r\n" +
+                " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n";
+            string doPost = " * <p><strong>HTTP POST</strong>: Processes form submissions for editing a " + name + ". Validates input,\r\n" +
+                " * attempts update of the the database via {@link " + name + "DAO}, and forwards back to the form view with\r\n " +
+                "* success or error messages as necessary. Successful updates redirect to the list of all " + name + ".</p\n>";
+            string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
+            access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
+            string see = " * @author Jonathan Beck\n";
+            see += " * @version 1.0\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".models." + name + "\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".data." + name + "DAO\n";
+            see += " * @see jakarta.servlet.http.HttpServlet\n";
+            result += header + doGet + doPost + access + created + see;
+            result += "*/\n";
+            return result;
+        }
+        public string genUseCases(int outerLoop)
+        {
 
             string result = "";
             int innerLoop = 1;
-            foreach (UseCaseType type in Enum.GetValues(typeof(UseCaseType))) {
-                result += genUsseCase(type, outerLoop+1, innerLoop);
+            foreach (UseCaseType type in Enum.GetValues(typeof(UseCaseType)))
+            {
+                result += genUsseCase(type, outerLoop + 1, innerLoop);
                 innerLoop++;
             }
             return result;
@@ -11010,8 +11184,8 @@ output+="return " + returntype + ";\n}\n";
         public string genUsseCase(UseCaseType type, int outerLoop, int innerLoop)
         {
             string result = "";
-            string header = "<h2>UC"+outerLoop+"-"+innerLoop+" :"+type+" "+name+"</h2><br/>\n";
-            string description = "<p><b>Description</b> A user will be able to "+type+" "+name+" objects. <p><br/>\n";
+            string header = "<h2>UC" + outerLoop + "-" + innerLoop + " :" + type + " " + name + "</h2><br/>\n";
+            string description = "<p><b>Description</b> A user will be able to " + type + " " + name + " objects. <p><br/>\n";
             string actors = "<p><b>Actors </b> The primary User </p><br/>";
             string preConditions = "<b>Preconditions</b> <ul>\n";
             preConditions += "<li>the user is logged in</li>\n";
@@ -11059,23 +11233,23 @@ output+="return " + returntype + ";\n}\n";
             switch (type)
             {
                 case UseCaseType.ActivateThing:
-                    postConditions += "<li>The selected "+name+ " will be activated</li>\n";
-                    
+                    postConditions += "<li>The selected " + name + " will be activated</li>\n";
+
                     break;
                 case UseCaseType.DeactivateThing:
                     postConditions += "<li>The selected \"+name+ \" will be deactivated</li>\n";
                     break;
                 case UseCaseType.createThing:
-                    postConditions += "<li>A "+name+" object will be added to the database</li>\n";
+                    postConditions += "<li>A " + name + " object will be added to the database</li>\n";
                     break;
                 case UseCaseType.UpdateThing:
-                    postConditions += "<li>A record of a "+name+" object will be updated</li>\n";
+                    postConditions += "<li>A record of a " + name + " object will be updated</li>\n";
                     break;
                 case UseCaseType.SearchThing:
-                    postConditions += "<li>A list of "+name+" objects will be displayed that match the criteria.</li>\n";
+                    postConditions += "<li>A list of " + name + " objects will be displayed that match the criteria.</li>\n";
                     break;
                 case UseCaseType.RetreiveOneThing:
-                    postConditions += "<li>The details of a single "+name+" object will be displayed</li>\n";
+                    postConditions += "<li>The details of a single " + name + " object will be displayed</li>\n";
                     break;
                 case UseCaseType.RetreiveAllThing:
                     postConditions += "<li>A list of " + name + " objects will be displayed.</li>\n";
@@ -11089,18 +11263,18 @@ output+="return " + returntype + ";\n}\n";
             }
             postConditions += "</ul>";
             string steps = "<b>Steps:</b><ul>\n";
-            steps += "<li>The User will click the "+name+" Management icon on the top of the page</li>\n";
+            steps += "<li>The User will click the " + name + " Management icon on the top of the page</li>\n";
             switch (type)
             {
                 case UseCaseType.ActivateThing:
-                    steps += "<li>The user will click a button to view a list of deactived "+name+"s</li>\n";
+                    steps += "<li>The user will click a button to view a list of deactived " + name + "s</li>\n";
                     steps += "<li>The user will click \"activate\" on the appropriate record</li>\n";
                     break;
                 case UseCaseType.DeactivateThing:
                     steps += "<li>The user will click \"deactivate\" on the appropriate record</li>\n";
                     break;
                 case UseCaseType.createThing:
-                    steps += "<li>The user will click the Add New "+name+" button</li>\n";
+                    steps += "<li>The user will click the Add New " + name + " button</li>\n";
                     steps += "<li>The user will insert valies into fields as needed</li>\n";
                     steps += "<li>The user will click save.</li>\n";
                     break;
@@ -11119,7 +11293,7 @@ output+="return " + returntype + ";\n}\n";
                     steps += "<li>A detailed view of the record will appear</li>\n";
                     break;
                 case UseCaseType.RetreiveAllThing:
-                    
+
                     break;
                 case UseCaseType.FilterThing:
                     steps += "<li>The user will select from the drop downs on the top of the page, then press enter</li>\n";
@@ -11144,7 +11318,7 @@ output+="return " + returntype + ";\n}\n";
                     alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
                     break;
                 case UseCaseType.RetreiveAllThing:
-                    
+
                     break;
                 case UseCaseType.FilterThing:
                     alternateFlow += "<li><b>Zero Results:</b>If zero records match the filter, no records will be displayed, alongside an error message</li>\n";
