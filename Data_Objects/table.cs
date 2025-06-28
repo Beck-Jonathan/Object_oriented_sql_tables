@@ -3795,7 +3795,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int page_number=1;\n";
             result += "int page_size = 20;\n";
             result += "try {\n";
-            result += "page_number = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "_page\"));\n";
+            result += "page_number = Integer.parseInt(req.getParameter(\"page\"));\n";
             result += "} catch (Exception e){\n";
             result += "page_number=1;\n";
             result += "}\n";
@@ -4826,7 +4826,7 @@ output+="return " + returntype + ";\n}\n";
         }
         public string jQueryDelete() {
             string result = "$(document).ready(function() {\r\n";
-            
+            result += "normalizeHeight();\n";
             result += "$(\"#dialog\").dialog({\n";
             result += "modal: true,\n";
             result += "bgiframe: true,\n";
@@ -4885,7 +4885,24 @@ output+="return " + returntype + ";\n}\n";
             result += "});\n";
             result += "$(\"#dialog\").dialog(\"open\");";
             result += " });\n})\n";
+
+            result += normalizeHeight();
             
+            return result;
+        }
+        private string normalizeHeight() {
+            string result = "function normalizeHeight() {\n";
+            result += "var cards = jQuery(\"span.card\");\n";
+            result += "var big = 0;\n";
+            result += "cards.each(function (index, el) {\n";
+            result += "if (jQuery(el).height() > big)\n";
+            result += "big = jQuery(el).height(); //find the largest height\n";
+            result += "});\n";
+            result += "cards.each(function (index, el) {\n";
+            result += "jQuery(el).css(\"height\", big + \"px\"); //assign largest height to all the divs\r\n";
+            result += "});";
+            result += "}\n";
+        
             return result;
         }
         private string initMethod()
@@ -11210,11 +11227,11 @@ output+="return " + returntype + ";\n}\n";
                     preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
                     preConditions += "<li>Some " + name + " are currently active</li>\n";
                     break;
-                case UseCaseType.RetreiveOneThing:
+                case UseCaseType.RetrieveOneThing:
                     preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
                     preConditions += "<li>Some " + name + " are currently active</li>\n";
                     break;
-                case UseCaseType.RetreiveAllThing:
+                case UseCaseType.RetrieveAllThing:
                     preConditions += "<li>Some " + name + "s have been added to the database</li>\n";
                     preConditions += "<li>Some " + name + " are currently active</li>\n";
                     break;
@@ -11248,17 +11265,17 @@ output+="return " + returntype + ";\n}\n";
                 case UseCaseType.SearchThing:
                     postConditions += "<li>A list of " + name + " objects will be displayed that match the criteria.</li>\n";
                     break;
-                case UseCaseType.RetreiveOneThing:
+                case UseCaseType.RetrieveOneThing:
                     postConditions += "<li>The details of a single " + name + " object will be displayed</li>\n";
                     break;
-                case UseCaseType.RetreiveAllThing:
+                case UseCaseType.RetrieveAllThing:
                     postConditions += "<li>A list of " + name + " objects will be displayed.</li>\n";
                     break;
                 case UseCaseType.FilterThing:
                     postConditions += "<li>A list of " + name + " objects will be displayed that match the criteria</li>\n";
                     break;
                 case UseCaseType.DeleteThing:
-                    postConditions += "<li>The selected \"+name+ \" will be deleted</li>\n";
+                    postConditions += "<li>The selected "+name+ " will be deleted</li>\n";
                     break;
             }
             postConditions += "</ul>";
@@ -11275,7 +11292,7 @@ output+="return " + returntype + ";\n}\n";
                     break;
                 case UseCaseType.createThing:
                     steps += "<li>The user will click the Add New " + name + " button</li>\n";
-                    steps += "<li>The user will insert valies into fields as needed</li>\n";
+                    steps += "<li>The user will insert values into fields as needed</li>\n";
                     steps += "<li>The user will click save.</li>\n";
                     break;
                 case UseCaseType.UpdateThing:
@@ -11288,11 +11305,11 @@ output+="return " + returntype + ";\n}\n";
                     steps += "<li>The user will type in the search box on the page, then press enter</li>\n";
                     steps += "<li>A List of records matching the search criteria will display</li>\n";
                     break;
-                case UseCaseType.RetreiveOneThing:
+                case UseCaseType.RetrieveOneThing:
                     steps += "<li>The user will click on the \"view\" icon next to the appropriate record</li>\n";
                     steps += "<li>A detailed view of the record will appear</li>\n";
                     break;
-                case UseCaseType.RetreiveAllThing:
+                case UseCaseType.RetrieveAllThing:
 
                     break;
                 case UseCaseType.FilterThing:
@@ -11307,17 +11324,17 @@ output+="return " + returntype + ";\n}\n";
             steps += "</ul>\n";
 
             string alternateFlow = "<b>Alternate Flows</b><ul>\n";
-            alternateFlow += "<li><b>Database Unavailable:</b> If the database is unavaialable, an error message will be diplsayed " +
-                "the user will be promoted to try again later.</li>\n";
+            alternateFlow += "<li><b>Database Unavailable:</b> If the database is unavailable, an error message will be displayed  " +
+                "the user will be prompted to try again later.</li>\n";
             switch (type)
             {
                 case UseCaseType.createThing:
                     alternateFlow += "<li><b>Invalid Data: </b> If invalid data is supplied, the form will be reloaded with error messages</li>\n";
                     break;
-                case UseCaseType.RetreiveOneThing:
+                case UseCaseType.RetrieveOneThing:
                     alternateFlow += "<li><b>Invalid Record: </b> If an invalid record is invoked, the list will be reloaded with error messages</li>\n";
                     break;
-                case UseCaseType.RetreiveAllThing:
+                case UseCaseType.RetrieveAllThing:
 
                     break;
                 case UseCaseType.FilterThing:

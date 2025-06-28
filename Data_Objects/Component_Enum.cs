@@ -144,8 +144,8 @@
     public enum UseCaseType
     {
         createThing,
-        RetreiveOneThing,
-        RetreiveAllThing,
+        RetrieveOneThing,
+        RetrieveAllThing,
         FilterThing,
         SearchThing,
         UpdateThing,
