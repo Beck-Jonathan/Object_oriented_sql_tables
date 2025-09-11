@@ -3984,6 +3984,7 @@ output+="return " + returntype + ";\n}\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Edit " + name + "\");\n";
+            result += "try {\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -3995,6 +3996,9 @@ output+="return " + returntype + ";\n}\n";
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
+            result += "{ catch (Exception e){\n";
+            result += "resp.sendRedirect(\"all-" + name + "s\"};\n";
+            result += "}\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             result += " @Override\n";
@@ -4004,6 +4008,7 @@ output+="return " + returntype + ";\n}\n";
             result += "String mode = req.getParameter(\"mode\");\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "//to set the drop downs\n";
+            result += "try {\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -4014,6 +4019,10 @@ output+="return " + returntype + ";\n}\n";
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
+            result += " catch (Exception e){\n";
+            result += "resp.sendRedirect(\"all-"+name+"s\");\n";
+            result += "return;\n";
+            result += "}\n";
             result = result + "//to get the old " + name + "\n";
 
             result = result + name + " _old" + name + "= (" + name + ")session.getAttribute(\"" + name.ToLower() + "\");\n";
@@ -10123,6 +10132,10 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue@gmail.com\");\n";
 
                         }
+                        else if (r.column_name.isWebsite()) {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.TestValue.com\");\n";
+
+                        }
                         else {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
 
@@ -10180,6 +10193,11 @@ output+="return " + returntype + ";\n}\n";
                         if (r.column_name.isEmail())
                         {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION@gmail.com\");\n";
+
+                        }
+                        else if (r.column_name.isWebsite())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.EXCEPTION.com\");\n";
 
                         }
                         else {
@@ -10243,6 +10261,11 @@ output+="return " + returntype + ";\n}\n";
                         if (r.column_name.isEmail())
                         {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE@gmail.com\");\n";
+
+                        }
+                        else if (r.column_name.isWebsite())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.DUPLICATE.com\");\n";
 
                         }
                         else {
@@ -10338,6 +10361,11 @@ output+="return " + returntype + ";\n}\n";
                         result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "@gmail.com\");\n";
 
                     }
+                    else if (r.column_name.isWebsite())
+                    {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"www.test" + name + ".com\");\n";
+
+                    }
                     else {
                         result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "\");\n";
 
@@ -10381,6 +10409,11 @@ output+="return " + returntype + ";\n}\n";
                         if (r.column_name.isEmail())
                         {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue@gmail.com\");\n";
+
+                        }
+                        else if (r.column_name.isWebsite())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.TestValue.com\");\n";
 
                         }
                         else {
@@ -10443,6 +10476,11 @@ output+="return " + returntype + ";\n}\n";
                         result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION@gmail.com\");\n";
 
                     }
+                    else if (r.column_name.isWebsite())
+                    {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"www.EXCEPTION.com\");\n";
+
+                    }
                     else {
                         result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION\");\n";
 
@@ -10472,6 +10510,11 @@ output+="return " + returntype + ";\n}\n";
                         if (r.column_name.isEmail())
                         {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION@gmail.com\");\n";
+
+                        }
+                        else if (r.column_name.isWebsite())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.EXCEPTION.com\");\n";
 
                         }
                         else {
@@ -10538,6 +10581,11 @@ output+="return " + returntype + ";\n}\n";
                         result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE@gmail.com\");\n";
 
                     }
+                    else if (r.column_name.isWebsite())
+                    {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"www.DUPLICATE.com\");\n";
+
+                    }
                     else {
                         result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE\");\n";
 
@@ -10572,6 +10620,11 @@ output+="return " + returntype + ";\n}\n";
                         if (r.column_name.isEmail())
                         {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE@gmail.com\");\n";
+
+                        }
+                        else if (r.column_name.isWebsite())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.DUPLICATE.com\");\n";
 
                         }
                         else {
