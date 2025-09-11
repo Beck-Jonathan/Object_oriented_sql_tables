@@ -9625,7 +9625,7 @@ output+="return " + returntype + ";\n}\n";
             result += initTests(2); //done
             result += tearDownTests(); //done
             result += testLoggedInGets200OnDoGet(); //done
-            result += testLoggedInGets302OnDoPostWithNoObjectSet(); //done
+            result += testLoggedInGets200OnDoPostWithNoFieldsSet(); // notDone
             result += TestLoggedOutGets302onDoGet();//done 
             result += TestLoggedOutGets302onDoPost();//done
             result += TestWrongRoleGets302onDoGet(); // done
@@ -9822,6 +9822,19 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
+
+        private string testLoggedInGets200OnDoPostWithNoFieldsSet() {
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.TwoHundredIfLoggedIn, this);
+            result += "@Test\n";
+            result += "public void TestLoggedInUserGets200OnDoPostWithNoFieldsSet() throws ServletException, IOException{\n";
+            result += SetUserOnTest("Jonathan");
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(200,status);\n";
+            result += "}\n";
+            return result;
+        }
         //done
         private string TestLoggedOutGets302onDoGet()
         {
@@ -9954,7 +9967,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.GetOneCanFail, this);
             result += "@Test\n";
-            result += "public void testGetOne" + name + "CanFail" + "() throws ServletException, IOException{\n";
+            result += "public void testGetOne" + name + "CanFailAndUserIsRedirected" + "() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             foreach (Column r in columns)
             {
@@ -9979,17 +9992,8 @@ output+="return " + returntype + ";\n}\n";
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
             result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
-            foreach (Column r in columns)
-            {
-                if (r.data_type.toCSharpDataType().Equals("bool"))
-                {
-                    result += "assertFalse(" + name.ToLower() + ".get" + r.column_name + "());\n";
-                }
-                else
-                {
-                    result += "assertNull(" + name.ToLower() + ".get" + r.column_name + "());\n";
-                }
-            }
+            result += "assertNull("+name.ToLower()+");\n";
+            result += "assertEquals(302,response.getStatus());\n";
             result += "}\n";
             return result;
         }

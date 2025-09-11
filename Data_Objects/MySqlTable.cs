@@ -614,7 +614,7 @@ namespace Data_Objects
             function_text += "and\n";
             function_text += "case \n";
             function_text += "when search_param=\"\" then 0=0\n";
-            function_text += "when search_param!=0 then ";
+            function_text += "when search_param!=\'\' then ";
             string or = "";
             foreach(Column r in columns) {
                 function_text += or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')\n";
@@ -1043,7 +1043,7 @@ namespace Data_Objects
             function_text += "and\n";
             function_text += "case \n";
             function_text += "when search_param=\"\" then 0=0\n";
-            function_text += "when search_param!=0 then\n ";
+            function_text += "when search_param!=\'\' then\n ";
             string or = "";
             foreach (Column r in columns)
             {
@@ -1052,7 +1052,7 @@ namespace Data_Objects
             }
 
             
-            function_text += "\n ;\n END $$ \n DELIMITER ;\n";
+            function_text += "\nEND ;\n END $$ \n DELIMITER ;\n";
             String full_text = comment_text + function_text;
             return full_text;
         }
