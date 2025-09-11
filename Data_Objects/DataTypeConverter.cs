@@ -105,5 +105,8 @@ namespace Data_Objects
             return result;
 
         }
+        public static bool isEmail(this string value) {            
+            return  value.ToLower().Contains("email") || value.ToLower().Contains("e-mail");           
+        }
     }
 }

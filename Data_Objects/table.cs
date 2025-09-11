@@ -3976,7 +3976,7 @@ output+="return " + returntype + ";\n}\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
             result += name.ToLower() + "= null;\n";
             result += "}\n";
-            result += "if (" + name.ToLower() + "==null || " + name.ToLower() + ".get" + columns[0].column_name + "==null){\n";
+            result += "if (" + name.ToLower() + "==null || " + name.ToLower() + ".get" + columns[0].column_name + "()==null){\n";
             result += "resp.sendRedirect(\"all-" + name + "s\");\n";
             result += "return;\n";
             result += "}\n";
@@ -4702,7 +4702,8 @@ output+="return " + returntype + ";\n}\n";
             result += "HttpSession session = req.getSession();\n";
             result += "User user = (User)session.getAttribute(\"User\");\n";
             result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
-            result += "resp.sendRedirect(\"/" + settings.database_name + "Login\");\n";
+            result += "session.invalidate();\n";
+            result += "resp.sendRedirect(\"" + settings.database_name + "Login\");\n";
             result += "return;\n";
             result += "}\n";
             result += "\n";
@@ -9620,6 +9621,7 @@ output+="return " + returntype + ";\n}\n";
         public string genJavaCreateServletTests()
         {
             string result = "";
+            result += packageStatementForTests();
             result += importStatementForTests(); //done
             result += classNameAndStaticVariables(2); //done
             result += initTests(2); //done
@@ -9642,6 +9644,7 @@ output+="return " + returntype + ";\n}\n";
         public string genJavaDeleteServletTests()
         {
             string result = "";
+            result += packageStatementForTests();
             result += importStatementForTests(); //done
             result += classNameAndStaticVariables(3);//done 
             result += initTests(3);//done 
@@ -9665,6 +9668,7 @@ output+="return " + returntype + ";\n}\n";
         public string genJavaEditServletTests()
         {
             string result = "";
+            result += packageStatementForTests();
             result += importStatementForTests();//done 
             result += classNameAndStaticVariables(4);//done 
             result += initTests(4);//done
@@ -9898,7 +9902,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
             result += "String redirect_link = response.getRedirectedUrl();\n";
-            result += "String desired_redirect = \"/" + settings.database_name + "_in\";\n";
+            result += "String desired_redirect = \"" + settings.database_name + "_in\";\n";
             result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "}\n";
             return result;
@@ -9915,7 +9919,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
             result += "String redirect_link = response.getRedirectedUrl();\n";
-            result += "String desired_redirect = \"/" + settings.database_name + "_in\";\n";
+            result += "String desired_redirect = \"" + settings.database_name + "_in\";\n";
             result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "}\n";
             return result;
@@ -9951,7 +9955,15 @@ output+="return " + returntype + ";\n}\n";
                         result += "public void testGetOne" + name + "GetsOne" + r.column_name + "() throws ServletException, IOException{\n";
                         result += SetUserOnTest("Jonathan");
                         result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
-                        result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
+                        if (r.data_type.toCSharpDataType().Equals("string"))
+                        {
+                            result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ".toString());\n";
+
+                        }
                         result += "request.setSession(session);\n";
                         result += "servlet.doGet(request,response);\n";
                         result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
@@ -9982,10 +9994,15 @@ output+="return " + returntype + ";\n}\n";
                     {
 
                         result += r.data_type.toJavaDataType() + " " + r.column_name + "= null;\n";
-                        result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
+                        if (r.data_type.toCSharpDataType().Equals("string"))
+                        {
+                            result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
 
-                        result += "assertNull(" + name.ToLower() + ".get" + columns[columnToNull].column_name + "());\n";
+                        }
+                        else {
+                            result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ".toString());\n";
 
+                        }
                     }
                 }
             }
@@ -10101,7 +10118,15 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+                        if (r.column_name.isEmail())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue@gmail.com\");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+
+                        }
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10152,7 +10177,15 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
+                        if (r.column_name.isEmail())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION@gmail.com\");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
+
+                        }
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10207,7 +10240,15 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
+                        if (r.column_name.isEmail())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE@gmail.com\");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
+
+                        }
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10292,7 +10333,15 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "\");\n";
+                    if (r.column_name.isEmail())
+                    {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "@gmail.com\");\n";
+
+                    }
+                    else {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "\");\n";
+
+                    }
 
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10329,7 +10378,15 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+                        if (r.column_name.isEmail())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue@gmail.com\");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+
+                        }
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10381,7 +10438,15 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION\");\n";
+                    if (r.column_name.isEmail())
+                    {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION@gmail.com\");\n";
+
+                    }
+                    else {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION\");\n";
+
+                    }
 
                 }
                 if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10404,7 +10469,15 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
+                        if (r.column_name.isEmail())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION@gmail.com\");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
+
+                        }
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10460,7 +10533,16 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE\");\n";
+                    if (r.column_name.isEmail())
+                    {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE@gmail.com\");\n";
+
+                    }
+                    else {
+                        result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE\");\n";
+
+                    }
+
 
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
@@ -10487,7 +10569,15 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
+                        if (r.column_name.isEmail())
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE@gmail.com\");\n";
+
+                        }
+                        else {
+                            result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
+
+                        }
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
