@@ -10788,6 +10788,258 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
+        public string GenLogoutServletTests() {
+            string result = "";
+            //package statement
+            result += "package com." + settings.owner_name + "." + settings.database_name + ".controllers;\n";
+
+            //import statements
+            result += "import java.io.IOException;\n";
+            result += "import java.util.*;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".data_fakes." + name + "_DAO_Fake;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + ";\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + "_VM;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models.User;\n";
+            result += "import jakarta.servlet.RequestDispatcher;\n";
+            result += "import jakarta.servlet.ServletException;\n";
+            result += "import jakarta.servlet.http.*;\n";
+            result += "import org.junit.jupiter.api.AfterEach;\n";
+            result += "import org.junit.jupiter.api.BeforeEach;\n";
+            result += "import org.junit.jupiter.api.Test;\n";
+            result += "import org.springframework.mock.web.*;\n";
+            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+
+            //class name and static variables
+            result += "\npublic class SignOutServlet Test {\n";
+
+            result += "private static final String PAGE=\"WEB-INF/" + settings.database_name + "/" + servletName + ".jsp\";\n";
+            result += "SignOutServlet servlet;\n";
+            result += "MockHttpServletRequest request;\n";
+            result += "MockHttpServletResponse response;\n";
+            result += "HttpSession session;\n";
+            result += "RequestDispatcher rd;\n";
+
+            //before each
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.setupTests, this);
+            result += "@BeforeEach\n";
+            result += "public void setup() throws ServletException{\n\n";
+            result += "servlet = new LogoutServlet();\n";
+            result += "servlet.init()\n";          
+            
+            result += "request =  new MockHttpServletRequest();\n";
+            result += "response = new MockHttpServletResponse();\n";
+            result += "session = new MockHttpSession();\n";
+            result += "rd = new MockRequestDispatcher(PAGE);\n";
+            result += "}\n\n";
+
+            //teardown - after each
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.teardownTests, this);
+            result += "@AfterEach\n";
+            result += "public void teardown(){\n";
+            result += "servlet=null;\n";
+            result += "request=null;\n";
+            result += "response=null;\n";
+            result += "session=null;\n";
+            result += "rd=null;\n";
+            result += "}\n";
+
+            //logged in user getss logged out
+            result += "@Test";
+            result += "public void TestLoggedInUserGets302OnDoGetAndSessionIsInvalid() throws ServletException, IOException{\r\n";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"admin\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(302,status);\n";
+            result += "session = request.getSession(false);;\n";
+            result += "assertNull(session);\n";
+            result += "}\n";
+
+
+            //logged out user is still logged out
+            result += "@Test\n";
+            result += "public void TestLoggeOutUserGets302OnDoGetAndSessionIsInvalid() throws ServletException, IOException{\r\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(302,status);\n";
+            result += "session = request.getSession(false);;\n";
+            result += "assertNull(session);\n";
+            result += "}\n";           
+
+
+            
+
+
+            
+
+            //init test
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.initTest, this);
+            result += "@Test\n";
+            result += "public void testInitWithNoParametersDoesNotThrowException() throws ServletException {\n";
+            result += "servlet = null;\n";
+            result += "servlet = new " + servletName + "();\n";
+            result += "servlet.init();\n";
+            result += "}\n";
+
+            result += "}\n";
+            return result;
+        }
+
+        public string GenLoginServletTests()
+        {
+            string result = "";
+            //package statement
+            result += "package com." + settings.owner_name + "." + settings.database_name + ".controllers;\n";
+
+            //import statements
+            result += "import java.io.IOException;\n";
+            result += "import java.util.*;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".data_fakes." + name + "_DAO_Fake;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + ";\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + "_VM;\n";
+            result += "import com." + settings.owner_name + "." + settings.database_name + ".models.User;\n";
+            result += "import jakarta.servlet.RequestDispatcher;\n";
+            result += "import jakarta.servlet.ServletException;\n";
+            result += "import jakarta.servlet.http.*;\n";
+            result += "import org.junit.jupiter.api.AfterEach;\n";
+            result += "import org.junit.jupiter.api.BeforeEach;\n";
+            result += "import org.junit.jupiter.api.Test;\n";
+            result += "import org.springframework.mock.web.*;\n";
+            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+
+            //class name and static variables
+            result += "\npublic class SignInServlet Test {\n";
+
+            result += "private static final String PAGE=\"WEB-INF/" + settings.database_name + "/" + servletName + ".jsp\";\n";
+            result += "SignInServlet servlet;\n";
+            result += "MockHttpServletRequest request;\n";
+            result += "MockHttpServletResponse response;\n";
+            result += "HttpSession session;\n";
+            result += "RequestDispatcher rd;\n";
+
+            //before each
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.setupTests, this);
+            result += "@BeforeEach\n";
+            result += "public void setup() throws ServletException{\n\n";
+            result += "servlet = new SignInServlet();\n";
+            result += "servlet.init(new User_DAO_Fake())\n";
+
+            result += "request =  new MockHttpServletRequest();\n";
+            result += "response = new MockHttpServletResponse();\n";
+            result += "session = new MockHttpSession();\n";
+            result += "rd = new MockRequestDispatcher(PAGE);\n";
+            result += "}\n\n";
+
+            //teardown - after each
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.teardownTests, this);
+            result += "@AfterEach\n";
+            result += "public void teardown(){\n";
+            result += "servlet=null;\n";
+            result += "request=null;\n";
+            result += "response=null;\n";
+            result += "session=null;\n";
+            result += "rd=null;\n";
+            result += "}\n";
+
+            //logged in user gets redirected
+            result += "@Test";
+            result += "public void TestLoggedInUserGets302OnDoGetAndSessionIsValid() throws ServletException, IOException{\r\n";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"admin\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "Boolean isValid = request.isRequestedSessionIdValid();";
+            result += "session = request.getSession(false);;\n";
+            result += "assertEquals(302,status);\n";
+            result += "assertNotNull(session);\n";
+            result += "}\n";
+
+
+            //logged out user is still logged out
+            result += "@Test\n";
+            result += "public void TestLoggeOutUserGets200OnDoGetAndSessionIsInvalid() throws ServletException, IOException{\r\n";
+            result += "servlet.doGet(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(200,status);\n";
+            result += "session = request.getSession(false);;\n";
+            result += "assertNull(session);\n";
+            result += "}\n";
+
+            //blank log in info gives errors
+            result += "@Test\n";
+            result += "public void TestLoginHasErrorsForEachFieldAndKeepsOnSamePage() throws ServletException, IOException{\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String User_IDError = results.get(\"userUser_IDerror\");\n";
+            result += "String PasswordError = results.get(\"userPassworderror\");\n";
+            result += "assertNotEquals(\"\",User_IDError);\n";
+            result += "assertNotNull(User_IDError);\n";
+            result += "assertNotEquals(\"\",PasswordError);\n";
+            result += "assertNotNull(PasswordError);\n";
+            result += " assertEquals(200,responseStatus);\n";
+            result += "}\n";
+            result += "\n";
+            
+
+
+            //bad log in info gives errors
+            result += "@Test\n";
+            result += "public void TestLoginFailsWithBadDataAndKeepsOnSamePage() throws ServletException, IOException{\r\n";
+            result += "request.setParameter(\"inputuserUser_ID\",\"TestValue\");\n";
+            result += "request.setParameter(\"inputuserPassword\",\"TestValue#2233\");\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String dbStatus = results.get(\"dbStatus\");\n";
+            result += "assertNotEquals(\"\",dbStatus);\n";
+            result += "assertNotNull(dbStatus);\n";
+            result += "assertEquals(\"User Not Logged In\",dbStatus);\n";
+            result += "assertEquals(200,responseStatus);\n";
+            result += "}\n";
+            result += "\n";
+         
+
+
+            //good log in info gets us redirected
+            result += "@Test\n";
+            result += "public void TestGoodLoginInfoAddsUserToSessionAndRedirects() throws ServletException, IOException{\r\n";
+            result += "request.setParameter(\"inputuserUser_ID\",\"bnyoAUFg\");\n";
+            result += "request.setParameter(\"inputuserPassword\",\"FkGJoBij!!\");\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int responseStatus = response.getStatus();\n";
+            result += "Map<String, String> results = (Map<String, String>) request.getAttribute(\"results\");\n";
+            result += "String User_Added = results.get(\"dbStatus\");\n";
+            result += "assertEquals(302,responseStatus);\n";
+            result += "assertNotNull(User_Added);\n";
+            result += "assertEquals(\"Logged In!\",User_Added);\n";
+            result += "assertNotEquals(\"\",User_Added);\n";
+            result += "}\n";
+            result += "\n";
+         
+
+
+            //init test
+            result += commentBox.genJavaTestJavaDoc(JavaTestType.initTest, this);
+            result += "@Test\n";
+            result += "public void testInitWithNoParametersDoesNotThrowException() throws ServletException {\n";
+            result += "servlet = null;\n";
+            result += "servlet = new " + servletName + "();\n";
+            result += "servlet.init();\n";
+            result += "}\n";
+
+            result += "}\n";
+            return result;
+        }
+
         private string SetUserOnTest(string role)
         {
             string result = "User user = new User();\n";
