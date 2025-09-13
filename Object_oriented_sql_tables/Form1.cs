@@ -920,10 +920,21 @@ namespace Object_oriented_sql_tables
                     {
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
-                    try
+                    
                         s = t.GenLoginServletTests();
+                    try
                     {
                         file_write.fileWrite(s, t.name, "Tests", "Login");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                    s = t.genManagementConsoleTests();
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "Tests", "Console");
 
                     }
                     catch (Exception ex)

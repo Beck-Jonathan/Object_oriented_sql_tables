@@ -3785,7 +3785,7 @@ output+="return " + returntype + ";\n}\n";
                 if (r.foreign_key != "")
                 {
                     result += "String _" + r.column_name.ToLower() + " = req.getParameter(\"" + r.column_name.ToLower() + "\")\n";
-                    result += "if (_" + r.column_name.ToLower() + ".isEmpty()){\n";
+                    result += "if (_"+r.column_name.ToLower()+"==null || _" + r.column_name.ToLower() + ".isEmpty()){\n";
                     result += "_" + r.column_name.ToLower() + " = \"\";\n";
                     result += "}\n";
                 }
@@ -10791,23 +10791,11 @@ output+="return " + returntype + ";\n}\n";
         public string GenLogoutServletTests() {
             string result = "";
             //package statement
-            result += "package com." + settings.owner_name + "." + settings.database_name + ".controllers;\n";
+
+            result += packageStatementForTests();
 
             //import statements
-            result += "import java.io.IOException;\n";
-            result += "import java.util.*;\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".data_fakes." + name + "_DAO_Fake;\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + ";\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + "_VM;\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".models.User;\n";
-            result += "import jakarta.servlet.RequestDispatcher;\n";
-            result += "import jakarta.servlet.ServletException;\n";
-            result += "import jakarta.servlet.http.*;\n";
-            result += "import org.junit.jupiter.api.AfterEach;\n";
-            result += "import org.junit.jupiter.api.BeforeEach;\n";
-            result += "import org.junit.jupiter.api.Test;\n";
-            result += "import org.springframework.mock.web.*;\n";
-            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+            result += importStatementForTests();
 
             //class name and static variables
             result += "\npublic class SignOutServlet Test {\n";
@@ -10893,27 +10881,16 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "";
             //package statement
-            result += "package com." + settings.owner_name + "." + settings.database_name + ".controllers;\n";
+            
+            result += packageStatementForTests();
 
             //import statements
-            result += "import java.io.IOException;\n";
-            result += "import java.util.*;\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".data_fakes." + name + "_DAO_Fake;\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + ";\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".models." + name + "_VM;\n";
-            result += "import com." + settings.owner_name + "." + settings.database_name + ".models.User;\n";
-            result += "import jakarta.servlet.RequestDispatcher;\n";
-            result += "import jakarta.servlet.ServletException;\n";
-            result += "import jakarta.servlet.http.*;\n";
-            result += "import org.junit.jupiter.api.AfterEach;\n";
-            result += "import org.junit.jupiter.api.BeforeEach;\n";
-            result += "import org.junit.jupiter.api.Test;\n";
-            result += "import org.springframework.mock.web.*;\n";
-            result += "import static org.junit.jupiter.api.Assertions.*;\n";
+            result += importStatementForTests();
+            
 
             //class name and static variables
             result += "\npublic class SignInServlet Test {\n";
-
+            
             result += "private static final String PAGE=\"WEB-INF/" + settings.database_name + "/" + servletName + ".jsp\";\n";
             result += "SignInServlet servlet;\n";
             result += "MockHttpServletRequest request;\n";
@@ -11038,6 +11015,24 @@ output+="return " + returntype + ";\n}\n";
 
             result += "}\n";
             return result;
+        }
+
+        public string genManagementConsoleTests() {
+            string result = "";
+            //package statement
+
+            result += packageStatementForTests();
+
+            //import statements
+            result += importStatementForTests();
+
+            result += testLoggedInGets200OnDoGet();
+
+            result += TestLoggedOutGets302onDoGet();
+
+
+            return result;
+
         }
 
         private string SetUserOnTest(string role)
