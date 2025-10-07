@@ -3890,7 +3890,7 @@ output+="return " + returntype + ";\n}\n";
             result += "} catch (Exception e){\n";
             result += "_ajax = false;\n";
             result += "}\n";
-            result += "int result = 0;\n";
+            result += "Integer result = 0;\n";
             result += "if (mode==0){\n";
             result += "try{\n";
             result = result + "result = " + name.ToLower() + "DAO.delete" + name + "(" + name + "ID);\n";
@@ -9530,7 +9530,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.increment == 0 && r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += "return _" + name.ToLower() + ".get" + r.column_name + "().equals(\"DUPLICATE\");\n";
+                    result += "return _" + name.ToLower() + ".get" + r.column_name + "().contains(\"DUPLICATE\");\n";
                     result += "}\n";
                     break;
                 }
@@ -9550,7 +9550,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.increment == 0 && r.data_type.toCSharpDataType().Equals("string"))
                 {
-                    result += "return _" + name.ToLower() + ".get" + r.column_name + "().equals(\"EXCEPTION\");\n";
+                    result += "return _" + name.ToLower() + ".get" + r.column_name + "().contains(\"EXCEPTION\");\n";
                     result += "}\n";
                     break;
                 }
@@ -10399,7 +10399,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
-            result += "//create a new albums parameters\n";
+            result += "//create a new "+name+"s parameters\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -10500,7 +10500,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
-            result += "//create a new albums parameters\n";
+            result += "//create a new "+name+"s parameters\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -10610,7 +10610,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
-            result += "//create a new albums parameters\n";
+            result += "//create a new "+name+" parameters\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)

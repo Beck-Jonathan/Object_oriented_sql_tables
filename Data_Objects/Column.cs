@@ -65,6 +65,7 @@ namespace Data_Objects
             }
             if (length > 0)
             {
+                
                 length_text = "(" + length + ")";
             };
         }

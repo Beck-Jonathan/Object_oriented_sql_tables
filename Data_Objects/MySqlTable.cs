@@ -732,7 +732,7 @@ namespace Data_Objects
             {
                 if (r.increment == 0 && r.default_value == "")
                 {
-                    function_text = function_text + comma + r.column_name;
+                    function_text = function_text + comma + r.column_name+r.length_text;
                     comma = ",";
                 }
             }
