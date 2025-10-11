@@ -86,7 +86,7 @@ namespace Data_Objects
             {
                 if (fk.mainTable == name)
                 {
-                    dropdownThing = dropdownThing + "List<String> selectDistinct" + fk.referenceTable + "ForDropDown();\n";
+                    dropdownThing = dropdownThing + "List<" + fk.referenceTable + "> selectDistinct" + fk.referenceTable + "ForDropDown();\n";
                 }
             }
             string selectfkThing = "";
@@ -670,7 +670,7 @@ namespace Data_Objects
             {
                 if (fk.mainTable == name)
                 {
-                    dropdownThing = dropdownThing + "List<String> getDistinct" + fk.referenceTable + "ForDropDown();\n";
+                    dropdownThing = dropdownThing + "List<"+ fk.referenceTable + "> getDistinct" + fk.referenceTable + "ForDropDown();\n";
                 }
             }
 
@@ -1744,7 +1744,7 @@ output+="return " + returntype + ";\n}\n";
                 if (fk.mainTable == name)
                 {
                     retrieveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Select_Distinct_For_Dropdown);
-                    retrieveAllThing = retrieveAllThing + "public List<String> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
+                    retrieveAllThing = retrieveAllThing + "public List<"+ fk.referenceTable + "> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
                     retrieveAllThing += genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
                     //no paramaters to set or add
                     //excute the quuery
@@ -2754,7 +2754,7 @@ output+="return " + returntype + ";\n}\n";
             result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
             result += "}\n";
-            result += "return result;}\n";
+            result += "return result;\n}\n";
             return result;
         }
         private string genJavaDAOretrieveDistinct()
@@ -2802,7 +2802,7 @@ output+="return " + returntype + ";\n}\n";
                 result += "} catch (SQLException e) {\n";
                 result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
                 result += "}\n";
-                result += "return result;}\n";
+                result += "return result;\n}\n";
                 return result;
             }
         }
@@ -2847,7 +2847,7 @@ output+="return " + returntype + ";\n}\n";
             result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
             result += "}\n";
-            result += "return result;}\n";
+            result += "return result;\n}\n";
             return result;
         }
         /// <summary>
@@ -2877,7 +2877,7 @@ output+="return " + returntype + ";\n}\n";
                     result = result + "List<" + name + "> result = new ArrayList<>();\n";
                     result += "try (Connection connection = getConnection()) { \n";
                     result += "if (connection != null) {\n";
-                    result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_" + name + "_by" + fk_table + "(?,?,?)}\")) {\n" +
+                    result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_retrieve_" + name + "_by_" + fk_table + "(?,?,?)}\")) {\n" +
                         "statement.set" + s.data_type.toJavaDAODataType() + "(1," + fk_name + ")\n;" +
                         "statement.setInt(2,limit)\n;" +
                         "statement.setInt(3,offset);\n";
@@ -3009,8 +3009,25 @@ output+="return " + returntype + ";\n}\n";
             result += "int rowsAffected=0;\n";
             result += "try (Connection connection = getConnection()) {\n";
             result += "if (connection != null) {\n";
-            result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_Delete_" + name + "( ?)}\")){\n";
-            result = result + "statement.setInt(1," + name.ToLower() + "ID);\n";
+            result = result + "try (CallableStatement statement = connection.prepareCall(\"{CALL sp_Delete_" + name + "( ";
+            foreach (Column r in columns)
+            {
+                String comma = "";
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    result += comma + "?";
+                    comma = ",";
+                }
+            }
+            result += ")}\")){\n";
+
+                    int _count = 1;
+            foreach (Column r in columns) {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')){
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "("+ _count + "," + name.ToLower() + "ID);\n";
+                    count++;
+                }
+            }
             result += "rowsAffected = statement.executeUpdate();\n";
             result += "if (rowsAffected == 0) {\n";
             result = result + "throw new RuntimeException(\"Could not Delete " + name + ". Try again later\");\n";
@@ -3355,19 +3372,63 @@ output+="return " + returntype + ";\n}\n";
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
-            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
-            result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
+            
+            Boolean hasFK = false;
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    hasFK = true;
+                    break;
+
+                }
+            }
+            if (hasFK)
+                
+            {
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        result += "List<" + parts[0] + "> all" + parts[0] + "s = null;\n";
+                    }
+                }
+                result += "try{\n";
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        //grab a list of the parents, assign them to the already existing static variable
+                        result = result + "all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                        //set them to the req attribute
+                    }
+                }
+                result += "} catch (Exception e){\n";
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        result += "all" + parts[0] + "s= new ArrayList<>();\n";
+                    }
+                }
+                result += "}\n";
+            }
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
-                    //grab a list of the parents, assign them to the already existing static variable
-                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
-                    //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
+
                 }
             }
+            result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
+            result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
+
+
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             //this only creates the doPost method
@@ -3376,17 +3437,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Override\n";
             result += "  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
-            foreach (Column r in columns)
-            {
-                if (r.foreign_key != "")
-                {
-                    string[] parts = r.references.Split('.');
-                    //grab a list of the parents, assign them to the already existing static variable
-                    result = result + "all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
-                    //set them to the req attribute
-                    result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
-                }
-            }
+            
             //get data
             foreach (Column r in columns)
             {
@@ -3457,6 +3508,48 @@ output+="return " + returntype + ";\n}\n";
             //set db message
             result += "}\n";
             //send it back
+            if (hasFK)
+
+            {
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        result += "List<" + parts[0] + "> all" + parts[0] + "s = null;\n";
+                    }
+                }
+                result += "try{\n";
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        //grab a list of the parents, assign them to the already existing static variable
+                        result = result + "all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                        //set them to the req attribute
+                    }
+                }
+                result += "} catch (Exception e){\n";
+                foreach (Column r in columns)
+                {
+                    if (r.foreign_key != "")
+                    {
+                        string[] parts = r.references.Split('.');
+                        result += "all" + parts[0] + "s= new ArrayList<>();\n";
+                    }
+                }
+                result += "}\n";
+            }
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
+
+                }
+            }
             result += "req.setAttribute(\"results\", results);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Add" + name + ".jsp\").forward(req, resp);\n";
@@ -3487,7 +3580,7 @@ output+="return " + returntype + ";\n}\n";
             result +=  "<c:if test=\"${" + name + "s.size() > 0}\">\n";
 
             result += "<div class=\"search-container\">\n";
-            result += "<form action=\"all-"+name+"\">\n";
+            result += "<form action=\"all-"+name+"s\">\n";
             result += "<input type=\"text\" placeholder=\"Search..\" id=\"searchBox\" name=\"search\">\n";
             foreach (Column r in columns)
             {
@@ -3791,7 +3884,7 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
 
-            result += "int " + name.ToLower() + "count=0;\n";
+            result += "int " + name.ToLower() + "_count=0;\n";
             result += "int page_number=1;\n";
             result += "int page_size = 20;\n";
             result += "try {\n";
@@ -3818,7 +3911,7 @@ output+="return " + returntype + ";\n}\n";
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result += "List<"+parts[0]+"> all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                    result += "List<"+parts[0]+"> all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
                     result +=  "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
@@ -3828,7 +3921,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.foreign_key != "")
                 {
-                    result += "," + r.data_type.toJavaDataType() + " " + r.column_name;
+                    result += "," + r.column_name;
                 }
             }
             result += ");\n";
@@ -3942,26 +4035,19 @@ output+="return " + returntype + ";\n}\n";
             result += genServletJavaDoc(ServletType.ViewEditSErvlet);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
             result = result + "public class Edit" + name + "Servlet extends HttpServlet{\n";
-            foreach (Column r in columns)
-            {
-                if (r.foreign_key != "")
-                {
-                    string[] parts = r.references.Split('.');
-                    result = result + "static List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
-                    //grab a list of the parents, assign and create a static variable
-                }
-            }
+           
             result += initMethod();
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
             result += "String mode = req.getParameter(\"mode\");\n";
             result += "int primaryKey = -1;\n";
+            
             result += "try{\n";
             result = result + "primaryKey = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "id\"));\n";
             result += "}catch (Exception e) {\n";
             result += "req.setAttribute(\"dbStatus\",e.getMessage());\n";
-            result += "}";
+            result += "}\n";
             result = result + name + " " + name.ToLower() + "= new " + name + "();\n";
             result += "try{\n";
             result = result + name.ToLower() + ".set" + name + "_ID(primaryKey);\n";
@@ -3984,6 +4070,15 @@ output+="return " + returntype + ";\n}\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Edit " + name + "\");\n";
+             foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    result = result + "List<" + parts[0] + "> all" + parts[0] + "s = null;\n";
+                    
+                }
+            }
             result += "try {\n";
             foreach (Column r in columns)
             {
@@ -3991,13 +4086,13 @@ output+="return " + returntype + ";\n}\n";
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result + " all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                    result = result + " all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
-            result += "{ catch (Exception e){\n";
-            result += "resp.sendRedirect(\"all-" + name + "s\"};\n";
+            result += "} catch (Exception e){\n";
+            result += "resp.sendRedirect(\"all-" + name + "s\");\n";
             result += "}\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
@@ -4007,6 +4102,15 @@ output+="return " + returntype + ";\n}\n";
             result += "Map<String, String> results = new HashMap<>();\n";
             result += "String mode = req.getParameter(\"mode\");\n";
             result += "req.setAttribute(\"mode\",mode);\n";
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
+                    string[] parts = r.references.Split('.');
+                    result = result + "List<" + parts[0] + "> all" + parts[0] + "s = null;\n";
+
+                }
+            }
             result += "//to set the drop downs\n";
             result += "try {\n";
             foreach (Column r in columns)
@@ -4015,11 +4119,11 @@ output+="return " + returntype + ";\n}\n";
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result = result + " all" + parts[0] + "s = " + parts[0] + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";                    //set them to the req attribute
+                    result = result + " all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";                    //set them to the req attribute
                     result = result + "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
-            result += " catch (Exception e){\n";
+            result += "} catch (Exception e){\n";
             result += "resp.sendRedirect(\"all-"+name+"s\");\n";
             result += "return;\n";
             result += "}\n";
@@ -4815,9 +4919,12 @@ output+="return " + returntype + ";\n}\n";
                     result += "}\n";
                     result += "total_errors = ";
                     string plus = "";
-                    foreach (Column s in columns) {
-                        result += plus + r.column_name + "_error";
+                    foreach (Column s in columns)
+                    {
+                        if (!s.identity.Equals("Y") && !s.identity.Equals("y") && s.default_value.Equals("")) { 
+                            result += plus + s.column_name + "_error";
                         plus = "+ ";
+                    }
                     }
                     result += ";\n";
                     result += "if (total_errors ==0){\n";
@@ -8485,7 +8592,7 @@ output+="return " + returntype + ";\n}\n";
             }
             if (stringKey)
             {
-                result += "public List<string> getDistinct" + name + "ForDropdown() {\n";
+                result += "public List<"+name+"> getDistinct" + name + "ForDropdown() {\n";
                 result += "List<string> results = new List<string>();\n";
                 result += "foreach (" + name + vmTag + " " + name.ToLower() + " in " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
                 result += "results.Add(" + name.ToLower() + "." + columns[0].column_name + ");\n";
@@ -9193,7 +9300,7 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.references != "")
                     {
-                        result += andand + "(" + name.ToLower() + ".get" + r.column_name + "()!=null||" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
+                        result += andand + "(" + r.column_name + ".isEmpty()||" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
                         andand = "&&";
                     }
                 }
@@ -9252,38 +9359,12 @@ output+="return " + returntype + ";\n}\n";
                 vmTag = "_VM";
             }
             string result = "@Override\n";
-            bool stringKey = false;
-            foreach (Column r in columns)
-            {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
-                {
-                    if (r.data_type.toJavaDataType().Equals("String"))
-                    {
-                        stringKey = true;
-                    }
-                }
-            }
-            if (stringKey)
-            {
-                result += "public List<String> getDistinct" + name + "ForDropdown() throws SQLException{\n";
-                result += "List<String> results = new ArrayList<>();\n";
-                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
-                result += "results.add(" + name.ToLower() + ".get" + columns[0].column_name + "());\n";
-                result += "}\n";
-                result += "return results;\n}\n";
-            }
-            else
-            {
-                result += "public List<" + name + "> getDistinct" + name + "ForDropdown() throws SQLException{\n";
-                result += "List<" + name + "> results = new ArrayList<>();\n";
-                result += "for (" + name + vmTag + " " + name.ToLower() + " : " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
-                result += name + " _" + name.ToLower() + " = new " + name + "();\n";
-                result += "_" + name.ToLower() + ".set" + columns[0].column_name + "(" + name.ToLower() + ".get" + columns[0].column_name + "());\n";
-                result += "_" + name.ToLower() + ".set" + columns[1].column_name + "(" + name.ToLower() + ".get" + columns[1].column_name + "());\n";
-                result += "results.add(_" + name.ToLower() + ");\n";
-                result += "}\n";
-                result += "return results;\n}\n";
-            }
+           
+            
+                result += "public List<"+name+"> getDistinct" + name + "ForDropdown() throws SQLException{\n";
+                
+                result += " return new ArrayList<>("+name+vmTag+");\n}\n";
+            
             return result;
         }
         private string genJavaDAOFakeRetriveByFK()
@@ -9597,7 +9678,7 @@ output+="return " + returntype + ";\n}\n";
             result += "){\n";
             result += "results.add(" + name.ToLower() + ");\n";
             result += "}\n}\n}\n";
-            result += "return results.count();\n}\n";
+            result += "return results.size();\n}\n";
             return result;
 
         }
@@ -9691,10 +9772,10 @@ output+="return " + returntype + ";\n}\n";
             result += TestGetOneGetsOne(); //done
             result += TestGetOneCanFail(); //done
             result += TestUpdateCanAddWithNoErrorsAndRedirects();
-            result += TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage();
-            result += TestInitWithNoParamsDoesNotCrash();
+            result += TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage();            
             result += testUpdateCanReturnZero();
             result += testUpdateCanThrowSQLException();
+            result += TestInitWithNoParamsDoesNotCrash();
             result += "\n}\n";
             return result;
         }
@@ -10072,7 +10153,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Test\n";
             result += "public void testLoggedInUserCanSearchAndReturnZero() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
-            result += "String searchTerm = \"\";\n";
+            result += "String searchTerm = \"banana banana123\";\n";
             result += "request.setParameter(\"search\",searchTerm);\n";
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
