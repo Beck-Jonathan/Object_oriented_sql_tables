@@ -726,7 +726,7 @@ namespace Data_Objects
             }
             function_text = function_text + ")\n" +
             "begin \n" +
-            "INSERT INTO  " + name + "\n(";
+            "INSERT INTO " + name + "\n(";
             comma = "";
             foreach (Column r in columns)
             {

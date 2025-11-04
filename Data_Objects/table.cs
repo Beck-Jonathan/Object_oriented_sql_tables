@@ -4134,9 +4134,9 @@ output+="return " + returntype + ";\n}\n";
             result += "resp.sendRedirect(\"all-"+name.ToLower()+"s\");\n";
             result += "return;\n";
             result += "}\n";
-            
+            //for (int i=0; i<columns.Count)
 
-            result += "//to get the new event's info\n";
+            result += "//to get the new "+name+"'s info\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -4991,7 +4991,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             result += "}})\n";
             result += "$(this).dialog(\"close\");\n";
-            result += "var rowid =\"#\"+ targetUrl+\"row\";\n";
+            result += "var rowid =\"#\"+ targetUrl+\"_row\";\n";
             result += "$(rowid).slideUp();\n";
             result += "},\n";
             
@@ -11841,5 +11841,21 @@ output+="return " + returntype + ";\n}\n";
             result += header + description + actors + preConditions + postConditions + steps + alternateFlow;
             return result;
         }
+
+        [Flags]
+        public enum Access
+        {
+            None = 0,
+            Delete = 1 << 0,  // 1
+            Publish = 1 << 1,  // 2
+            Submit = 1 << 2,  // 4
+            Comment = 1 << 3,  // 8
+            Modify = 1 << 4,
+            Writer = Submit | Modify,
+            Editor = Delete | Publish | Comment,
+            Owner = Writer | Editor
+
+        }
+        
     }
 }
