@@ -2072,6 +2072,7 @@ output+="return " + returntype + ";\n}\n";
         private string genJavaHeader()
         {
             string result = commentBox.GenXMLClassComment(this, XMLClassType.JavaDataObject);
+            result += "import org.jetbrains.annotations.NotNull;\n";
             result = result + "\n public class " + name + " implements Comparable<" + name + "> {\n";
             return result;
         }
@@ -3605,7 +3606,7 @@ output+="return " + returntype + ";\n}\n";
                     result += "</div>\n";
                 }
             }
-            result += "<button type=\"submit\"><i class=\"fa fa-search\"></i></button>\n";
+            result += "<button type=\"submit\"><i class=\"fa fa-search\"search></i></button>\n";
             result += "</form>\n";
             result += "</div>\n";
             result += "";
@@ -3638,7 +3639,7 @@ output+="return " + returntype + ";\n}\n";
             foreach (Column r in columns)
             {
                 //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
-                if (!r.data_type.ToLower().Equals("bit"))
+                if (!r.data_type.ToLower().Equals("bit")&&!r.data_type.ToLower().Contains("bool"))
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
@@ -3658,7 +3659,7 @@ output+="return " + returntype + ";\n}\n";
                 }
                 else
                 {
-                    result = result + "<td><input type=\"checkbox\" disabled <c:if test=\"${" + name.ToLower() + ".is_active}\">checked</c:if>></td>\n";
+                    result = result + "<td><input type=\"checkbox\" id=\"${"+name.ToLower()+"."+name.ToLower()+"_ID"+r.column_name+"}\" disabled <c:if test=\"${" + name.ToLower() + ".is_active}\">checked</c:if>></td>\n";
                 }
             }
             result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=edit\" > Edit </a></td>\n";
