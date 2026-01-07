@@ -2624,7 +2624,7 @@ output+="return " + returntype + ";\n}\n";
                     result = result + "statement.setString(1, _" + name.ToLower() + ".get" + columns[i].column_name.bracketStrip() + "().toString());\n";
                 }
             result += "\ntry (ResultSet resultSet = statement.executeQuery()){";
-            result += "\nif(resultSet.next()){";
+            result += "\nif(resultSet.next()){\n";
             foreach (Column r in columns)
             {
                 result = result + r.data_type.toJavaDataType() + " " + r.column_name.bracketStrip() + " = resultSet.get" + r.data_type.toJavaDAODataType() + "(\"" + name + "_" + r.column_name.bracketStrip() + "\");\n";
@@ -3576,7 +3576,7 @@ output+="return " + returntype + ";\n}\n";
             result += "<div class=\"row\">\n";
             result += "<div class=\"col-12\">\n";
             result +=  "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + "s</h1>\n";
-            result +=  "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${" + name + "s.size()} " + name.Replace("_", " ") + "${" + name + "s.size() ne 1 ? \"s\" : \"\"}</p>\n";
+            result +=  "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${count}" + name.Replace("_", " ") + "$count ne 1 ? \"s\" : \"\"}</p>\n";
             result +=  "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
             result +=  "<c:if test=\"${" + name + "s.size() > 0}\">\n";
 
@@ -3695,14 +3695,15 @@ output+="return " + returntype + ";\n}\n";
 
                 }
             }
+            result += "<input type = hidden name = \"search\" value = \"${results.search}\">\n";
             result += "<input type=\"hidden\" name=\"page\" value=\"${currentPage-1}\">\n";
             result += "<br/><br/>\n";
             result += "<input type=\"submit\" value=\"Previous Page\" />\n";
             result += "</form>\n";
             result += "</c:if>\n";
             result += "<%--For displaying Page numbers.\n";
-            result += "The when condition does not display a link for the current page--%>";
-            result += "<form action=\"all-"+name+"s\" method=\"get\" >";
+            result += "The when condition does not display a link for the current page--%>\n";
+            result += "<form action=\"all-"+name+"s\" method=\"get\" >\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -3711,6 +3712,7 @@ output+="return " + returntype + ";\n}\n";
 
                 }
             }
+            result += "<input type = hidden name = \"search\" value = \"${results.search}\">\n";
             result += "Select a page :\n";
             result += "<select name=\"page\" onchange=\"this.form.submit()\">\n";
             result += "<c:forEach var=\"i\" begin=\"1\" end=\"${noOfPages}\">\n";
@@ -3720,7 +3722,7 @@ output+="return " + returntype + ";\n}\n";
             result += "<br/><br/>\n";
             result += "<input type=\"submit\" value=\"Submit\" />\n";
             result += "</form>\n";
-            result += "<%--For displaying Next link --%>\n";
+            result += "<%--For displaying Next link except on the last page --%>\n";
             result += "<c:if test=\"${currentPage lt noOfPages}\">\n";
             result += "<form action=\"all-Transactions\" method=\"get\">\n";
             foreach (Column r in columns)
@@ -3731,6 +3733,7 @@ output+="return " + returntype + ";\n}\n";
 
                 }
             }
+            result += "<input type = hidden name = \"search\" value = \"${results.search}\">\n";
             result += "<input type=\"hidden\" name=\"page\" value=\"${currentPage+1}\">\n";
             result += "<br/><br/>\n";
             result += "<input type=\"submit\" value=\"Next Page\" />\n";
@@ -3946,6 +3949,7 @@ output+="return " + returntype + ";\n}\n";
 
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
+            result = result + "req.setATtribute(\"count\","+name.ToLower()+"_count);\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/all-" + name + "s.jsp\").forward(req,resp);\n";
             result += "\n}\n}";
             //header comment
@@ -9301,19 +9305,20 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.references != "")
                     {
-                        result += andand + "(" + r.column_name + ".isEmpty()||" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
-                        andand = "&&";
+                        result +=   "(!" + r.column_name + ".isEmpty()&& !" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
+                        result += "\n{continue;\n}\n}";
+                        
                     }
                 }
 
                 result += "){\n";
-                result += "if (search_term.isEmpty() ";
+                result += "if (!search_term.isEmpty() ";
                 foreach (Column r in columns) {
-                    result += "|| " + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
+                    result += "&& ! " + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
                 }
                 result += "){\n";
-                result += "results.add(" + name.ToLower() + ");\n";
-                result += "}\n}\n}\n";
+                result += "continue;";
+                result += "}\n results.add(" + name.ToLower() + ");\n}\n";
                 result += "return results;\n}\n";
 
             }
@@ -9322,15 +9327,16 @@ output+="return " + returntype + ";\n}\n";
                 result += "public List <" + name + "> getAll" + name + "(int limit, int offset, String search_term) throws SQLException {\n";
                 result += "List<" + name + "> results = new ArrayList<>();\n";
                 result += "for (" + name + " " + name.ToLower() + " : " + name.ToLower() + "s){\n";
-                result += "if (search_term.isEmpty() ";
+                result += "if (!search_term.isEmpty() ";
                 foreach (Column r in columns)
                 {
-                    result += "|| " + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
+                    result += "&& !" + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
                 }
                 result += "){\n";
-                result += "results.add(" + name.ToLower() + ");\n";
+                result += "continue;\n";
                 result += "}\n}\n";
-
+                result += "results.add(" + name.ToLower() + ");\n";
+                result += "}\n";
                 result += "return results;\n";
                 result += "}\n";
             }
@@ -9657,29 +9663,17 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += ") throws SQLException {\n";
-            result += "List<" + name + "_VM> results = new ArrayList<>();\n";
-            result += "for (" + name + "_VM " + name.ToLower() + " : " + name.ToLower() + "VMs){\n";
-            result += "if (";
-            string andand = "";
+            result += "in result=0;\n";
+            result = "result = getAll" + name + "(0,Integer.MAX_VALUE, Search_term";
             foreach (Column r in columns)
             {
                 if (r.references != "")
                 {
-                    result += andand + "(" + name.ToLower() + ".get" + r.column_name + "()!=null||" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
-                    andand = "&&";
+                    result += ", " + r.data_type.toJavaDataType() + " " + r.column_name;
                 }
             }
-
-            result += "){\n";
-            result += "if (Search_term.isEmpty() ";
-            foreach (Column r in columns)
-            {
-                result += "|| " + name.ToLower() + ".get" + r.column_name + "().contains(Search_term)";
-            }
-            result += "){\n";
-            result += "results.add(" + name.ToLower() + ");\n";
-            result += "}\n}\n}\n";
-            result += "return results.size();\n}\n";
+            result += ").size();\n";
+            result += "return result;\n}\n";
             return result;
 
         }
@@ -10027,8 +10021,11 @@ output+="return " + returntype + ";\n}\n";
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
             result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
+            result += "int count = (int)  request.getAttribute(\"count\");\n";
             result += "assertNotNull(" + name.ToLower() + "s);\n";
             result += "assertEquals(20," + name.ToLower() + "s.size());\n";
+            
+            result += "assertEquals(20,count);\n";
             result += "}\n";
 
             return result;
@@ -10124,6 +10121,8 @@ output+="return " + returntype + ";\n}\n";
                         result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
                         result += "assertNotNull(" + name.ToLower() + "s);\n";
                         result += "assertEquals(20," + name.ToLower() + "s.size());\n";
+                        result += "int count = (int)  request.getAttribute(\"count\");\n";
+                        result += "assertEquals(20,count);\n";
                         result += "}\n";
                     }
                 }
@@ -10144,6 +10143,8 @@ output+="return " + returntype + ";\n}\n";
             result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
             result += "assertNotNull(" + name.ToLower() + "s);\n";
             result += "assertEquals(20," + name.ToLower() + "s.size());\n";
+            result += "int count = (int) request.getAttribute(\"count\");\n";
+            result += "assertEquals(20,count);\n";
             result += "}\n";         
             return result;
         }
@@ -10161,6 +10162,8 @@ output+="return " + returntype + ";\n}\n";
             result += "List<" + name + "_VM> " + name.ToLower() + "s = (List<" + name + "_VM>) request.getAttribute(\"" + name + "s\");\n";
             result += "assertNotNull(" + name.ToLower() + "s);\n";
             result += "assertEquals(0," + name.ToLower() + "s.size());\n";
+            result += "int count = (int) request.getAttribute(\"count\");\n";
+            result += "assertEquals(0,count);\n";
             result += "}\n";
             return result;
         }
@@ -11464,7 +11467,7 @@ output+="return " + returntype + ";\n}\n";
 
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
-                result =  "\"" + generateRandomString(r, 8 - r.length) + "\"";
+                result = "\"" + generateRandomString(r, 8 - r.length) + "\"";
 
                 if (r.default_value.ToLower().Contains("uuid"))
                 {
@@ -11472,7 +11475,7 @@ output+="return " + returntype + ";\n}\n";
 
                 }
 
-                
+
 
             }
             else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -11496,11 +11499,39 @@ output+="return " + returntype + ";\n}\n";
                 double toAdd = rand.Next(1000, 7000) / 100d;
                 result = toAdd.ToString();
             }
+            else if (r.data_type.ToLower().Equals("date")) {
+                result = genRandomDate();
+            }
+
+            else if (r.data_type.ToLower().Equals("time"))
+            {
+                result = genRandomTime();
+            }
+
+            else if (r.data_type.ToLower().Equals("datetime"))
+            {
+                return genRandomTime() + " " + genRandomDate();
+            }
             else
             {
                 result += "";
             }
             return result;
+        }
+
+        private string genRandomTime() {
+            double hour = rand.Next(1, 11);
+            double minute = rand.Next(11, 59);
+            string ampm = rand.Next(1, 3) == 1 ? "am" : "pm";
+            return hour.ToString() + ":" + minute.ToString() + " " + ampm;
+            
+        }
+        private string genRandomDate()
+        {
+            double day = rand.Next(1, 28);
+            double month = rand.Next(1, 11);
+            double year = rand.Next(2000, 2025);
+            return month.ToString() + "/" + day.ToString() + "/" + year.ToString(); ;
         }
 
         private string genServletJavaDoc(ServletType type) {
@@ -11843,20 +11874,38 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        [Flags]
-        public enum Access
-        {
-            None = 0,
-            Delete = 1 << 0,  // 1
-            Publish = 1 << 1,  // 2
-            Submit = 1 << 2,  // 4
-            Comment = 1 << 3,  // 8
-            Modify = 1 << 4,
-            Writer = Submit | Modify,
-            Editor = Delete | Publish | Comment,
-            Owner = Writer | Editor
+        public string genCSVTempalte() {
+            string result = "";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                if (r.default_value == "" && (r.identity == null || r.identity == "" || r.identity.ToLower().StartsWith("n")))
+                {
+                    result += comma +" "+ r.column_name + " ";
+                    comma = ",";
+                }
+            }
+            result += "\n";
+            comma = ",";
+            for (int i = 0; i < 5; i++)
+            {
+                foreach (Column r in columns)
+                {
+                    if (r.default_value == "" && (r.identity==null ||r.identity == "" ||r.identity.ToLower().StartsWith("n")  ))
+                    {
+                        result += comma + " " + genFakeData(r).Replace('\"',' ') + " ";
+                        comma = ",";
+                    }
+                }
+                result += "\n";
+                comma = "";
+            }
 
+            return result;
+        
         }
+
+        
         
     }
 }

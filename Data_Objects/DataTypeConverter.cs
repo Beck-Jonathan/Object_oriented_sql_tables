@@ -27,7 +27,7 @@ namespace Data_Objects
         public static string toJavaDataType(this string sqlDataType)
         {
             string result = sqlDataType.Replace("[", "").Replace("]", "");
-            if (result.ToLower().Equals("nvarchar")) { result = "String"; }
+            if (result.ToLower().Contains("varchar")) { result = "String"; }
             if (result.ToLower().Equals("bit")) { result = "boolean"; }
             if (result.ToLower().Equals("bool")) { result = "boolean"; }
             if (result.ToLower().Equals("int") || sqlDataType.ToLower().Equals("Integer")) { result = "Integer"; }

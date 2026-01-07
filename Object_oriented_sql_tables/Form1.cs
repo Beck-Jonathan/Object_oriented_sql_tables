@@ -1017,6 +1017,21 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+                if (true)
+                {
+                    //change to these setting 43
+                    s = t.genCSVTempalte();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "CSVTempalte", "Text");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
 
                 count++;
             }
