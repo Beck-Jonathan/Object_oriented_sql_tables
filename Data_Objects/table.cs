@@ -9800,6 +9800,9 @@ output+="return " + returntype + ";\n}\n";
             
             result += "public void setup() throws ServletException{\n\n";
             result += "servlet = new " + servletName + "();\n";
+            result += "MockServletContext servletContext = new MockServletContext();\n";
+            result += "MockServletConfig servletConfig = new MockServletConfig(servletContext, \"" + servletName + "\");\n";
+            result += "servlet.init(servletConfig);\n";
             result += "servlet.init(";
             result += "new " + name + "_DAO_Fake()";
             foreach (Column r in columns)
@@ -9815,9 +9818,9 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += ");\n";
-            result += "request =  new MockHttpServletRequest();\n";
+            result += "request =  new MockHttpServletRequest(servletContext);\n";
             result += "response = new MockHttpServletResponse();\n";
-            result += "session = new MockHttpSession();\n";
+            result += "session = new MockHttpSession(servletContext);\n";
             result += "rd = new MockRequestDispatcher(PAGE);\n";
             result += "}\n\n";
             return result;
