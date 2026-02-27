@@ -96,5 +96,10 @@ namespace Data_Objects
         {
             throw new NotImplementedException();
         }
+
+        public string gen_update_each()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

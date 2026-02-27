@@ -2,15 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Diagnostics.Eventing.Reader;
-using System.Reflection;
-using System.Runtime.Remoting.Messaging;
-using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using System.Xml.XPath;
 namespace Data_Objects
 {
     public class table
@@ -118,7 +110,17 @@ namespace Data_Objects
             string genTemplate = "FileStream get" + name + "TemplateFile();\n";
             string export = "FileStream export" + name + "ToFile();\n";
 
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead+ batchAdd+count+genTemplate+export+"}\n\n";
+            string singleUpdate = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                singleUpdate += "int update" + name + "_" + r.column_name + "(" + name + "_old" + name + " , " + name + " _new" + name + ");\n";
+            }
+
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectfkThing + updateThing + deleteThing + undeleteThing + dropdownThing + fileWrite + fileRead + batchAdd + count + genTemplate + export + singleUpdate + "}\n\n";
             return output;
         }
         /// <summary>
@@ -154,7 +156,9 @@ namespace Data_Objects
             string count = genCSharpDatabaseAccessorCount();
             string template = genCSharpDatabaseAccessoTemplate();
             string export = genCSharpDatabaseAccessorExport();
-            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing +writeThing+readThing+ addBatchThing +count+template+export+ "}\n\n";
+
+            string updateSingleThing = genCSharpDatabaseAccessorUpdateSingle();
+            string output = comment + header + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + writeThing + readThing + addBatchThing + count + template + export + updateSingleThing + "}\n\n";
             //good
             return output;
         }
@@ -164,7 +168,7 @@ namespace Data_Objects
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_Accessor);
 
             string header = gencCSharpFileAccessorClassHeader();  //done
-             
+
             string addThing = genCharpFileAccessorAdd();    //done
 
             string selectThingbyPK = genCharpFileAccessorretrieveByKey();   //done
@@ -172,7 +176,7 @@ namespace Data_Objects
             string selectallThing = genCharpFileAccessorretrieveAll();  //done
 
             string selectbyFK = genCharpFileAccessorretrievefk();
-             
+
             string updateThing = genCharpFileAccessorUpdate(); //done
 
             string deleteThing = genCharpFileAccessorDelete(); //done
@@ -183,40 +187,43 @@ namespace Data_Objects
             string readThing = genCharpFileAccessorRead();
             string addBatchThing = genCSharpFileAccessorBatchAdd(); //done
             string count = genCSharpFileAccessorCount();
-            string template = genCSharpFileAccessoTemplate() ;
+            string template = genCSharpFileAccessoTemplate();
             string export = genCSharpFileAccessorExport();
-            string output = comment + header + readThing + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + writeThing  + addBatchThing + count+export+template+"}\n}\n";
+            string updateSingleThing = genCSharpFileAccessorUpdateSingle();
+            string output = comment + header + readThing + addThing + selectThingbyPK + selectallThing + selectbyFK + updateThing + deleteThing + undeleteThing + distinctThing + writeThing + addBatchThing + count + export + template + updateSingleThing + "}\n}\n";
             //good
             return output;
         }
 
-        private string gencCSharpFileAccessorClassHeader() {
+        private string gencCSharpFileAccessorClassHeader()
+        {
             string result = "using DataObjects;\n";
             result += "using iDataAccessLayer;\n";
             result += "\n";
             result += "namespace DataAccessLayer{\n\n";
-            result += "public class "+name+"Accessor : I"+name+"Accessor\n{\n";
-            result += "private List<"+name+"> "+name.ToLower()+"s;\n";
-            
+            result += "public class " + name + "Accessor : I" + name + "Accessor\n{\n";
+            result += "private List<" + name + "> " + name.ToLower() + "s;\n";
+
             return result;
-        
+
         }
         private string genCharpFileAccessorAdd()
         {
-            string result = "public int add"+name+"("+name+ " _"+name.ToLower()+")\n{\n";
+            string result = "public int add" + name + "(" + name + " _" + name.ToLower() + ")\n{\n";
             result += "if (" + name.ToLower() + "s ==null)\n{\n";
             result += "getAll" + name + "s();\n";
             result += "}\n";
             result += name.ToLower() + "s.Add(_" + name.ToLower() + ");\n";
-            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";\n";
+            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\" + name.ToLower() + "s.txt\";\n";
             result += "try{\n";
             result += "using (StreamWriter w = File.AppendText(filePath))\n";
             result += "{\n";
             result += "w.WriteLine(";
             string plus = "";
-            foreach (Column r in columns) {
-                result += plus+" _" + name.ToLower() + "." + r.column_name ;
-                    plus = "+\"\\t\"+";
+            foreach (Column r in columns)
+            {
+                result += plus + " _" + name.ToLower() + "." + r.column_name;
+                plus = "+\"\\t\"+";
             }
             result += ");\n";
             result += "}\n";
@@ -234,32 +241,34 @@ namespace Data_Objects
         private string genCharpFileAccessorretrieveByKey()
         {
             string firstLetter = name.Substring(0, 1).ToLower();
-            string result = "public "+name+ " select"+name+"ByPrimaryKey("+name+" "+name.ToLower()+")\n{\n";
-            result +=name+ " _"+name.ToLower()+" = null;\n";
+            string result = "public " + name + " select" + name + "ByPrimaryKey(" + name + " " + name.ToLower() + ")\n{\n";
+            result += name + " _" + name.ToLower() + " = null;\n";
             result += "try\n{\n";
             result += "foreach (" + name + " " + firstLetter + " in " + name.ToLower() + "s)\n{\n";
             result += "if(";
             string andand = "";
-            foreach (Column r in columns) {
-                if (r.primary_key == 'y' || r.primary_key == 'Y') {
-                    result += andand+ firstLetter + "." + r.column_name + ".Equals(" + name.ToLower() + "." + r.column_name + ")";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key == 'y' || r.primary_key == 'Y')
+                {
+                    result += andand + firstLetter + "." + r.column_name + ".Equals(" + name.ToLower() + "." + r.column_name + ")";
                     andand = " && ";
                 }
             }
             result += ")\n{\n";
-            result += "_"+name.ToLower()+ " = new "+name+"("+firstLetter+");\n";
+            result += "_" + name.ToLower() + " = new " + name + "(" + firstLetter + ");\n";
             result += "break;";
             result += "}\n";
             result += "}\n";
-            result += "if (_"+name.ToLower()+" ==null)\n{\n";
-            result += "throw new ApplicationException(\"unable to find "+name+"\");";
+            result += "if (_" + name.ToLower() + " ==null)\n{\n";
+            result += "throw new ApplicationException(\"unable to find " + name + "\");";
             result += "}\n";
             result += "}\n";
             result += "catch (Exception ex)";
             result += "{\n";
-            result += "throw new ApplicationException(\"Unable to find "+name+"\", ex);";
+            result += "throw new ApplicationException(\"Unable to find " + name + "\", ex);";
             result += "}\n";
-            result += "return _"+name.ToLower()+";\n";
+            result += "return _" + name.ToLower() + ";\n";
             result += "}\n";
             return result;
 
@@ -269,34 +278,39 @@ namespace Data_Objects
             string firstLetter = name.Substring(0, 1).ToLower();
             int fkCount = 0;
             string result = "public List<" + name + "> SelectAll" + name + "(int offset, int limit";
-            foreach (Column r in columns) {
-                if (r.references != "") {
+            foreach (Column r in columns)
+            {
+                if (r.references != "")
+                {
                     string[] parts = r.references.Split('.');
                     string fk_table = parts[0];
-                    
+
                     result += ",string " + fk_table.ToLower();
                     fkCount++;
                 }
             }
             result += ")\n{\n";
             result += "List<" + name + "> result = new List<" + name + ">();\n";
-            result += "if ("+name.ToLower()+"s ==null)\n{\n";
-            result += "getAll"+name+"s();\n";
+            result += "if (" + name.ToLower() + "s ==null)\n{\n";
+            result += "getAll" + name + "s();\n";
             result += "}\n";
             result += "foreach (" + name + " " + firstLetter + " in " + name.ToLower() + "s)\n{";
             string andand = "";
             if (fkCount == 0)
-            {                
-                result += "result.Add("+firstLetter+";\n";
+            {
+                result += "result.Add(" + firstLetter + ";\n";
 
             }
-            else {
+            else
+            {
                 result += "if (";
-                foreach (Column r in columns) {
-                    if (r.references != "") {
+                foreach (Column r in columns)
+                {
+                    if (r.references != "")
+                    {
                         string[] parts = r.references.Split('.');
                         string fk_table = parts[0];
-                        result += andand + firstLetter + "." + r.column_name + ".Equals(" +fk_table.ToLower()+")";
+                        result += andand + firstLetter + "." + r.column_name + ".Equals(" + fk_table.ToLower() + ")";
                         andand = "&&";
                     }
                 }
@@ -331,27 +345,26 @@ namespace Data_Objects
         }
         private string genCharpFileAccessorUpdate()
         {
-            string result = "public int update"+name+"("+name+" old"+name+", "+name+" new"+name+")\n{\n";
+            string result = "public int update" + name + "(" + name + " old" + name + ", " + name + " new" + name + ")\n{\n";
             result += "int result = 0;\n";
             result += "try\n";
             result += "{\n";
-            result += "result += delete"+name+"(old"+name+");\n";
+            result += "result += delete" + name + "(old" + name + ");\n";
             result += "if (result != 1)";
             result += "{\n";
-            result += "throw new ApplicationException(\"unable to delete "+name.ToLower() + "\");\n";
+            result += "throw new ApplicationException(\"unable to delete " + name.ToLower() + "\");\n";
             result += "}\n";
-            result += "result += add"+name+"(new"+name+");";
+            result += "result += add" + name + "(new" + name + ");";
             result += "if (result != 2)";
             result += "{\n";
             result += "throw new ApplicationException(\"unable to add " + name.ToLower() + "\");\n";
             result += "}\n";
             result += "}\n";
             result += "catch (Exception ex) {\n";
-            result += "throw new ApplicationException(\"unable to update "+name.ToLower()+"\", ex);\n";
+            result += "throw new ApplicationException(\"unable to update " + name.ToLower() + "\", ex);\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
-
 
             return result;
 
@@ -383,7 +396,7 @@ namespace Data_Objects
             result += "throw new ApplicationException(\"unable to delete " + name + "\");";
             result += "}\n";
             result += "else {\n";
-            result += "rewriteDataFile("+name.ToLower()+"s);\n";
+            result += "rewriteDataFile(" + name.ToLower() + "s);\n";
             result += "}\n";
             result += "";
             result += "}\n";
@@ -441,19 +454,20 @@ namespace Data_Objects
         }
         private string genCharpFileAccessorWrite()
         {
-            string result = "private bool rewriteDataFile(List<"+name+"> "+name+"s)\n";
+            string result = "private bool rewriteDataFile(List<" + name + "> " + name + "s)\n";
             result += "{\n";
-            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";\n";
+            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\" + name.ToLower() + "s.txt\";\n";
             result += "try\n";
             result += "{\n";
             result += "StreamWriter fileBuddy = new StreamWriter(filePath);\n";
-            result += "foreach ("+name+" _"+name.ToLower()+" in "+name+"s)\n";
+            result += "foreach (" + name + " _" + name.ToLower() + " in " + name + "s)\n";
             result += "{\n";
             result += "fileBuddy.WriteLine(";
             string tabplus = "";
-            foreach (Column r in columns) {
-                result += tabplus+"_"+name.ToLower()+"."+r.column_name+"\n";
-                 tabplus = "+\"\t\" +";
+            foreach (Column r in columns)
+            {
+                result += tabplus + "_" + name.ToLower() + "." + r.column_name + "\n";
+                tabplus = "+\"\t\" +";
             }
             result += ");\n";
             result += "}\n";
@@ -465,17 +479,16 @@ namespace Data_Objects
             result += "}\n";
             result += "return true;\n";
             result += "}\n";
-            
 
             return result;
 
         }
         private string genCharpFileAccessorRead()
         {
-            string result = "private void getAll"+name+"s()\n";
+            string result = "private void getAll" + name + "s()\n";
             result += "{\n";
-            result += name.ToLower()+"s = new List<"+name+">();\n";
-            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\"+name.ToLower()+"s.txt\";";
+            result += name.ToLower() + "s = new List<" + name + ">();\n";
+            result += "string filePath = AppData.AppPath + \"\\\\\" + \"Data\\\\" + name.ToLower() + "s.txt\";";
             result += "try\n";
             result += "{\n";
             result += "StreamReader fileReader = new StreamReader(filePath);\n";
@@ -489,7 +502,7 @@ namespace Data_Objects
             result += "if (line.Length > 3)\n";
             result += "{\n";
             result += "parts = line.Split(separator);\n";
-            result += "if (parts.Count() > "+(columns.Count-1)+")  //are all model parts present\n";
+            result += "if (parts.Count() > " + (columns.Count - 1) + ")  //are all model parts present\n";
             result += "{\n"; //pick each part
             int i = 0;
             foreach (Column r in columns)
@@ -527,7 +540,6 @@ namespace Data_Objects
                         result += r.data_type + " " + r.column_name.ToLower() + "=(" + r.data_type + ") parts[" + i + "];\n";
                     }
 
-                        
                     i++;
                 }
             }
@@ -539,25 +551,25 @@ namespace Data_Objects
                 comma = ", ";
             }
             result += ");\n";
-            result += name.ToLower()+"s.Add(" + name.ToLower() + ");\n";
-
+            result += name.ToLower() + "s.Add(" + name.ToLower() + ");\n";
 
             result += "}\n";
             result += "}\n";
             result += "}\n";
             result += "fileReader.Close();\n";
-            result += "if ("+name.ToLower()+"s == null || "+name.ToLower()+"s.Count == 0)\n";
+            result += "if (" + name.ToLower() + "s == null || " + name.ToLower() + "s.Count == 0)\n";
             result += "{\n";
-            result += "throw new Exception(\"Unable to load "+name.ToLower()+"s\");\n";
+            result += "throw new Exception(\"Unable to load " + name.ToLower() + "s\");\n";
             result += "}\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
-            result += "throw new ApplicationException(\""+name+"s not found\", ex);\n";
+            result += "throw new ApplicationException(\"" + name + "s not found\", ex);\n";
             result += "}\n";
             string orderBy = ".OrderBy(o => o.";
-            result += name.ToLower()+"s = "+name.ToLower()+"s";
-            foreach (Column r in columns) {
+            result += name.ToLower() + "s = " + name.ToLower() + "s";
+            foreach (Column r in columns)
+            {
                 result += orderBy + r.column_name + ")";
                 orderBy = ".ThenBy( o => o.";
             }
@@ -570,7 +582,7 @@ namespace Data_Objects
         {
             string result = "";
             string firstLetter = name.Substring(0, 1).ToLower();
-            result += "public int AddBatchOf" + name + "(List<" + name + "> _"+name.ToLower()+"s)\n{\n";
+            result += "public int AddBatchOf" + name + "(List<" + name + "> _" + name.ToLower() + "s)\n{\n";
             result += "int result=0;";
             result += "try\n{\n";
             result += "foreach (" + name + " " + firstLetter + " in _" + name.ToLower() + "s){\n";
@@ -586,7 +598,8 @@ namespace Data_Objects
 
         }
 
-        private string genCSharpFileAccessorCount() {
+        private string genCSharpFileAccessorCount()
+        {
             string result = "";
             result += "";
             result += "";
@@ -595,21 +608,11 @@ namespace Data_Objects
             result += "";
             result += "";
             return result;
-        
+
         }
 
-        private string genCSharpFileAccessoTemplate() {
-            string result = "";
-            result += "";
-            result += "";
-            result += "";
-            result += "";
-            result += "";
-            result += "";
-            return result;
-        }
-
-        private string genCSharpFileAccessorExport() {
+        private string genCSharpFileAccessoTemplate()
+        {
             string result = "";
             result += "";
             result += "";
@@ -620,6 +623,17 @@ namespace Data_Objects
             return result;
         }
 
+        private string genCSharpFileAccessorExport()
+        {
+            string result = "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            result += "";
+            return result;
+        }
 
         /// <summary>
         /// Reads through each <see cref="Column"/>   object associated with the <see cref="table"/> Object and
@@ -670,7 +684,7 @@ namespace Data_Objects
             {
                 if (fk.mainTable == name)
                 {
-                    dropdownThing = dropdownThing + "List<"+ fk.referenceTable + "> getDistinct" + fk.referenceTable + "ForDropDown();\n";
+                    dropdownThing = dropdownThing + "List<" + fk.referenceTable + "> getDistinct" + fk.referenceTable + "ForDropDown();\n";
                 }
             }
 
@@ -683,7 +697,7 @@ namespace Data_Objects
                 }
             }
 
-            string fileWrite = "int write"+name+"sToFile(List<"+name+"> "+name+"s, string path);\n";
+            string fileWrite = "int write" + name + "sToFile(List<" + name + "> " + name + "s, string path);\n";
             string fileRead = "List<" + name + "> read" + name + "sFromFile(string path);\n";
             string batchAdd = "int addBatchOf" + name + "(List<" + name + "> " + name.ToLower() + "s);\n";
             string count = "int count" + name + "(";
@@ -697,11 +711,21 @@ namespace Data_Objects
                 }
             }
             count += ");\n";
-            string genTemplate = "FileStream get"+name+"TemplateFile();\n";
+            string genTemplate = "FileStream get" + name + "TemplateFile();\n";
             string export = "FileStream export" + name + "ToFile();\n";
 
-            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing+ fileRead+fileWrite+batchAdd+count+genTemplate+export+"}\n\n";
-            
+            string singleEdit = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                singleEdit += "int edit" + name + "_" + r.column_name + "(" + name + "_old" + name + " , " + name + " _new" + name + ");\n";
+            }
+
+            string output = comment + header + addThing + getThingbyPK + getallThing + getfkThing + editThing + purgeThing + unPurgeThing + dropdownThing + fk_thing + fileRead + fileWrite + batchAdd + count + genTemplate + export + singleEdit + "}\n\n";
+
             return output;
         }
         /// <summary>
@@ -728,6 +752,7 @@ namespace Data_Objects
             string genTempalte = genManagerTemplateFile();
             string export = genManagerExport();
             string count = genManagerCount();
+            string singleEdit = genManagerSingleEdit();
             //String dropdown = genManagerDropDown();
             string footer = "\n}\n";
             result = result
@@ -743,9 +768,10 @@ namespace Data_Objects
                 + fileRead
                 + batchAdd
                 + validator
-                +genTempalte
+                + genTempalte
                 + export
-                +count
+                + count
+                + singleEdit
                 // + dropdown
                 + footer
                 ;
@@ -811,11 +837,11 @@ namespace Data_Objects
             result = result + "public int addBatchOf" + name + "(List<" + name + "> " + "_" + name + "s){\n";
             result += "int result = 0;\n";
             result += "try\n{";
-            result +="result =  _" + name.firstCharLower() + "Accessor.addBatchOf" + name + "(_" + name + "s));\n";
+            result += "result =  _" + name.firstCharLower() + "Accessor.addBatchOf" + name + "(_" + name + "s));\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
-            result +=  "throw new ApplicationException(\"" + name + " not added\" + ex.InnerException.Message, ex);\n";
+            result += "throw new ApplicationException(\"" + name + " not added\" + ex.InnerException.Message, ex);\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
@@ -982,14 +1008,13 @@ namespace Data_Objects
             return getfkThing;
         }
 
-        private string genManagerFileWrite() {
-            
+        private string genManagerFileWrite()
+        {
 
-
-            string result = "int write" + name + "sToFile(List<" + name + "> "+name+"s, string path){\n";
+            string result = "int write" + name + "sToFile(List<" + name + "> " + name + "s, string path){\n";
             result += "int result = 0;;\n";
             result += "try\n{";
-            result += "result = _"+name.ToLower()+"Accessor.write" + name + "sToFile(" + name + "s, path);\n";
+            result += "result = _" + name.ToLower() + "Accessor.write" + name + "sToFile(" + name + "s, path);\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
@@ -1001,12 +1026,13 @@ namespace Data_Objects
 
             return result;
         }
-        private string genManagerFileRead() {
-            
+        private string genManagerFileRead()
+        {
+
             string result = "List<" + name + "> read" + name + "sFromFile(string path){\n";
-            result += "List<"+name+"> results = new List<"+name+">();\n";
+            result += "List<" + name + "> results = new List<" + name + ">();\n";
             result += "try\n{";
-            result = result + "results = _"+name.ToLower()+"Accessor.read" + name + "sFromFile(path);\n";
+            result = result + "results = _" + name.ToLower() + "Accessor.read" + name + "sFromFile(path);\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
@@ -1048,31 +1074,31 @@ namespace Data_Objects
             return comment + updateThing;
         }
 
-        private string genManagerTemplateFile() {
+        private string genManagerTemplateFile()
+        {
             String result = "\n";
             result = result + "public FileStream get" + name + "TempalteFile(){\n";
             result += "FileStream result = null;;\n";
-            
-            
+
             result += "try\n{";
-            result = result + "result = "+name+"Accessor.get" + name + "TempalteFile();\n";
+            result = result + "result = " + name + "Accessor.get" + name + "TempalteFile();\n";
             result += "}\n";
             result += "catch (Exception ex)\n";
             result += "{\n";
             result = result + "throw new ApplicationException(\"" + name + " tempalte not generated\" + ex.InnerException.Message, ex);;\n";
             result += "}\n";
-            
+
             result += "return result;\n";
             result += "}\n";
             result += "\n";
-            return  result;
+            return result;
 
         }
-        private string genManagerExport() {
+        private string genManagerExport()
+        {
             String result = "\n";
             result = result + "public FileStream export" + name + "ToFile(){\n";
             result += "FileStream result = null;;\n";
-
 
             result += "try\n{";
             result = result + "result = " + name + "Accessor.export" + name + "ToFile();\n";
@@ -1081,15 +1107,15 @@ namespace Data_Objects
             result += "{\n";
             result = result + "throw new ApplicationException(\"" + name + " export not generated\" + ex.InnerException.Message, ex);;\n";
             result += "}\n";
-            
+
             result += "return result;\n";
             result += "}\n";
             result += "\n";
             return result;
 
-
         }
-        private string genManagerCount() {
+        private string genManagerCount()
+        {
             string retrieveAll = "";
             retrieveAll = retrieveAll + "\npublic int count" + name + "(";
             string comma = "";
@@ -1104,17 +1130,17 @@ namespace Data_Objects
             retrieveAll += "){\n";
             retrieveAll = retrieveAll + "int result =0;\n";
             retrieveAll += "try{\n";
-            retrieveAll = retrieveAll + "result = _" + name.ToLower() + "Accessor.count" + name + "("; 
-            comma = ""; 
+            retrieveAll = retrieveAll + "result = _" + name.ToLower() + "Accessor.count" + name + "(";
+            comma = "";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
-                    retrieveAll += comma +  r.column_name;
+                    retrieveAll += comma + r.column_name;
                     comma = ",";
                 }
             }
-            
+
             retrieveAll += ");\n";
             retrieveAll += "if (result == 0){\n";
             retrieveAll = retrieveAll + "throw new ApplicationException(\"Unable to retrieve " + name + "s\" );\n";
@@ -1127,6 +1153,38 @@ namespace Data_Objects
             return retrieveAll;
 
         }
+
+        private string genManagerSingleEdit()
+        {
+            string updateThing = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                updateThing += "int edit" + name + "_" + r.column_name + "(_old" + name + " , " + name + " _new" + name + "){\n";
+                updateThing += "int result =0 ;\n";
+                updateThing += "bool oldIsValid = false;\n";
+                updateThing += "bool newIsValid = false;\n";
+                updateThing += "ValidateModel(old" + name + ",ref oldIsValid);\n";
+                updateThing += "ValidateModel(new" + name + ",ref newIsValid);\n";
+                updateThing += "if (oldIsValid&&newIsValid){\n";
+                updateThing += "try{\n";
+                updateThing = updateThing + "result = _" + name.ToLower() + "Accessor.update" + name + "_" + r.column_name + "(old" + name + ", new" + name + ");\n";
+                updateThing += "if (result == 0){\n";
+                updateThing = updateThing + "throw new ApplicationException(\"Unable to update " + name + "\" );\n";
+                updateThing += "}\n";
+                updateThing += "}\n";
+                updateThing += "catch (Exception ex){\n";
+                updateThing += "throw ex;\n";
+                updateThing += "}\n";
+                updateThing += "}\n";
+                updateThing += "return result;\n}\n";
+
+            }
+            return updateThing;
+        }
         /// Generates a c# data object with markup reflecting min and max length, etc.
         /// Jonathan Beck
         /// </summary>
@@ -1135,7 +1193,6 @@ namespace Data_Objects
         {
             _ = commentBox.GenXMLClassComment(this, XMLClassType.CSharpDataObject);
             string output = "public class " + name + "\n{\n";
-            
 
             int count = 0;
             foreach (Column r in columns)
@@ -1150,7 +1207,8 @@ namespace Data_Objects
                 {
                     DataAnnotationLength = "[MaxLength(" + r.length + "),MinLength(3)]\n";
                 }
-                else {
+                else
+                {
                     DataAnnotationLength = "[Range(0, 100)]\n";
                 }
                 String DataAnnotationDisplayName = "[Display(Name = \"" + r.column_name.bracketStrip() + "\")]\n";
@@ -1187,7 +1245,8 @@ namespace Data_Objects
             output += genCSharpConstructor();
             return output;
         }
-        private string genCSharpConstructor() {
+        private string genCSharpConstructor()
+        {
             //default
             string defaultConstructor = "\npublic " + name + "(){}\n";
             //param
@@ -1224,7 +1283,7 @@ namespace Data_Objects
             {
                 if (r.primary_key == 'y' || r.primary_key == 'Y' || r.unique == 'y' || r.unique == 'Y')
                 {
-                    ParamConstructor2 +=  "\n." + r.column_name + " = " + r.column_name.ToLower() + ";";
+                    ParamConstructor2 += "\n." + r.column_name + " = " + r.column_name.ToLower() + ";";
                 }
             }
             ParamConstructor2 += "\n}\n";
@@ -1318,7 +1377,7 @@ namespace Data_Objects
         private string genSPfooter(int mode)
         {
             string returntype = "output";
-            if (mode == 2||mode==4) { returntype = "rows"; }
+            if (mode == 2 || mode == 4) { returntype = "rows"; }
             string output = " \ncatch (Exception ex)\n"
 + "{\n"
 + "    throw ex;\n"
@@ -1327,10 +1386,11 @@ namespace Data_Objects
 + "{\n"
 + "    conn.Close();\n"
 + "}\n";
-            if (mode == 4) {
+            if (mode == 4)
+            {
                 output += "}\n";
             }
-output+="return " + returntype + ";\n}\n";
+            output += "return " + returntype + ";\n}\n";
             return output;
         }
         /// <summary>
@@ -1345,7 +1405,7 @@ output+="return " + returntype + ";\n}\n";
             createThing += "){\n";
             createThing += genSPHeaderA("sp_insert_" + name);
             //add parameters
-            
+
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -1373,7 +1433,8 @@ output+="return " + returntype + ";\n}\n";
             return createThing;
         }
 
-        private string genCSharpDatabaseAccessorBatchAdd() {
+        private string genCSharpDatabaseAccessorBatchAdd()
+        {
             string createThing = commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Add);
             createThing += "\npublic int addBatchOf" + name + "(List<" + name + "> _" + name.ToLower();
             createThing += "s){\n";
@@ -1405,7 +1466,6 @@ output+="return " + returntype + ";\n}\n";
             //cath block and onwards
             createThing += genSPfooter(4);
             return createThing;
-
 
         }
 
@@ -1744,7 +1804,7 @@ output+="return " + returntype + ";\n}\n";
                 if (fk.mainTable == name)
                 {
                     retrieveAllThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Select_Distinct_For_Dropdown);
-                    retrieveAllThing = retrieveAllThing + "public List<"+ fk.referenceTable + "> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
+                    retrieveAllThing = retrieveAllThing + "public List<" + fk.referenceTable + "> selectDistinct" + fk.referenceTable + "ForDropDown(){\n";
                     retrieveAllThing += genSPHeaderC("String", "sp_select_distinct_and_active_" + fk.referenceTable + "_for_dropdown");
                     //no paramaters to set or add
                     //excute the quuery
@@ -1763,15 +1823,17 @@ output+="return " + returntype + ";\n}\n";
             }
             return retrieveAllThing;
         }
-        private string genCharpDatabaseAccessorWrite() {
-            string result = "public int write" + name + "sToFile(List<"+name+"> "+name+"s,string path){\n";
+        private string genCharpDatabaseAccessorWrite()
+        {
+            string result = "public int write" + name + "sToFile(List<" + name + "> " + name + "s,string path){\n";
             result += "int result=0;\n";
             result += "try\n{";
             result += "StreamWriter streamWriter = new StreamWriter(path);\n";
             result += "foreach (" + name + " " + name.ToLower() + " in " + name + "s){\n";
             result += "streamWriter.WriteLine(\n";
             string tab = "";
-            foreach (Column r in columns) {
+            foreach (Column r in columns)
+            {
                 result += tab + name.ToLower() + ".get" + r.column_name + "()\n";
                 tab = "+\"\\t\"+";
             }
@@ -1789,8 +1851,9 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        private string genCharpDatabaseAccessorRead() {
-            string result = "public List<"+name+"> read"+name+"sFromFile(string path){\n";
+        private string genCharpDatabaseAccessorRead()
+        {
+            string result = "public List<" + name + "> read" + name + "sFromFile(string path){\n";
             result += "List<name> " + name + "s = new List<" + name + ">();\n";
             result += "try\n{";
             result += "StreamReader fileReader = new StreamReader(path);\n";
@@ -1799,27 +1862,28 @@ output+="return " + returntype + ";\n}\n";
             result += "{\n";
             result += "string line = fileReader.ReadLine();\n";
             result += "string[] parts;\n";
-            result += " if (line.Length > "+(columns.Count-1)+") //is this line long enough?\n";
+            result += " if (line.Length > " + (columns.Count - 1) + ") //is this line long enough?\n";
             result += "{\n";
             result += "parts = line.Split(separator);\n";
-            result += "if (parts.Count() > "+ (columns.Count - 1) + ")  //are all properties present?\n";
+            result += "if (parts.Count() > " + (columns.Count - 1) + ")  //are all properties present?\n";
             int i = 0;
-            foreach (Column r in columns) {
+            foreach (Column r in columns)
+            {
                 if (r.increment == 0)
                 {
-                    result += r.data_type.toCSharpDataType()+" " + r.column_name.ToLower() + "=parts[" + i + "]\n";
+                    result += r.data_type.toCSharpDataType() + " " + r.column_name.ToLower() + "=parts[" + i + "]\n";
                     i++;
                 }
             }
-            result += name+" "+name.ToLower()+" = new "+ name+"(";
+            result += name + " " + name.ToLower() + " = new " + name + "(";
             string comma = "";
             foreach (Column r in columns)
             {
-                result += comma+r.column_name.ToLower();
+                result += comma + r.column_name.ToLower();
                 comma = ", ";
             }
             result += ");\n";
-            result += name+"s.Add("+name.ToLower()+");\n";
+            result += name + "s.Add(" + name.ToLower() + ");\n";
             result += "}\n";
             result += "}\n";
             result += "}\n";
@@ -1829,7 +1893,7 @@ output+="return " + returntype + ";\n}\n";
             result += "{\n";
             result = result + "throw new ApplicationException(\"" + name + "s not read fom File\" + ex.InnerException.Message, ex);;\n";
             result += "}\n";
-            result += "return "+name+"s;\n";
+            result += "return " + name + "s;\n";
             result += "}\n";
             result += "\n";
 
@@ -1874,11 +1938,92 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        /// <summary>
-        /// Generates a rudamentary xaml window for creating records for  this <see cref="table"/> 
-        /// Jonathan Beck
-        /// </summary>
-        /// <returns>A string that is xaml window for adding to this table
+        private string genCSharpDatabaseAccessorUpdateSingle()
+        {
+            string updateThing = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                updateThing += commentBox.GenXMLMethodComment(this, XML_Method_Type.CSharp_Accessor_Update);
+                updateThing += "\npublic int update" + name + "_" + r.column_name + "(";
+                updateThing = updateThing + name + " _old" + name + " , " + name + " _new" + name;
+                updateThing += "){\n";
+                updateThing += genSPHeaderA("sp_update_" + name + "_" + r.column_name);
+                //add parameters
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y') || s.increment == 1)
+                    {
+                        updateThing = updateThing + "cmd.Parameters.Add(\"@old" + s.column_name.bracketStrip() + "\", SqlDbType." + s.data_type.bracketStrip().toSQLDBType(s.length) + ");\n";
+                    }
+                }
+                updateThing = updateThing + "cmd.Parameters.Add(\"@old" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                updateThing = updateThing + "cmd.Parameters.Add(\"@new" + r.column_name.bracketStrip() + "\", SqlDbType." + r.data_type.bracketStrip().toSQLDBType(r.length) + ");\n";
+                //setting parameters
+                updateThing += "\n //We need to set the parameter values\n";
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y') || s.increment == 1)
+                    {
+                        updateThing = updateThing + "cmd.Parameters[\"@old" + s.column_name.bracketStrip() + "\"].Value = _old" + name + "." + s.column_name.bracketStrip() + ";\n";
+                    }
+                }
+                updateThing = updateThing + "cmd.Parameters[\"@old" + r.column_name.bracketStrip() + "\"].Value = _old" + name + "." + r.column_name.bracketStrip() + ";\n";
+                updateThing = updateThing + "cmd.Parameters[\"@new" + r.column_name.bracketStrip() + "\"].Value = _new" + name + "." + r.column_name.bracketStrip() + ";\n";
+                //excute the quuery
+                updateThing += "try \n { \n //open the connection \n conn.Open();  ";
+                updateThing += "//execute the command and capture result\n";
+                updateThing += "rows = cmd.ExecuteNonQuery();\n";
+                updateThing += "if (rows == 0) {\n //treat failed update as exception \n ";
+                updateThing += "throw new ArgumentException(\"invalid values, update failed\");\n}\n}";
+                //capture reuslts
+                updateThing += "";
+                //cath block and onwards
+                updateThing += genSPfooter(2);
+            }
+            return updateThing;
+        }
+        private string genCSharpFileAccessorUpdateSingle()
+        {
+            string updateThing = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                string result = "public int update" + name + "_" + r.column_name + "(" + name + " old" + name + ", " + name + " new" + name + ")\n{\n";
+                result += "int result = 0;\n";
+                result += "try\n";
+                result += "{\n";
+                result += "result += delete" + name + "(old" + name + ");\n";
+                result += "if (result != 1)";
+                result += "{\n";
+                result += "throw new ApplicationException(\"unable to delete " + name.ToLower() + "\");\n";
+                result += "}\n";
+                result += "result += add" + name + "(new" + name + ");";
+                result += "if (result != 2)";
+                result += "{\n";
+                result += "throw new ApplicationException(\"unable to add " + name.ToLower() + "\");\n";
+                result += "}\n";
+                result += "}\n";
+                result += "catch (Exception ex) {\n";
+                result += "throw new ApplicationException(\"unable to update " + name.ToLower() + "\", ex);\n";
+                result += "}\n";
+                result += "return result;\n";
+                result += "}\n";
+
+                return result;
+
+            }
+            return updateThing;
+        }
+
         public string genXAMLWindow()
         {
             string comment = commentBox.genCommentBox(name, Component_Enum.CSharp_XAML_Window);
@@ -2290,7 +2435,7 @@ output+="return " + returntype + ";\n}\n";
                 string getter = commentBox.genJavaGetterJavaDoc(name, r);
                 getter += "public " + r.data_type.bracketStrip().toJavaDataType() + " get" + r.column_name + "() {\n return " + r.column_name + ";\n}";
                 string setter = commentBox.genJavaSetterJavaDoc(name, r);
-                 setter += "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
+                setter += "public void set" + r.column_name + "(" + r.data_type.bracketStrip().toJavaDataType() + " " + r.column_name + ")";
                 if (r.data_type.Equals("datetime"))
                 {
                     setter += "throws ParseException";
@@ -2298,25 +2443,36 @@ output+="return " + returntype + ";\n}\n";
                 setter += " {\n";
                 if (r.data_type.Equals("nvarchar"))
                 {
-                    setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^.,!()A-Za-z0-9 - ]\",\"\");\n";
-                    setter = setter + "if(" + r.column_name + ".length()<4){\n";
-                    setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too short.\");\n}\n";
-                    setter = setter + "if(" + r.column_name + ".length()>" + r.length + "){\n";
-                    setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too long.\");\n}\n";
+                    if (r.column_name.ToLower().Contains("id"))
+                    {
+                        setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^.,!()A-Za-z0-9 - ]\",\"\");\n";
+                        setter = setter + "if(" + r.column_name + ".length()<36){\n";
+                        setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too short.\");\n}\n";
+                        setter = setter + "if(" + r.column_name + ".length()>36){\n";
+                        setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too long.\");\n}\n";
+                    }
+                    else
+                    {
+                        setter = setter + r.column_name + " = " + r.column_name + ".replaceAll(\"[^.,!()A-Za-z0-9 - ]\",\"\");\n";
+                        setter = setter + "if(" + r.column_name + ".length()<4){\n";
+                        setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too short.\");\n}\n";
+                        setter = setter + "if(" + r.column_name + ".length()>" + r.length + "){\n";
+                        setter = setter + "throw new IllegalArgumentException(\"" + r.column_name + " is too long.\");\n}\n";
+                    }
                 }
-                if (r.data_type.Equals("int"))
+                else if (r.data_type.Equals("int"))
                 {
                     setter += "if (" + r.column_name + "<0||" + r.column_name + ">10000){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Negative\");\n";
                     setter += "}\n";
                 }
-                if (r.data_type.Equals("decimal"))
+                else if (r.data_type.Equals("decimal"))
                 {
                     setter += "if (" + r.column_name + "<0||" + r.column_name + ">10000){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Negative\");\n";
                     setter += "}\n";
                 }
-                if (r.data_type.Equals("datetime"))
+                else if (r.data_type.Equals("datetime"))
                 {
                     setter += "String minDate = \"01/01/1991\";\n";
                     setter += "DateFormat df = new SimpleDateFormat(\"dd/MM/yyyy\");\n";
@@ -2326,7 +2482,7 @@ output+="return " + returntype + ";\n}\n";
                     setter += "if (" + r.column_name + ".compareTo(_minDate)<0){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be Before 1991\");\n";
                     setter += "}\n";
-                    setter += "if (" + r.column_name + ".compareTo(_maxDate))>0{\n";
+                    setter += "if (" + r.column_name + ".compareTo(_maxDate)>0){\n";
                     setter += "throw new IllegalArgumentException(\"" + r.column_name + " Can Not Be after 2100\");\n";
                     setter += "}\n";
 
@@ -2429,7 +2585,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object.
-       
+
         public string genJavaDAO()
         {
             string result = "";
@@ -2448,6 +2604,7 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOFileRead();  //done
             result += genJavaDAOFileWrite(); //pending
             result += genJavaDAOSQLFileWrite();
+            result += genJavaDAOUpdateSingle();
             result += genJavaDAOFooter(); //work
 
             return result;
@@ -2551,8 +2708,10 @@ output+="return " + returntype + ";\n}\n";
 
             //gen count
             result += "int get" + name + "Count(String Search_term";
-            foreach (Column r in columns) {
-                if (r.foreign_key != "") {
+            foreach (Column r in columns)
+            {
+                if (r.foreign_key != "")
+                {
                     result += ", String " + r.column_name;
                 }
             }
@@ -2566,7 +2725,17 @@ output+="return " + returntype + ";\n}\n";
             result += "int write" + name + "ToFile(List<" + name + "> " + name + "s, String path) throws IOException;\n";
             //write to mySQL
             result += "int write" + name + "ToSQLInsert(List<" + name + "> " + name + "s, String path) throws IOException;\n";
-            
+
+            //edit each filed
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                result += "int update" + name + "_" + r.column_name + "(" + name + " _old" + name + " , " + name + " _new" + name + ") throws SQLException;\n";
+            }
+
             result += "}\n";
 
             return result;
@@ -2983,7 +3152,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated DAO object delete method.
-        
+
         private string genJavaDelete()
         {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Delete);
@@ -3022,10 +3191,12 @@ output+="return " + returntype + ";\n}\n";
             }
             result += ")}\")){\n";
 
-                    int _count = 1;
-            foreach (Column r in columns) {
-                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y')){
-                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "("+ _count + "," + name.ToLower() + "ID);\n";
+            int _count = 1;
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + _count + "," + name.ToLower() + "ID);\n";
                     count++;
                 }
             }
@@ -3134,11 +3305,9 @@ output+="return " + returntype + ";\n}\n";
             result += "\n";
             return result;
         }
-        private string genJavaDAOCount() {
+        private string genJavaDAOCount()
+        {
             string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
-            string comma = "";
-            string nullValue = "";
-            
             result = result + "public int get" + name + "Count(String Search_term";
             foreach (Column r in columns)
             {
@@ -3166,7 +3335,7 @@ output+="return " + returntype + ";\n}\n";
             result += "try(ResultSet resultSet = statement.executeQuery()) {\n";
             result += "while (resultSet.next()) {\n";
             result += "result = resultSet.getInt(1);\n";
-            result+="\n}\n}\n}\n";
+            result += "\n}\n}\n}\n";
             result += "} catch (SQLException e) {\n";
             result = result + "throw new RuntimeException(\"Could not retrieve " + name + "s. Try again later\");\n";
             result += "}\n";
@@ -3174,7 +3343,8 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string genJavaDAOAddBatch() {
+        private string genJavaDAOAddBatch()
+        {
             string result = "";
             string comma = "";
             result += "public int addBatchOf" + name + "s(List<" + name + "> " + name.ToLower() + "s) throws SQLException{\n";
@@ -3202,7 +3372,7 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += "numRowsAffected += statement.executeUpdate();\n";
-            
+
             result += "} catch (SQLException e) {\n";
             result = result + "continue;\n";
             result += "}\n";
@@ -3214,13 +3384,13 @@ output+="return " + returntype + ";\n}\n";
             result += "return numRowsAffected;\n}";
             result += "\n";
             return result;
-            
+
         }
 
-
-        private string genJavaDAOFileRead() {
-            string result = "public List<"+name+"> get"+name+"sFromFile(File file) throws FileNotFoundException {\n";
-            result += "List<"+name+"> results = new ArrayList<>();\n";
+        private string genJavaDAOFileRead()
+        {
+            string result = "public List<" + name + "> get" + name + "sFromFile(File file) throws FileNotFoundException {\n";
+            result += "List<" + name + "> results = new ArrayList<>();\n";
             result += "BufferedReader reader;\n";
             result += "try {\n";
             result += "reader = new BufferedReader(new FileReader(file));\n";
@@ -3234,7 +3404,7 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.increment == 0)
                 {
-                    result += r.data_type.toJavaDataType() + " " + r.column_name.ToLower() + "=("+r.data_type.toJavaDataType()+") parts.get(" + i + ");\n";
+                    result += r.data_type.toJavaDataType() + " " + r.column_name.ToLower() + "=(" + r.data_type.toJavaDataType() + ") parts.get(" + i + ");\n";
                     i++;
                 }
             }
@@ -3248,7 +3418,7 @@ output+="return " + returntype + ";\n}\n";
             result += ");\n";
             result += "results.add(" + name.ToLower() + ");\n";
             result += "line = reader.readLine();\n";
-            
+
             result += "}\n";
             result += "} catch (Exception e) {\n";
             result += "throw new RuntimeException(e.getMessage()+\"\\n\\nCould Not Read " + name + "s. Please Check your file formatting;\");\n";
@@ -3256,7 +3426,6 @@ output+="return " + returntype + ";\n}\n";
             result += "return results;\n";
 
             result += "}\n";
-
 
             return result;
         }
@@ -3274,15 +3443,17 @@ output+="return " + returntype + ";\n}\n";
             result += "PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);\n";
             result += "writer.println(\"";
             string tab = "";
-            foreach (Column r in columns) {
+            foreach (Column r in columns)
+            {
                 result += tab + r.column_name;
                 tab = "\\t";
             }
             tab = "";
             result += "\");\n";
             result += "for (" + name + " " + "_" + name.ToLower() + " : " + name + "s) {\n";
-            foreach (Column r in columns) {
-                result += "writer.print("+tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
+            foreach (Column r in columns)
+            {
+                result += "writer.print(" + tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
                 tab = "\"\\t\"+";
             }
             result += "writer.print(\"\\n\")\n";
@@ -3293,7 +3464,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
-        
+
         private string genJavaDAOSQLFileWrite()
         {
             string result = "";
@@ -3306,7 +3477,7 @@ output+="return " + returntype + ";\n}\n";
             result += "}";
 
             result += "PrintWriter writer = new PrintWriter(path, StandardCharsets.UTF_8);\n";
-            result += "writer.println(\"INSERT\\t INTO \\t"+name+"\\t(";
+            result += "writer.println(\"INSERT\\t INTO \\t" + name + "\\t(";
             string tab = "";
             foreach (Column r in columns)
             {
@@ -3323,21 +3494,70 @@ output+="return " + returntype + ";\n}\n";
                 if (r.data_type.ToLower().Equals("int") || r.data_type.ToLower().Equals("decimal"))
                 {
                     result += "writer.print(" + tab + "_" + name.ToLower() + ".get" + r.column_name + "());\n";
-                    
+
                 }
-                else {
-                    result += "writer.print(" + tab+"\"'\""+ "_" + name.ToLower() + ".get" + r.column_name + "()+\"'\");\n";
+                else
+                {
+                    result += "writer.print(" + tab + "\"'\"" + "_" + name.ToLower() + ".get" + r.column_name + "()+\"'\");\n";
 
                 }
                 tab = "\" , \"+";
             }
-            
+
             result += "writer.print(\"),\\n\");\n";
             result += "result ++;\n";
             result += "}\n";
             result += "writer.close();\n";
             result += "return result;\n";
             result += "}\n";
+            return result;
+        }
+        private string genJavaDAOUpdateSingle()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
+                result += "\n public int update" + name + "_" + r.column_name + "(_old" + name + " , " + name + " _new" + name + ") throws SQLException {\n";
+                result += "int result = 0;\n";
+                result += "try (Connection connection = getConnection()) {\n";
+                result += "if (connection !=null){\n";
+                result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_update_" + name + "_" + r.column_name + "(";
+                string comma = "";
+                foreach (Column s in columns)
+                {
+                    if (s.primary_key == 'y' || s.primary_key == 'Y')
+                    {
+                        result = result + comma + "? ";
+                        comma = ",";
+                    }
+                }
+                result = result + comma + "?,?";
+                result += ")}\"))\n {\n";
+                int count = 1;
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                    {
+                        result = result + "statement.set" + s.data_type.toJavaDAODataType() + "(" + count + ",_old" + name + ".get" + s.column_name.bracketStrip() + "());\n";
+                        count++;
+                    }
+                }
+                result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",_old" + name + ".get" + r.column_name.bracketStrip() + "());\n";
+                count++;
+                result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",_new" + name + ".get" + r.column_name.bracketStrip() + "());\n";
+                count++;
+                result += "result=statement.executeUpdate();\n";
+                result += "} catch (SQLException e) {\n";
+                result = result + "throw new RuntimeException(\"Could not update " + name + " . Try again later\");\n";
+                result += "}\n}\n}\n return result;\n}\n";
+
+            }
             return result;
         }
 
@@ -3358,7 +3578,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated create servlet.
-       
+
         public string genCreateServelet()
         {
             string result = "";
@@ -3373,7 +3593,7 @@ output+="return " + returntype + ";\n}\n";
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
-            
+
             Boolean hasFK = false;
             foreach (Column r in columns)
             {
@@ -3385,7 +3605,7 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             if (hasFK)
-                
+
             {
                 foreach (Column r in columns)
                 {
@@ -3429,7 +3649,6 @@ output+="return " + returntype + ";\n}\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Add " + name + "\");\n";
 
-
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Add" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
             //this only creates the doPost method
@@ -3438,7 +3657,7 @@ output+="return " + returntype + ";\n}\n";
             result += "@Override\n";
             result += "  protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
-            
+
             //get data
             foreach (Column r in columns)
             {
@@ -3477,7 +3696,8 @@ output+="return " + returntype + ";\n}\n";
                     {
                         result = result + name.ToLower() + ".set" + r.column_name + "(LocalDate.parse(_" + r.column_name + "));\n";
                     }
-                    else if (r.data_type.ToLower().Contains("decimal")) {
+                    else if (r.data_type.ToLower().Contains("decimal"))
+                    {
                         result = result + name.ToLower() + ".set" + r.column_name + "(Double.valueOf(_" + r.column_name + "));\n";
 
                     }
@@ -3575,13 +3795,13 @@ output+="return " + returntype + ";\n}\n";
             result += "<div class = \"container\">\n";
             result += "<div class=\"row\">\n";
             result += "<div class=\"col-12\">\n";
-            result +=  "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + "s</h1>\n";
-            result +=  "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${count}" + name.Replace("_", " ") + "$count ne 1 ? \"s\" : \"\"}</p>\n";
-            result +=  "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
-            result +=  "<c:if test=\"${" + name + "s.size() > 0}\">\n";
+            result += "<h1>All " + settings.database_name + " " + name.Replace("_", " ") + "s</h1>\n";
+            result += "<p>There ${" + name + "s.size() eq 1 ? \"is\" : \"are\"}&nbsp;${count}" + name.Replace("_", " ") + "$count ne 1 ? \"s\" : \"\"}</p>\n";
+            result += "Add " + name.Replace("_", " ") + "   <a href=\"add" + name + "\">Add</a>\n";
+            result += "<c:if test=\"${" + name + "s.size() > 0}\">\n";
 
             result += "<div class=\"search-container\">\n";
-            result += "<form action=\"all-"+name+"s\">\n";
+            result += "<form action=\"all-" + name + "s\">\n";
             result += "<input type=\"text\" placeholder=\"Search..\" id=\"searchBox\" name=\"search\">\n";
             foreach (Column r in columns)
             {
@@ -3590,7 +3810,7 @@ output+="return " + returntype + ";\n}\n";
                     string[] parts = r.foreign_keys[0].Split('.');
                     string fieldname = "input" + name.ToLower() + r.column_name;
                     string errorname = name.ToLower() + r.column_name + "error";
-                    
+
                     result = result + "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
                     result += "<div class=\"input-group input-group-lg\">\n";
                     result = result + "<select  class=\"<c:if test=\"${not empty results." + errorname + "}\">is-invalid</c:if> form-control border-0 bg-light rounded-end ps-1\" placeholder=\"" + r.column_name + "\" id=\"" + fieldname + "\" name=\"" + fieldname + "\" value=\"${fn:escapeXml(results." + r.column_name + ")}\">\n";
@@ -3602,7 +3822,7 @@ output+="return " + returntype + ";\n}\n";
                     result = result + "<c:if test=\"${not empty results." + errorname + "}\">\n";
                     result = result + "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
                     result += "</c:if>\n";
-                    
+
                     result += "</div>\n";
                 }
             }
@@ -3610,7 +3830,6 @@ output+="return " + returntype + ";\n}\n";
             result += "</form>\n";
             result += "</div>\n";
             result += "";
-
 
             result += "Export " + name.Replace("_", " ") + "   <a href=\"export" + name + "?mode=export\">Add</a>\n";
             result += "Write To SQL File " + name.Replace("_", " ") + "   <a href=\"export" + name + "?mode=SQL\">Add</a>\n";
@@ -3635,11 +3854,11 @@ output+="return " + returntype + ";\n}\n";
             result += "</thead>\n";
             result += "<tbody>\n";
             result = result + "<c:forEach items=\"${" + name + "s}\" var=\"" + name.ToLower() + "\">\n";
-            result += "<tr id=\"${"+name.ToLower()+"."+name.ToLower()+"_ID}row\">\n";
+            result += "<tr id=\"${" + name.ToLower() + "." + name.ToLower() + "_ID}row\">\n";
             foreach (Column r in columns)
             {
                 //https://stackoverflow.com/questions/21755757/first-character-of-string-lowercase-c-sharp
-                if (!r.data_type.ToLower().Equals("bit")&&!r.data_type.ToLower().Contains("bool"))
+                if (!r.data_type.ToLower().Equals("bit") && !r.data_type.ToLower().Contains("bool"))
                 {
                     if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                     {
@@ -3648,7 +3867,8 @@ output+="return " + returntype + ";\n}\n";
                             result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\"> Details </a></td>\n";
 
                         }
-                        else {
+                        else
+                        {
                             result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=view\">${fn:escapeXml(" + name.ToLower() + "." + name.ToLower() + "_ID)}</a></td>\n";
                         }
                     }
@@ -3659,7 +3879,7 @@ output+="return " + returntype + ";\n}\n";
                 }
                 else
                 {
-                    result = result + "<td><input type=\"checkbox\" id=\"${"+name.ToLower()+"."+name.ToLower()+"_ID"+r.column_name+"}\" disabled <c:if test=\"${" + name.ToLower() + ".is_active}\">checked</c:if>></td>\n";
+                    result = result + "<td><input type=\"checkbox\" id=\"${" + name.ToLower() + "." + name.ToLower() + "_ID" + r.column_name + "}\" disabled <c:if test=\"${" + name.ToLower() + ".is_active}\">checked</c:if>></td>\n";
                 }
             }
             result = result + "<td><a href = \"edit" + name.ToLower() + "?" + name.ToLower() + "id=${" + name.ToLower() + "." + name.ToLower() + "_ID}&mode=edit\" > Edit </a></td>\n";
@@ -3671,8 +3891,8 @@ output+="return " + returntype + ";\n}\n";
                 "\t\t\t\t\t\t</c:choose>\">\n" +
                 "<c:if test=\"${!" + name.ToLower() + ".is_active}\">un</c:if>Delete </a></td> \n";
             result += "<td>\n<div> \n";
-            result += "<button class=\"delButton\" href=\"${"+name.ToLower()+"."+name.ToLower()+"_ID}\" >Delete</button> </div>\n";
-            result += "<div style=\"display: none;\" id=\"" + name.ToLower()+"."+name.ToLower()+"_IDStatus\"></div>\n";
+            result += "<button class=\"delButton\" href=\"${" + name.ToLower() + "." + name.ToLower() + "_ID}\" >Delete</button> </div>\n";
+            result += "<div style=\"display: none;\" id=\"" + name.ToLower() + "." + name.ToLower() + "_IDStatus\"></div>\n";
 
             result += " </td>\n";
             result += "</tr>\n";
@@ -3686,7 +3906,7 @@ output+="return " + returntype + ";\n}\n";
             result += "</div>\n";
             result += "<%--For displaying Previous link except for the 1st page --%>\n";
             result += "<c:if test=\"${currentPage != 1}\">\n";
-            result += "<form action=\"all-"+name+"s\" method=\"get\">\n";
+            result += "<form action=\"all-" + name + "s\" method=\"get\">\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -3703,7 +3923,7 @@ output+="return " + returntype + ";\n}\n";
             result += "</c:if>\n";
             result += "<%--For displaying Page numbers.\n";
             result += "The when condition does not display a link for the current page--%>\n";
-            result += "<form action=\"all-"+name+"s\" method=\"get\" >\n";
+            result += "<form action=\"all-" + name + "s\" method=\"get\" >\n";
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
@@ -3739,7 +3959,7 @@ output+="return " + returntype + ";\n}\n";
             result += "<input type=\"submit\" value=\"Next Page\" />\n";
             result += "</form>\n";
             result += "</c:if>\n";
-            
+
             result += "<div id=\"dialog\" title=\"Confirmation Required\">\n";
             result += "Are you sure about this?\n";
             result += "</div>\n";
@@ -3794,20 +4014,21 @@ output+="return " + returntype + ";\n}\n";
                                 result += "</div>\n";
                                 rowcount++;
                             }
-                            else {
-                                
+                            else
+                            {
+
                                 string fieldname = "input" + name.ToLower() + r.column_name;
                                 string errorname = name.ToLower() + r.column_name + "error";
-                                result +=   "<!-- " + r.column_name + " -->\n";
-                                result +=   "<div class =\"row\" id = \"row" + rowcount + "\">\n";
-                                result +=  "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
+                                result += "<!-- " + r.column_name + " -->\n";
+                                result += "<div class =\"row\" id = \"row" + rowcount + "\">\n";
+                                result += "<label for=\"" + fieldname + "\" class=\"form-label\">" + r.column_name + "</label>\n";
                                 result += "<div class=\"input-group input-group-lg\">\n";
                                 result += "<input type=\"radio\" id=\"" + fieldname + "true\" name=\"" + fieldname + "\" value=\"true\">";
                                 result += "<label for=\"" + fieldname + "true\">true</label><br>";
-                                result += "<input type=\"radio\" id=\""+fieldname+"false\" name=\""+fieldname+"\" value=\"false\">";
-                                result += "<label for=\""+fieldname+"false\">false</label><br>";
-                                result +=  "<c:if test=\"${not empty results." + errorname + "}\">\n";
-                                result +=  "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
+                                result += "<input type=\"radio\" id=\"" + fieldname + "false\" name=\"" + fieldname + "\" value=\"false\">";
+                                result += "<label for=\"" + fieldname + "false\">false</label><br>";
+                                result += "<c:if test=\"${not empty results." + errorname + "}\">\n";
+                                result += "<div class=\"invalid-feedback\">${results." + errorname + "}</div>\n";
                                 result += "</c:if>\n";
                                 result += "</div>\n";
                                 result += "</div>\n";
@@ -3860,7 +4081,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated view all servlet.</returns>
-        
+
         public string genviewAllServlet()
         {
             //this only creates the doGet method
@@ -3870,7 +4091,7 @@ output+="return " + returntype + ";\n}\n";
             result += genServletJavaDoc(ServletType.ViewAllSErvlet);
 
             result += "@WebServlet(\"/all-" + name + "s\")\n";
-            result += "public class All" + name + "sServlet extends HttpServlet {";
+            result += "public class All" + name + "sServlet extends HttpServlet {\n";
             result += initMethod();
             result += "@Override\n";
             result += "  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
@@ -3881,8 +4102,8 @@ output+="return " + returntype + ";\n}\n";
             {
                 if (r.foreign_key != "")
                 {
-                    result += "String _" + r.column_name.ToLower() + " = req.getParameter(\"" + r.column_name.ToLower() + "\")\n";
-                    result += "if (_"+r.column_name.ToLower()+"==null || _" + r.column_name.ToLower() + ".isEmpty()){\n";
+                    result += "String _" + r.column_name.ToLower() + " = req.getParameter(\"" + r.column_name.ToLower() + "\");\n";
+                    result += "if (_" + r.column_name.ToLower() + "==null || _" + r.column_name.ToLower() + ".isEmpty()){\n";
                     result += "_" + r.column_name.ToLower() + " = \"\";\n";
                     result += "}\n";
                 }
@@ -3915,9 +4136,9 @@ output+="return " + returntype + ";\n}\n";
                 {
                     string[] parts = r.references.Split('.');
                     //grab a list of the parents, assign them to the already existing static variable
-                    result += "List<"+parts[0]+"> all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
+                    result += "List<" + parts[0] + "> all" + parts[0] + "s = " + parts[0].ToLower() + "DAO.getDistinct" + parts[0] + "ForDropdown();\n";
                     //set them to the req attribute
-                    result +=  "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
+                    result += "req.setAttribute(\"" + parts[0] + "s\", all" + parts[0] + "s);\n";
                 }
             }
             result += name.ToLower() + "_count = " + name.ToLower() + "DAO.get" + name + "Count(search_term";
@@ -3943,13 +4164,13 @@ output+="return " + returntype + ";\n}\n";
             result += name.ToLower() + "s = new ArrayList<>();\n";
 
             result += "}\n";
-            result += "int total_pages = ("+name.ToLower()+"_count/page_size)+1;\n";
+            result += "int total_pages = (" + name.ToLower() + "_count/page_size)+1;\n";
             result += "req.setAttribute(\"noOfPages\", total_pages);\n";
-            result += "req.setAttribute(\"currentPage\", page_number);";
+            result += "req.setAttribute(\"currentPage\", page_number);\n";
 
             result = result + "req.setAttribute(\"" + name + "s\", " + name.ToLower() + "s);\n";
             result = result + "req.setAttribute(\"pageTitle\", \"All " + name + "s\");\n";
-            result = result + "req.setATtribute(\"count\","+name.ToLower()+"_count);\n";
+            result = result + "req.setAttribute(\"count\"," + name.ToLower() + "_count);\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/all-" + name + "s.jsp\").forward(req,resp);\n";
             result += "\n}\n}";
             //header comment
@@ -3964,7 +4185,7 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated delete servlet.</returns>
-        
+
         public string genDeleteServlet()
         {
             string result = commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Delete);
@@ -4040,14 +4261,14 @@ output+="return " + returntype + ";\n}\n";
             result += genServletJavaDoc(ServletType.ViewEditSErvlet);
             result = result + "\n@WebServlet(\"/edit" + name + "\")\n";
             result = result + "public class Edit" + name + "Servlet extends HttpServlet{\n";
-           
+
             result += initMethod();
             result += "\n @Override\n";
             result += "protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
             result += privLevelStatement();
             result += "String mode = req.getParameter(\"mode\");\n";
             result += "int primaryKey = -1;\n";
-            
+
             result += "try{\n";
             result = result + "primaryKey = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "id\"));\n";
             result += "}catch (Exception e) {\n";
@@ -4075,13 +4296,13 @@ output+="return " + returntype + ";\n}\n";
             result += "req.setAttribute(\"mode\",mode);\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Edit " + name + "\");\n";
-             foreach (Column r in columns)
+            foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
                     string[] parts = r.references.Split('.');
                     result = result + "List<" + parts[0] + "> all" + parts[0] + "s = null;\n";
-                    
+
                 }
             }
             result += "try {\n";
@@ -4129,19 +4350,19 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += "} catch (Exception e){\n";
-            result += "resp.sendRedirect(\"all-"+name+"s\");\n";
+            result += "resp.sendRedirect(\"all-" + name + "s\");\n";
             result += "return;\n";
             result += "}\n";
             result = result + "//to get the old " + name + "\n";
 
             result = result + name + " _old" + name + "= (" + name + ")session.getAttribute(\"" + name.ToLower() + "\");\n";
-            result += "if (_old"+name+"==null){\n";
-            result += "resp.sendRedirect(\"all-"+name.ToLower()+"s\");\n";
+            result += "if (_old" + name + "==null){\n";
+            result += "resp.sendRedirect(\"all-" + name.ToLower() + "s\");\n";
             result += "return;\n";
             result += "}\n";
             //for (int i=0; i<columns.Count)
 
-            result += "//to get the new "+name+"'s info\n";
+            result += "//to get the new " + name + "'s info\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -4174,11 +4395,11 @@ output+="return " + returntype + ";\n}\n";
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
                     }
-                    else if (r.data_type.ToLower().Contains("date")|| r.data_type.ToLower().Contains("time"))
+                    else if (r.data_type.ToLower().Contains("date") || r.data_type.ToLower().Contains("time"))
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(LocalDate.parse(_" + r.column_name + "));\n";
                     }
-                    else if (r.data_type.ToLower().Contains("decimal") )
+                    else if (r.data_type.ToLower().Contains("decimal"))
                     {
                         result = result + " _new" + name + ".set" + r.column_name + "(Double.valueOf(_" + r.column_name + "));\n";
                     }
@@ -4217,12 +4438,97 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n}\n";
             return result;
         }
+
+        public string genEditOneServlets(Column r)
+        {
+
+            //do get
+            string result = "";
+            result += importStatements(name, settings.database_name);
+            result += "import static com." + settings.owner_name + "." + settings.database_name + ".shared.ResultWriter.writeResult;\n";
+            //do get
+            result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
+            result += genServletJavaDoc(ServletType.ViewEditSErvlet);
+            result = result + "\n@WebServlet(\"/edit" + name + "_" + r.column_name + "_AJEX\")\n";
+            result = result + "public class Edit" + name + "_" + r.column_name + "_AJAX extends HttpServlet{\n";
+            result += genAJXErrorCodes(r);
+            result += initMethod();
+            result += "\n @Override\n";
+            result += "protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += "int result=NO_CHANGE;\n";
+            result += AJAXprivLevelStatement();
+            result += "int primaryKey = -1;\n";
+            result += r.data_type.toJavaDataType() + " old" + r.column_name + " =null;\n";
+            result += r.data_type.toJavaDataType() + " new" + r.column_name + " =null;\n";
+            result += "try{\n";
+            result += "primaryKey = Integer.parseInt(req.getParameter(\"" + name.ToLower() + "id\"));\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=INVALID_" + name.ToUpper() + "_ID;\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "try{\n";
+            result += "old" + r.column_name + " = req.getParameter(\"" + name.ToLower() + "_old" + r.column_name + "\");\n";
+            result += "if ( old" + r.column_name + "==null || old" + name + ".isEmpty()){\n";
+            result += "throw new ServletException(\"old value is empty.\");\n";
+            result += "}\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=OLD_" + r.column_name.ToUpper() + "_MISSING;\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "try{\n";
+            result += "new" + r.column_name + " = req.getParameter(\"" + name.ToLower() + "_new" + r.column_name + "\");\n";
+            result += "if ( new" + r.column_name + "==null || new" + name + ".isEmpty()){\n";
+            result += "throw new ServletException(\"old value is empty.\");\n";
+            result += "}\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=NEW_" + r.column_name.ToUpper() + "_INVALID;\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += name + " old" + name + " = new " + name + "();\n";
+            result += name + " new" + name + " = new " + name + "();\n";
+            result += "try{\n";
+            result += "old" + name + ".set" + name + "_ID(primaryKey);\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=-INVALID_" + name.ToUpper() + "_OBJECT;\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "try{\n";
+            result += "old" + name + ".set" + r.column_name + "(old" + r.column_name + ");\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=-INVALID_OLD_" + r.column_name.ToUpper() + ";\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "try{\n";
+            result += "new" + name + ".set" + r.column_name + "(new" + r.column_name + ");\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=-INVALID_NEW_" + r.column_name.ToUpper() + ";\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "try{\n";
+            result += "result=" + name.ToLower() + "DAO.update" + name + "_" + r.column_name + "(old" + name + " , new" + name + ");\n";
+            result += "}catch (Exception e) {\n ";
+            result += "result=DATABASE_ERROR;\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "writeResult(resp,result);\n";
+            result += "return;\n";
+            result += "}";
+
+            return result;
+        }
         /// <summary>
         /// Generates the View Single/Edit JSP for the Java  object for this <see cref="table"/> 
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for this object's associated View Single/Edit JSP.</returns>
-        
+
         public string genViewEditJSP()
         {
             int rowcount = 0;
@@ -4240,11 +4546,12 @@ output+="return " + returntype + ";\n}\n";
                 if (!r.column_name.ToLower().Contains("active"))
                 {
                     int i = 0;
-                    if (r.increment != 0 || r.default_value.ToLower().Contains("uuid")) {
+                    if (r.increment != 0 || r.default_value.ToLower().Contains("uuid"))
+                    {
                         result = result + "<!-- " + r.column_name + " -->\n";
                         result = result + "<div class =\"row\" id = \"row" + rowcount + "\">\n";
-                        result = result + "<h2>" + columns[i+1].column_name + "  :  \n";
-                        result = result + " ${fn:escapeXml(" + name.ToLower() + "." + columns[i+1].column_name.firstCharLower() + ")}</h2>\n";
+                        result = result + "<h2>" + columns[i + 1].column_name + "  :  \n";
+                        result = result + " ${fn:escapeXml(" + name.ToLower() + "." + columns[i + 1].column_name.firstCharLower() + ")}</h2>\n";
                         result += "</div>\n";
                         rowcount++;
 
@@ -4280,7 +4587,8 @@ output+="return " + returntype + ";\n}\n";
                             result += "</div>\n";
                             rowcount++;
                         }
-                        else {
+                        else
+                        {
                             string fieldname = "input" + name.ToLower() + r.column_name;
                             string errorname = name.ToLower() + r.column_name + "error";
                             result += "<!-- " + r.column_name + " -->\n";
@@ -4340,9 +4648,10 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        public string genUploadJSP() {
+        public string genUploadJSP()
+        {
             string result = "";
-            
+
             return result;
         }
 
@@ -4350,7 +4659,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "";
             result += importStatements(name, settings.database_name);
-            
+
             //change comment box
             //settings
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
@@ -4369,8 +4678,8 @@ output+="return " + returntype + ";\n}\n";
             result += "public void init()  {\n";
             result += name.ToLower() + "DAO = new " + name + "DAO();\n";
             result += "}\n";
-            result += "public void init( i"+name+"DAO "+name.ToLower()+"DAO){\n";
-            result += "this."+name.ToLower()+"DAO = "+name.ToLower()+"DAO;\n";
+            result += "public void init( i" + name + "DAO " + name.ToLower() + "DAO){\n";
+            result += "this." + name.ToLower() + "DAO = " + name.ToLower() + "DAO;\n";
             result += "}\n";
 
             //doget
@@ -4379,7 +4688,7 @@ output+="return " + returntype + ";\n}\n";
             result += privLevelStatement();
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             result = result + "req.setAttribute(\"pageTitle\", \"Upload " + name + "\");\n";
-            result += "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/upload_"+name+".jsp\").forward(req, resp);\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/upload_" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n";
 
             //dopost
@@ -4414,39 +4723,36 @@ output+="return " + returntype + ";\n}\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
             result += "req.setAttribute(\"results\", results);\n";
             result += "req.setAttribute(\"pageTitle\", \"Upload a file \");\n";
-            result += "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/upload_"+name.ToLower()+".jsp\").forward(req, resp);\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/upload_" + name.ToLower() + ".jsp\").forward(req, resp);\n";
             result += "return;\n";
             result += "}\n"; //line 93
             result += "File uploadedFile = new File(uploadFilePath + File.separator + fileName);\n";
-            result += "List<"+name+"> "+name.ToLower()+"s = null;\n";
+            result += "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "try {\n";
-            result += name.ToLower()+"s = "+name.ToLower()+"DAO.read"+name+"sFromFile(uploadedFile);\n";
+            result += name.ToLower() + "s = " + name.ToLower() + "DAO.read" + name + "sFromFile(uploadedFile);\n";
             result += "} catch (Exception ex){\n";
             result += "results.put(\"dbStatus\",ex.getMessage());\n";
             result += "req.setAttribute(\"results\", results);\n";
             result += "req.setAttribute(\"pageTitle\", \"Upload a file \");\n";
-            result += "req.getRequestDispatcher(\"WEB-INF/"+settings.database_name+"/upload_" + name.ToLower() + ".jsp\").forward(req, resp);\n";
+            result += "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/upload_" + name.ToLower() + ".jsp\").forward(req, resp);\n";
             result += "return;\n";
             result += "}\n"; //line 106
-            result += "int new"+name.ToLower()+"s = 0;\n";
+            result += "int new" + name.ToLower() + "s = 0;\n";
             result += "int old" + name.ToLower() + "s = 0;\n";
             result += "int total" + name.ToLower() + "s = " + name.ToLower() + "s.size();\n";
             result += "try { \n";
-            result += "new" + name.ToLower() + "s= " + name.ToLower() + "DAO.addBatchOf"+name+"s(" + name.ToLower() + "s);\n";
+            result += "new" + name.ToLower() + "s= " + name.ToLower() + "DAO.addBatchOf" + name + "s(" + name.ToLower() + "s);\n";
             result += "} catch (Exception e) {\n";
             result += "results.put(\"dbStatus\",e.getMessage());\n";
             result += "}\n"; //line 116
-            result += "old"+name.ToLower()+"s= total"+name.ToLower()+"s- new"+name.ToLower()+"s;\n";
+            result += "old" + name.ToLower() + "s= total" + name.ToLower() + "s- new" + name.ToLower() + "s;\n";
             result += "uploadedFile.delete();\n";
-            result += "results.put(\"AddedCount\",\"You uploaded \"+total"+name.ToLower()+"s+\" "+name.ToLower()+"s. \"+new"+ name.ToLower() + "s+\" of them were new. \"+ old"+ name.ToLower() + "s+\" of them were old, and not added to the database.\");\n";
+            result += "results.put(\"AddedCount\",\"You uploaded \"+total" + name.ToLower() + "s+\" " + name.ToLower() + "s. \"+new" + name.ToLower() + "s+\" of them were new. \"+ old" + name.ToLower() + "s+\" of them were old, and not added to the database.\");\n";
             result += "session.setAttribute(\"results\",results);\n";
             result += "resp.sendRedirect(\"home\");\n";
             result += "return;\n";
             result += "}\n";
             result += "}\n";
-
-
-
 
             //result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
             //result = result + "req.setAttribute(\"pageTitle\", \"Upload " + name + "\");\n";
@@ -4455,20 +4761,18 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        
-
         public string genExportServlet()
         {
             string result = "";
             result += importStatements(name, settings.database_name);
-            
+
             //change comment box
             //settings
             result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_Add);
             result += genServletJavaDoc(ServletType.ExportServlet);
             result += "\n@WebServlet(\"/export" + name + "\")\n";
-            result += "public class Export"+name+"Servlet extends HttpServlet {\n";
-            result += "private i"+name+"DAO "+name.ToLower()+"DAO;\n";
+            result += "public class Export" + name + "Servlet extends HttpServlet {\n";
+            result += "private i" + name + "DAO " + name.ToLower() + "DAO;\n";
             result += "private static final String UPLOAD_DIR = \"uploads\";\n";
             result += "private ServletFileUpload uploader = null;\n";
             result += "@Override\n";
@@ -4480,7 +4784,7 @@ output+="return " + returntype + ";\n}\n";
             result += "this.uploader = new ServletFileUpload(fileFactory);\n";
             result += "}\n";
             result += "public void init(i" + name + "DAO " + name.ToLower() + "DAO) {\n"; ;
-            result += "this."+name.ToLower()+"DAO = "+name.ToLower()+"DAO;\n";
+            result += "this." + name.ToLower() + "DAO = " + name.ToLower() + "DAO;\n";
             result += "}\n";
             result += "";
             //do get
@@ -4489,20 +4793,20 @@ output+="return " + returntype + ";\n}\n";
             result += "String applicationPath = req.getServletContext().getRealPath(\"\");\n";
             result += "String uploadFilePath = applicationPath + File.separator + UPLOAD_DIR;\n";
             result += privLevelStatement();
-            result += "String filename = \"output_\"+user.getUser_Name()+\"_"+name+"\"+\".txt\";\n";
+            result += "String filename = \"output_\"+user.getUser_Name()+\"_" + name + "\"+\".txt\";\n";
             result += "String full_file = uploadFilePath + File.separator + filename;\n";
             result += "String mode = req.getParameter(\"mode\");\n";
             result += "session.setAttribute(\"currentPage\",req.getRequestURL());\n";
-            result += "List<"+name+"> "+name.ToLower()+"s = null;\n";
+            result += "List<" + name + "> " + name.ToLower() + "s = null;\n";
             result += "boolean error = false;\n";
             result += "try {\n";
-            result += name.ToLower()+"s = "+name.ToLower()+"DAO.getAll"+name+"();\n";
+            result += name.ToLower() + "s = " + name.ToLower() + "DAO.getAll" + name + "();\n";
             result += "} catch (SQLException e) {\n";
             result += "error = true;\n";
             result += "}\n";
             result += "try {\n";
             result += "if (mode.equals(\"export\")){\n";
-            result += name.ToLower()+"DAO.write"+name+"ToFile("+name.ToLower()+"s, full_file);\n";
+            result += name.ToLower() + "DAO.write" + name + "ToFile(" + name.ToLower() + "s, full_file);\n";
             result += "}\n";
             result += "if (mode.equals(\"SQL\")){\n";
             result += name.ToLower() + "DAO.write" + name + "ToSQLInsert(" + name.ToLower() + "s, full_file);\n";
@@ -4510,7 +4814,7 @@ output+="return " + returntype + ";\n}\n";
             result += "} catch (Exception e) {\n";
             result += " error = true;\n";
             result += "}\n";
-            
+
             result += "resp.setContentType(\"APPLICATION/OCTET-STREAM\");\n";
             result += "resp.setHeader(\"Content-Disposition\", \"attachment; filename=\\\"\" + filename + \"\\\"\");\n";
             result += "java.io.FileInputStream fileInputStream = new java.io.FileInputStream(uploadFilePath +File.separator+ filename);\n";
@@ -4523,9 +4827,6 @@ output+="return " + returntype + ";\n}\n";
             result += "delFile.delete();\n";
             result += "}\n";
             result += "}\n";
-
-
-
 
             return result;
         }
@@ -4797,10 +5098,8 @@ output+="return " + returntype + ";\n}\n";
 
         private string usingStatements(string objectname, string projectName)
         {
-            string result = "\n";
-            result = "using DataObjects;\n";
+            string result = "using DataObjects;\n";
             result += "using iDataAccessLayer";
-
 
             result += "namespace DataAccessFakes\n{";
 
@@ -4811,6 +5110,28 @@ output+="return " + returntype + ";\n}\n";
         /// Jonathan Beck
         /// </summary>
         /// <returns>A string that is  Java code for standard access level control on the servlet. </returns>
+
+        private string genAJXErrorCodes(Column r)
+        {
+            string result = "";
+            result += "/* ---------- Success ---------- */\n";
+            result += "public static final int SUCCESS = 1;\n";
+            result += "public static final int NO_CHANGE = 0;\n";
+            result += "/* ---------- Authorization ---------- */\n";
+            result += "public static final int UNAUTHORIZED = -1;\n";
+            result += "/* ---------- Input Errors ---------- */\n";
+            result += "public static final int INVALID_" + name.ToUpper() + "_ID = -2;\n";
+            result += "public static final int OLD_" + r.column_name.ToUpper() + "_MISSING = -3;\n";
+            result += "public static final int NEW_" + r.column_name.ToUpper() + "_INVALID = -4;\n";
+            result += "public static final int INVALID_" + name.ToUpper() + "_OBJECT = -5;\n";
+            result += "public static final int INVALID_OLD_" + r.column_name.ToUpper() + " = -6;\n";
+            result += "public static final int INVALID_NEW_" + r.column_name.ToUpper() + " = -7;\n";
+            result += "/* ---------- Persistence ---------- */\n";
+            result += "public static final int DATABASE_ERROR = -8;\n";
+
+            return result;
+
+        }
         private string privLevelStatement()
         {
             string result = "\n//To restrict this page based on privilege level\n";
@@ -4822,6 +5143,23 @@ output+="return " + returntype + ";\n}\n";
             result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
             result += "session.invalidate();\n";
             result += "resp.sendRedirect(\"" + settings.database_name + "Login\");\n";
+            result += "return;\n";
+            result += "}\n";
+            result += "\n";
+            return result;
+        }
+
+        private string AJAXprivLevelStatement()
+        {
+            string result = "\n//To restrict this page based on privilege level\n";
+            result += "int PRIVILEGE_NEEDED = 0;\n";
+            result += "List<String> ROLES_NEEDED = new ArrayList<>();\n";
+            result += "//add roles here\n";
+            result += "HttpSession session = req.getSession();\n";
+            result += "User user = (User)session.getAttribute(\"User\");\n";
+            result += "if (user==null||user.getPrivilege_ID()<PRIVILEGE_NEEDED||!user.isInRole(ROLES_NEEDED)){\n";
+            result += "result =-1;\n";
+            result += "writeResult(resp,result);\n";
             result += "return;\n";
             result += "}\n";
             result += "\n";
@@ -4880,8 +5218,10 @@ output+="return " + returntype + ";\n}\n";
             result += "let submitbutton = document.getElementById(\"submitButton\")\n";
             result += "submitbutton.disabled=true;\n";
             result += "let total_errors=0;\n";
-            foreach (Column r in columns) {
-                if (!r.identity.Equals("Y") && !r.identity.Equals("y") && r.default_value.Equals("")) {
+            foreach (Column r in columns)
+            {
+                if (!r.identity.Equals("Y") && !r.identity.Equals("y") && r.default_value.Equals(""))
+                {
                     result += "let " + r.column_name + "_error=0;\n";
                 }
             }
@@ -4893,15 +5233,15 @@ output+="return " + returntype + ";\n}\n";
             //to loop through each input field
             foreach (Column r in columns)
             {
-                if (!r.identity.Equals("Y") && !r.identity.Equals("y")&&r.default_value.Equals(""))
+                if (!r.identity.Equals("Y") && !r.identity.Equals("y") && r.default_value.Equals(""))
                 {
                     string fieldname = "input" + name.ToLower() + r.column_name;
                     string jsname = r.column_name + "_input";
                     result += "// to clean the field, then set event listener for validating the input for " + r.column_name + "\n";
                     result += "var " + jsname + "= document.getElementById(\"" + fieldname + "\");\n";
-                    
+
                     result += jsname + ".addEventListener('blur',function(){\n";
-                    result += jsname+".value = "+jsname + ".value.trim();\n";
+                    result += jsname + ".value = " + jsname + ".value.trim();\n";
                     //if for numeric check
                     if (r.length == 0)
                     {
@@ -4926,10 +5266,11 @@ output+="return " + returntype + ";\n}\n";
                     string plus = "";
                     foreach (Column s in columns)
                     {
-                        if (!s.identity.Equals("Y") && !s.identity.Equals("y") && s.default_value.Equals("")) { 
+                        if (!s.identity.Equals("Y") && !s.identity.Equals("y") && s.default_value.Equals(""))
+                        {
                             result += plus + s.column_name + "_error";
-                        plus = "+ ";
-                    }
+                            plus = "+ ";
+                        }
                     }
                     result += ";\n";
                     result += "if (total_errors ==0){\n";
@@ -4938,15 +5279,135 @@ output+="return " + returntype + ";\n}\n";
                     result += "submitbutton.disabled=true;\n";
                     result += "}\n";
 
-
-                    result +=    "}\n);\n";
+                    result += "}\n);\n";
                 }
             }
             // to end the js file
             result += "\n}\n)\n";
             return result;
         }
-        public string jQueryDelete() {
+
+        public string jQueryUpdateSingle()
+        {
+            string result = "";
+            result += "<script>\n";
+            result += "document.addEventListener(\"DOMContentLoaded\", () => {\n";
+            result += setEventListener();
+            result += handleFieldUpdate();
+            result += sendUpdate();
+
+            result += iconManagement();
+            result += "});\n";
+            result += "</script>\n";
+
+            return result;
+
+        }
+
+        private string setEventListener()
+        {
+            string result = "";
+            result += "const inputs = document.querySelectorAll(\"input[data-endpoint]\");\n";
+            result += "const modelSetIdEl = document.getElementById(\"modelSetId\");\n";
+            result += "inputs.forEach(input => {\n";
+            result += "input.dataset.originalValue = input.value;\n";
+            result += "input.addEventListener(\"blur\", () => \n";
+            result += " handleFieldUpdate(input);\n";
+            result += "});\n";
+            result += "});\n";
+            result += "function handleFieldUpdate(input) {\n";
+            result += "const oldValue = input.dataset.originalValue;\n";
+            result += "const newValue = input.value;\n";
+            result += "if (oldValue === newValue) return;\n";
+            result += "//const statusIcon = getStatusIcon(input);\n";
+            result += "//setSaving(statusIcon);\n";
+            result += "const payload = {\n";
+            result += "modelSetId: modelSetIdEl ? modelSetIdEl.value : null,\n";
+            result += "field: input.name,\n";
+            result += "oldValue,\n";
+            result += "newValue\n";
+            result += "};\r\n\n";
+            result += "sendUpdate(input.dataset.endpoint, payload)\n";
+            result += ".then(() => {\n";
+            result += "input.dataset.originalValue = newValue;\n";
+            result += "//setSaved(statusIcon);\n";
+            result += "})\n";
+            result += ".catch(() => {\n";
+            result += "input.value = oldValue;\n";
+            result += "setError(statusIcon);\n";
+            result += "});\n";
+            result += "}\n";
+            return result;
+
+        }
+
+        private string handleFieldUpdate()
+        {
+            string result = "";
+            result += "function handleFieldUpdate(input) {\n";
+            result += "const oldValue = input.dataset.originalValue;\n";
+            result += "const newValue = input.value;\n";
+            result += "if (oldValue === newValue) return;\n";
+            result += "//const statusIcon = getStatusIcon(input);\n";
+            result += "//setSaving(statusIcon);\n";
+            result += "const payload = {\n";
+            result += "modelSetId: modelSetIdEl ? modelSetIdEl.value : null,\n";
+            result += "field: input.name,\n";
+            result += "oldValue,\n";
+            result += "newValue\n";
+            result += "};\r\n\n";
+            result += "sendUpdate(input.dataset.endpoint, payload)\n";
+            result += ".then(() => {\n";
+            result += "input.dataset.originalValue = newValue;\n";
+            result += "//setSaved(statusIcon);\n";
+            result += "})\n";
+            result += ".catch(() => {\n";
+            result += "input.value = oldValue;\n";
+            result += "setError(statusIcon);\n";
+            result += "});\n";
+            result += "}\n";
+
+            return result;
+        }
+
+        private string sendUpdate()
+        {
+            String result = "unction sendUpdate(endpoint, payload) {\n";
+            result += "return fetch(endpoint, {\n";
+            result += "method: \"POST\",\n";
+            result += "headers: { \"Content-Type\": \"application/json\" },\n";
+            result += "body: JSON.stringify(payload)\n";
+            result += "}).then(res => {\n";
+            result += "if (!res.ok) throw new Error(\"Save failed\");\n";
+            result += "});\n";
+            result += "}\n";
+            return result;
+        }
+
+        private string iconManagement()
+        {
+            String result = "function getStatusIcon(input) {\n";
+            result += "return input.closest(\".input-group\").querySelector(\".field-status\");\n";
+            result += "}\n";
+            result += "function setSaving(icon) {\n";
+            result += "icon.className = \"bi bi-arrow-repeat field-status saving text-primary\";\n";
+            result += "}\n";
+            result += "function setSaved(icon) {\n";
+            result += "icon.className = \"bi bi-check-circle-fill field-status text-success\";\n";
+            result += "clearAfterDelay(icon);\n";
+            result += "}\n";
+            result += "function setError(icon) {\n";
+            result += "icon.className = \"bi bi-x-circle-fill field-status text-danger\";\n";
+            result += "}\n";
+            result += "function clearAfterDelay(icon, delay = 2000) {\n";
+            result += "setTimeout(() => {\n";
+            result += "icon.className = \"bi bi-circle field-status text-muted\";\n";
+            result += "}, delay);\n";
+            result += "}\n";
+            return result;
+        }
+        public string jQueryDelete()
+        {
             string result = "$(document).ready(function() {\r\n";
             result += "normalizeHeight();\n";
             result += "$(\"#dialog\").dialog({\n";
@@ -4956,7 +5417,7 @@ output+="return " + returntype + ";\n}\n";
             result += "width: 500,\n";
             result += "height: 400,\n";
             result += "});\n";
-            
+
             result += "$(\".delButton\").click(function(e) {\n";
             result += "e.preventDefault();\n";
             result += "var headers = document.getElementsByClassName('table-responsive')[0].childNodes[0].childNodes[1].childNodes[1].childNodes;\r\n";
@@ -4967,7 +5428,7 @@ output+="return " + returntype + ";\n}\n";
             result += "text +=headers[i].textContent+\": \"+parentrow[(i-1)/2].innerHTML+\"</br>\";\n";
             result += "}\n";
             result += "document.getElementById(\"dialog\").innerHTML=text;";
-            
+
             result += "var targetUrl = $(this).attr(\"href\");\n";
             result += "$('#dialog').dialog('option', 'title', 'Delete '+parentrow[1].innerHTML+\"???\");\n";
             result += "$(\"#dialog\").dialog({\n";
@@ -4983,8 +5444,8 @@ output+="return " + returntype + ";\n}\n";
             result += "\"Delete For Real\" : function() {\n";
             result += "console.log(\"try\");\n";
             result += "$.ajax({\n";
-            result += "url: 'delete"+name+"',\n";
-            result += "data: \""+name.ToLower()+"id=\" + targetUrl+\"&AJAX=true\" ,\n";
+            result += "url: 'delete" + name + "',\n";
+            result += "data: \"" + name.ToLower() + "id=\" + targetUrl+\"&AJAX=true\" ,\n";
             result += "type: 'post',\n";
             result += "async: true,\n";
             result += "success: function (response) {\n";
@@ -4999,7 +5460,7 @@ output+="return " + returntype + ";\n}\n";
             result += "var rowid =\"#\"+ targetUrl+\"_row\";\n";
             result += "$(rowid).slideUp();\n";
             result += "},\n";
-            
+
             result += "\"Let It Stay\" : function() {\n";
             result += " $(this).dialog(\"close\");\n";
             result += "}\n";
@@ -5009,10 +5470,11 @@ output+="return " + returntype + ";\n}\n";
             result += " });\n})\n";
 
             result += normalizeHeight();
-            
+
             return result;
         }
-        private string normalizeHeight() {
+        private string normalizeHeight()
+        {
             string result = "function normalizeHeight() {\n";
             result += "var cards = jQuery(\"span.card\");\n";
             result += "var big = 0;\n";
@@ -5024,7 +5486,7 @@ output+="return " + returntype + ";\n}\n";
             result += "jQuery(el).css(\"height\", big + \"px\"); //assign largest height to all the divs\r\n";
             result += "});";
             result += "}\n";
-        
+
             return result;
         }
         private string initMethod()
@@ -5124,6 +5586,8 @@ output+="return " + returntype + ";\n}\n";
             result += sp_delete();//done
             result += sp_distinct(); //done
             result += sp_count(); //done
+
+            result += sp_update_single();
             return result;
 
         }
@@ -5263,6 +5727,37 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
+        private string sp_update_single()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                string header = "\nsp_update_" + name + "_" + name + ":\n";
+                string table_used = sp_tables_used_gen(0);
+                string parameters = "\n\tParameters:\t";
+                string comma = "";
+                foreach (Column s in columns)
+                {
+                    //parameters += comma + "@old" + r.column_name;
+                    comma = ", ";
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                    {
+                        parameters += comma + "@old" + s.column_name;
+                    }
+                }
+                parameters += comma + "@old" + r.column_name;
+                parameters += comma + "@new" + r.column_name;
+
+                string returns = "\n\tReturns: \tint(@@rowsAffected)\n";
+                result += header + table_used + parameters + returns;
+            }
+
+            return result;
+        }
         private string sp_return_fields_gen()
         {
             string comma = "";
@@ -5376,7 +5871,8 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        public string genCSharpManagerTests() {
+        public string genCSharpManagerTests()
+        {
             string result = "";
             string header = genManagerTestHeader();
             string AddGood = genManagerTestAddCanAdd();
@@ -5407,15 +5903,16 @@ output+="return " + returntype + ";\n}\n";
                 + retrieveByPKGood + retrieveByPKFail
                 + retrieveByFKGood + retrieveByFKFail
                 + RetrieveAllGood + RetrieveAllfail + RetreiveAllFilter
-                + UpdateGood  + UpdateFail                
+                + UpdateGood + UpdateFail
                 + batchAddCanWork + batchAddFail
-                + ValidationMethod+footer
+                + ValidationMethod + footer
                 ;
             return result;
 
         }
 
-        private string genManagerTestHeader() {
+        private string genManagerTestHeader()
+        {
 
             string result = "";
             result += "using System;\n";
@@ -5438,7 +5935,7 @@ output+="return " + returntype + ";\n}\n";
             result += name + "Manager _" + name.ToLower() + "Manager;\n";
             result += "[TestInitialize]\n";
             result += "public void setup() {\n";
-            result += " _" + name.ToLower() + "Manager = new " + name + "Manager(new "+name+"AccessorFake());\n";
+            result += " _" + name.ToLower() + "Manager = new " + name + "Manager(new " + name + "AccessorFake());\n";
             result += "}\n";
             result += "[TestCleanup]\n";
             result += "public void tearDown() {";
@@ -5449,7 +5946,7 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestAddCanAdd()
         {
             string result = "[TestMethod]\n";
-            result += "public void TestAdd"+name+"CanAdd(){\n";
+            result += "public void TestAdd" + name + "CanAdd(){\n";
             result += "//arrage\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
@@ -5460,7 +5957,7 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        result += "_"+name.ToLower()+"."+r.column_name+" = \"TestValue\";\n";
+                        result += "_" + name.ToLower() + "." + r.column_name + " = \"TestValue\";\n";
 
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
@@ -5487,7 +5984,7 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
             result += "//act\n";
-            result += "actual =  _" + name.ToLower() + "Manager.Add(_"+name.ToLower()+");\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Add(_" + name.ToLower() + ");\n";
             result += "//assert\n";
             result += "Assert.AreEqual(expected,actual);\n";
             result += "}\n";
@@ -5497,13 +5994,13 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
-            result += "public void TestAdd"+name+"CanFail(){\n";
+            result += "public void TestAdd" + name + "CanFail(){\n";
             result += "//arrage\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
-            result += name + " _" + name.ToLower() + " = new " + name + "();\n";            
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
             result += "//act\n";
-            result += "actual =  _" + name.ToLower() + "Manager.Add(_"+name.ToLower()+");\n";
+            result += "actual =  _" + name.ToLower() + "Manager.Add(_" + name.ToLower() + ");\n";
             result += "//assert - Nothing To do\n";
             result += "";
             result += "}\n";
@@ -5513,7 +6010,7 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestDeleteCanDelete()
         {
             string result = "[TestMethod]\n";
-            result += "public void TestDelete"+name+"CanDelete(){\n";
+            result += "public void TestDelete" + name + "CanDelete(){\n";
             result += "//arrage\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
@@ -5550,8 +6047,7 @@ output+="return " + returntype + ";\n}\n";
                     }
                 }
             }
-            
-               
+
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.Delete(_" + name.ToLower() + ");\n";
             result += "//assert\n";
@@ -5564,13 +6060,13 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
-            result += "public void TestDelete"+name+"CanFail(){\n";
+            result += "public void TestDelete" + name + "CanFail(){\n";
             result += "//arange\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
-            result += name + " _" + name.ToLower() + " = new " + name + "();\n";          
+            result += name + " _" + name.ToLower() + " = new " + name + "();\n";
             result += "//act\n";
-            result += "actual =  _" + name.ToLower() + "Manager.Delete(_" + name.ToLower() + ");\n"; 
+            result += "actual =  _" + name.ToLower() + "Manager.Delete(_" + name.ToLower() + ");\n";
             result += "\n";
             result += "//assert -- nothing to do\n";
             result += "\n";
@@ -5581,7 +6077,7 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestUnDeleteCanUndelete()
         {
             string result = "[TestMethod]\n";
-            result += "public void TestUnDelete"+name+"CanUnDelete(){\n";
+            result += "public void TestUnDelete" + name + "CanUnDelete(){\n";
             result += "//arrage\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
@@ -5631,7 +6127,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
-            result += "public void TestUnDelete"+name+"CanFail(){\n";
+            result += "public void TestUnDelete" + name + "CanFail(){\n";
             result += "//arange\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
@@ -5648,10 +6144,10 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestRetreiveByPKCanWork()
         {
             string result = "[TestMethod]\n";
-            result += "public void TestRetreive"+name+"ByPKCanRetreiveByPK(){\n";
+            result += "public void TestRetreive" + name + "ByPKCanRetreiveByPK(){\n";
             result += "//arrage\n";
-            
-            result += name+" expected = new "+name+"();\n";
+
+            result += name + " expected = new " + name + "();\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -5684,8 +6180,8 @@ output+="return " + returntype + ";\n}\n";
                     }
                 }
             }
-            result += name+ " actual = new "+name+"();\n";
-            
+            result += name + " actual = new " + name + "();\n";
+
             foreach (Column r in columns)
             {
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
@@ -5722,13 +6218,13 @@ output+="return " + returntype + ";\n}\n";
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.GetByPK(actual);\n";
             result += "//assert\n";
-            foreach (Column r in columns) {
-                result += "Assert.AreEqual(expected."+r.column_name+",actual."+r.column_name+");\n";
+            foreach (Column r in columns)
+            {
+                result += "Assert.AreEqual(expected." + r.column_name + ",actual." + r.column_name + ");\n";
             }
-            
+
             result += "}\n";
             return result;
-            
 
         }
         private string genManagerTestRetreiveByPKCanFail()
@@ -5736,7 +6232,7 @@ output+="return " + returntype + ";\n}\n";
             string result = "[TestMethod]\n";
             result += "[ExpectedException(typeof(ApplicationException))]\n";
             result += "public void TestRetreive" + name + "ByPKCanRetreiveByFail(){\n";
-            
+
             result += "//arrage\n";
             result += name + " expected = new " + name + "();\n";
             foreach (Column r in columns)
@@ -5771,7 +6267,7 @@ output+="return " + returntype + ";\n}\n";
                     }
                 }
             }
-            result += name + " actual = new " + name + "();\n";           
+            result += name + " actual = new " + name + "();\n";
 
             result += "//act\n";
             result += "actual =  _" + name.ToLower() + "Manager.GetByPK(actual);\n";
@@ -5834,7 +6330,7 @@ output+="return " + returntype + ";\n}\n";
                 if (key.referenceTable.ToLower().Equals(name.ToLower()))
                 {
                     result += "[TestMethod]\n";
-                    result += "public void TestRetreiveAll" + name + "CanFilterBy"+key.referenceTable+"(){\n";
+                    result += "public void TestRetreiveAll" + name + "CanFilterBy" + key.referenceTable + "(){\n";
                     result += "//arrage\n";
                     result += "int expected = 4;\n";
                     result += "int actual =0;\n";
@@ -5867,51 +6363,50 @@ output+="return " + returntype + ";\n}\n";
         {
 
             string result = "[TestMethod]\n";
-            result += "public void TestUpdate"+name+"CanUpdate(){\n";
+            result += "public void TestUpdate" + name + "CanUpdate(){\n";
             result += "//arrage\n";
             result += "int expected = 1;\n";
             result += "int actual = 0;\n";
-            result += name + " old"+name+" = new " + name + "();\n";
+            result += name + " old" + name + " = new " + name + "();\n";
             result += name + " new" + name + " = new " + name + "();\n";
             foreach (Column r in columns)
             {
-                
-                    if (r.data_type.toCSharpDataType().Equals("string"))
-                    {
-                        result += "old"+name+"." + r.column_name + " = \"TestValue\";\n";
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    result += "old" + name + "." + r.column_name + " = \"TestValue\";\n";
                     result += "new" + name + "." + r.column_name + " = \"TestValue1\";\n";
 
                 }
-                    if (r.data_type.toCSharpDataType().Equals("int"))
-                    {
-                        result += "old" + name + "." + r.column_name + " = 406;\n";
+                if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "old" + name + "." + r.column_name + " = 406;\n";
                     result += "new" + name + "." + r.column_name + " = 407;\n";
 
                 }
-                    if (r.data_type.toCSharpDataType().Equals("bool"))
-                    {
-                        result += "old" + name + "." + r.column_name + " = true;\n";
+                if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "old" + name + "." + r.column_name + " = true;\n";
                     result += "new" + name + "." + r.column_name + " = false;\n";
 
                 }
-                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
-                    {
-                        result += "old" + name + "." + r.column_name + " = new DateTime();\n";
+                if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                {
+                    result += "old" + name + "." + r.column_name + " = new DateTime();\n";
                     result += "new" + name + "." + r.column_name + " = true;\n";
 
                 }
 
-                    if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
-                    {
-                        result += "old" + name + "." + r.column_name + " = 12.12m;\n";
+                if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
+                {
+                    result += "old" + name + "." + r.column_name + " = 12.12m;\n";
                     result += "new" + name + "." + r.column_name + " = 12.13m;\n";
 
                 }
-                
             }
             result += "";
             result += "//act\n";
-            result += "actual =  _" + name.ToLower() + "Manager.update(old"+name+",new"+name+");\n";
+            result += "actual =  _" + name.ToLower() + "Manager.update(old" + name + ",new" + name + ");\n";
             result += "//assert\n";
             result += "Assert.AreEqual(expected,actual);\n";
             result += "}\n";
@@ -5933,35 +6428,30 @@ output+="return " + returntype + ";\n}\n";
                 if (r.data_type.toCSharpDataType().Equals("string"))
                 {
                     result += "old" + name + "." + r.column_name + " = \"TestValue\";\n";
-                    
 
                 }
                 if (r.data_type.toCSharpDataType().Equals("int"))
                 {
                     result += "old" + name + "." + r.column_name + " = 406;\n";
-                    
 
                 }
                 if (r.data_type.toCSharpDataType().Equals("bool"))
                 {
                     result += "old" + name + "." + r.column_name + " = true;\n";
-                    
 
                 }
                 if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
                 {
                     result += "old" + name + "." + r.column_name + " = new DateTime();\n";
-                    
 
                 }
 
                 if (r.data_type.toCSharpDataType().ToLower().Contains("decimal"))
                 {
                     result += "old" + name + "." + r.column_name + " = 12.12m;\n";
-                   ;
+                    ;
 
                 }
-
             }
             result += "";
             result += "//act\n";
@@ -5975,7 +6465,7 @@ output+="return " + returntype + ";\n}\n";
         private string genManagerTestBatchAddCanWork()
         {
             string result = "[TestMethod]\n";
-            result += "public void TestAddBatch"+name+"CanWork(){\n";
+            result += "public void TestAddBatch" + name + "CanWork(){\n";
             result += "//arrage\n";
             result += "";
             result += "//act\n";
@@ -6001,9 +6491,6 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
-        
-
-
 
         public string createCSharpModelTests()
         {
@@ -6093,7 +6580,8 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string testCSharpModelInitialize() {
+        private string testCSharpModelInitialize()
+        {
             string result = "";
             result += "using System;\n";
             result += "using System.Collections.Generic;\n";
@@ -6104,25 +6592,25 @@ output+="return " + returntype + ";\n}\n";
             result += "using System.ComponentModel.DataAnnotations;\n";
             result += "\n";
             result += "namespace DataObjectTests\n";
-            
+
             result += "{\n";
             result += "[TestClass]\n";
 
-            result += "public class "+name+"Tests\n";
+            result += "public class " + name + "Tests\n";
             result += "{\n";
             result += name + " _" + name.ToLower() + ";\n";
             result += "[TestInitialize]\n";
             result += "public void setup() {\n";
-            result += " _"+name.ToLower()+" = new "+name+"();\n";
+            result += " _" + name.ToLower() + " = new " + name + "();\n";
             result += "}\n";
             result += "[TestCleanup]\n";
             result += "public void tearDown() {";
-            result += "_"+name.ToLower() + "= null;\n";
+            result += "_" + name.ToLower() + "= null;\n";
             result += "}\n";
             return result;
-        
+
         }
-        
+
         private string testCSharpDefaultConstructor()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.DefaultConstructor, this);
@@ -6424,7 +6912,7 @@ output+="return " + returntype + ";\n}\n";
             result += "using DataObjects;\n";
             result += "\n";
             result += "namespace DataObjectTests\n";
-            
+
             result += "{\n";
             result += "[TestClass]\n";
 
@@ -6433,7 +6921,7 @@ output+="return " + returntype + ";\n}\n";
             result += name + "VM _" + name.ToLower() + ";\n";
             result += "[TestInitialize]\n";
             result += "public void setup() {\n";
-            result +=  " _" + name.ToLower() + " = new " + name + "();\n";
+            result += " _" + name.ToLower() + " = new " + name + "();\n";
             result += "}\n";
             result += "[TestCleanup]\n";
             result += "public void tearDown() {";
@@ -6536,11 +7024,11 @@ output+="return " + returntype + ";\n}\n";
                     {
                         if (r.default_value.ToLower().Contains("uuid"))
                         {
-                            array.Add(generateRandomString(r, 0));
+                            _ = array.Add(generateRandomString(r, 0));
                         }
                         else
                         {
-                            array.Add(generateRandomString(r, -2));
+                            _ = array.Add(generateRandomString(r, -2));
 
                         }
 
@@ -6603,14 +7091,14 @@ output+="return " + returntype + ";\n}\n";
                         break;
 
                 }
-               
+
                 result += "{\n";
                 if (hasdate)
                 {
                     DateTime today = DateTime.Today;
                     result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
                     result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
-                    
+
                 }
                 //constructor
                 result += name + " _" + name.ToLower() + "= new " + name + "(\n";
@@ -6775,7 +7263,6 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-
         private string testCSharpObjectSet(string objectname)
         {
             string result = "[TestMethod]\n";
@@ -6785,7 +7272,6 @@ output+="return " + returntype + ";\n}\n";
             result += "Assert.AreEqual(_" + objectname.ToLower() + ",_" + name.ToLower() + "VM." + objectname + ");\n";
             result += "}\n";
             return result;
-
 
         }
         private string testCSharpListObjectSet(string objectname)
@@ -6811,8 +7297,8 @@ output+="return " + returntype + ";\n}\n";
             result += "\";\n";
             result += "_" + name.ToLower() + "." + r.column_name + "=" + r.column_name + ";\n";
             result += "bool result = false;";
-            result += "var lstErrors = ValidateModel(_"+name.ToLower()+",ref result);\n";
-            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\""+r.column_name+"\")).Count() > 0);\r\n";
+            result += "var lstErrors = ValidateModel(_" + name.ToLower() + ",ref result);\n";
+            result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
 
@@ -6837,8 +7323,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testCSharpStringSet(Column r)
         {
-            String dummy = "";
-
+            string dummy;
             if (r.default_value.ToLower().Contains("uuid"))
             {
                 dummy = generateRandomString(r, 0);
@@ -6852,11 +7337,10 @@ output+="return " + returntype + ";\n}\n";
             result += "[TestMethod]\n";
             result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
             result += "String " + r.column_name + " = \"" + dummy + "\";\n";
-            result += "_" + name.ToLower() + "." + r.column_name +" = " + r.column_name + ";\n";
+            result += "_" + name.ToLower() + "." + r.column_name + " = " + r.column_name + ";\n";
             result += "Assert.AreEqual(" + r.column_name + ",_" + name.ToLower() + "." + r.column_name + ");\n";
             result += "}\n";
             return result;
-
 
         }
         private string testCSharpIntTooSmall(Column r)
@@ -6872,7 +7356,6 @@ output+="return " + returntype + ";\n}\n";
             result += "Assert.IsTrue(lstErrors.Where(x => x.ErrorMessage.Contains(\"" + r.column_name + "\")).Count() > 0);\r\n";
             result += "}\n";
             return result;
-            
 
         }
         private string testCSharpIntTooBig(Column r)
@@ -6939,7 +7422,7 @@ output+="return " + returntype + ";\n}\n";
             int numberToTest = rand.Next(1, 10000);
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "[TestMethod]\n";
-            
+
             result += "public void test" + name + "Sets" + r.column_name + "(){\n";
             result += "double " + r.column_name + " = " + numberToTest + ";\n";
             result += "_" + name.ToLower() + ".set" + r.column_name + "(" + r.column_name + ");\n";
@@ -6995,7 +7478,7 @@ output+="return " + returntype + ";\n}\n";
             result += "[TestMethod]\n";
             //result += "[ExpectedException(typeof(ArgumentOutOfRangeException))]\n";
             result += "public void test" + name + "FailsValidationIf" + r.column_name + "TooBig() throws ParseException{\n";
-            result += "String strDate = \"01/01/2190\";\n";            
+            result += "String strDate = \"01/01/2190\";\n";
             result += "Date date = DateTime.ParseExact(strDate,\"dd/mm/yyyy\");\n";
             result += "_" + name.ToLower() + "." + r.column_name + " = date;\n";
             result += "bool result = false;";
@@ -7007,10 +7490,10 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testCSharpDatetimeSet(Column r)
         {
-            
+
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "[TestMethod]\n";
-            
+
             result += "public void test" + name + "Sets" + r.column_name + "() throws ParseException{\n";
             DateTime today = DateTime.Today;
             result += "String strDate = \"" + today.Day + "/" + today.Month + "/" + today.Year + "\";\n";
@@ -7024,7 +7507,8 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string genCSharpValidationMethod() {
+        private string genCSharpValidationMethod()
+        {
             string result = "private IList<ValidationResult> ValidateModel(object model, ref bool result)\n";
             result += "{\b";
             result += "var validationResults = new List<ValidationResult>();\n";
@@ -7032,10 +7516,9 @@ output+="return " + returntype + ";\n}\n";
             result += "result = Validator.TryValidateObject(model, ctx, validationResults, true);\n";
             result += "return validationResults;\n";
             result += "}\n";
-            
+
             return result;
-        
-        
+
         }
 
         /// <summary>
@@ -7046,7 +7529,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "";
             result += testJavaModelInitialize(); //done
-            
+
             result += testJavaDefaultConstructor();
             result += testJavaParameterizedConstructor();
             result += testJavaKeyedParameterizedConstructor();
@@ -7095,7 +7578,7 @@ output+="return " + returntype + ";\n}\n";
 
             if (r.data_type.toCSharpDataType().Equals("string"))
             {
-                
+
                 result += testJavaTooShort(r);  //done
                 result += testJavaTooLong(r); //done
                 result += testJavaStringSet(r); //done
@@ -7189,10 +7672,11 @@ output+="return " + returntype + ";\n}\n";
                     {
                         _ = array.Add(generateRandomString(r, 0));
                     }
-                    else {
+                    else
+                    {
                         _ = array.Add(generateRandomString(r, -2));
                     }
-                    
+
                     _ = Task.Delay(1);
                 }
                 else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -7229,6 +7713,19 @@ output+="return " + returntype + ";\n}\n";
 
             //method signature
             result += "public void test" + name + "ParameterizedConstructorSetsAllVariables(){\n";
+            bool hasDate = false;
+            foreach (Column r in columns)
+            {
+                if (r.data_type.ToLower().Contains("date"))
+                {
+                    hasDate = true;
+                    break;
+                }
+            }
+            if (hasDate)
+            {
+                result += "Date testDate = new Date();\n";
+            }
             //constructor
             result += name + " _" + name.ToLower() + "= new " + name + "(\n";
             //assing a value to each variable
@@ -7257,9 +7754,13 @@ output+="return " + returntype + ";\n}\n";
                 {
                     result += comma + array[i];
                 }
+                else if (r.data_type.ToLower().Contains("date"))
+                {
+                    result += comma + "testDate";
+                }
                 else
                 {
-                    result += comma + "new " + r.data_type + "()\n";
+                    result += comma + "new " + r.data_type + "()";
                 }
                 comma = ",\n ";
 
@@ -7306,7 +7807,7 @@ output+="return " + returntype + ";\n}\n";
         private string testJavaDefaultConstructor()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.DefaultConstructor, this);
-             result += "@Test\n";
+            result += "@Test\n";
             result += "public void test" + name + "DefaultConstructorSetsNoVariables(){\n";
             result += name + " _" + name.ToLower() + "= new " + name + "();\n";
             foreach (Column r in columns)
@@ -7401,10 +7902,11 @@ output+="return " + returntype + ";\n}\n";
                             _ = array.Add(generateRandomString(r, 0));
 
                         }
-                        else {
+                        else
+                        {
                             _ = array.Add(generateRandomString(r, -2));
                         }
-                        
+
                         _ = Task.Delay(1);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -7550,15 +8052,16 @@ output+="return " + returntype + ";\n}\n";
                 {
                     if (r.data_type.toCSharpDataType().Equals("string"))
                     {
-                        if (r.default_value.ToLower().Contains("uuid")) {
-                             array.Add(generateRandomString(r, 0));
+                        if (r.default_value.ToLower().Contains("uuid"))
+                        {
+                            _ = array.Add(generateRandomString(r, 0));
                         }
                         else
                         {
-                             array.Add(generateRandomString(r, -2));
+                            _ = array.Add(generateRandomString(r, -2));
 
                         }
-                       
+
                         _ = Task.Delay(1);
                     }
                     else if (r.data_type.toCSharpDataType().Equals("bool"))
@@ -7794,7 +8297,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testJavaTooShort(Column r)
         {
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
             result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooShort(){\n";
             result += "String " + r.column_name + " = \"";
@@ -7809,7 +8312,7 @@ output+="return " + returntype + ";\n}\n";
         private string testJavaTooLong(Column r)
         {
 
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
             result += "public void  test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooLong(){\n";
             result += "String " + r.column_name + " = \"";
@@ -7846,7 +8349,7 @@ output+="return " + returntype + ";\n}\n";
         {
 
             int numberToTest = rand.Next(1, 10000);
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "(){\n";
             result += "int " + r.column_name + " = " + numberToTest + ";\n";
@@ -7870,7 +8373,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testJavaDecimalTooSmall(Column r)
         {
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall(){\n";
             result += "double " + r.column_name + " = -1;\n";
@@ -7895,7 +8398,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testJavaDatetimeTooBig(Column r)
         {
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooBig() throws ParseException{\n";
             result += "String strDate = \"01/01/2190\";\n";
@@ -7908,7 +8411,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testJavaDatetimeTooSmall(Column r)
         {
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterThrowsException, this, r);
             result += "@Test\n";
             result += "public void test" + name + "ThrowsIllegalArgumentExceptionIf" + r.column_name + "TooSmall() throws ParseException{\n";
             result += "String strDate = \"03/03/1990\";\n";
@@ -7922,7 +8425,7 @@ output+="return " + returntype + ";\n}\n";
         private string testJavaDatetimeSet(Column r)
         {
             _ = rand.Next(1, 10000);
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "() throws ParseException{\n";
             DateTime today = DateTime.Today;
@@ -7939,17 +8442,17 @@ output+="return " + returntype + ";\n}\n";
         private string testJavaStringSet(Column r)
         {
 
-            String dummy = "";
-
+            string dummy;
             if (r.default_value.ToLower().Contains("uuid"))
             {
                 dummy = generateRandomString(r, 0);
             }
-            else {
+            else
+            {
                 dummy = generateRandomString(r, -2);
             }
 
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "@Test\n";
             result += "public void testSet" + r.column_name + "Sets" + r.column_name + "(){\n";
             result += "String " + r.column_name + " = \"" + dummy + "\";\n";
@@ -7961,7 +8464,7 @@ output+="return " + returntype + ";\n}\n";
         }
         private string testJavaBoolSetFalse(Column r)
         {
-            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this,r);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.SetterWorks, this, r);
             result += "@Test\n";
             result += "public void test" + name + "Sets" + r.column_name + "asFalse(){\n";
             result += "boolean status = false;\n";
@@ -8125,6 +8628,7 @@ output+="return " + returntype + ";\n}\n";
             result += genJavaDAOFakeCount(); // done, needs javadoccomment
             result += genJavaDAOFakeFileWrite();
             result += genJavaDAOFakeFileRead();
+            result += genJavaDAOFakeUpdateSingle();
             result += genJavaDAODuplicateKey(); // not done
             result += genJavaDAOExceptionKey();
             result += genJavaDAOFooter(); // done, needs javadoccomment          
@@ -8157,7 +8661,8 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string genCSharpAccessorFakeHeader(string databasename) {
+        private string genCSharpAccessorFakeHeader(string databasename)
+        {
             int x = 0;
             string result = "";
             int numberOfFakes = rand.Next(4, 6);
@@ -8184,11 +8689,11 @@ output+="return " + returntype + ";\n}\n";
             result += "public " + name + "AccessorFake(){\n";
             if (hasVM)
             {
-                result += name.ToLower() + "VMs = new List<"+name+">();\n";
+                result += name.ToLower() + "VMs = new List<" + name + ">();\n";
             }
             else
             {
-                result += name.ToLower() + "s = new List<"+name+">();\n";
+                result += name.ToLower() + "s = new List<" + name + ">();\n";
             }
 
             //generate non keyed data
@@ -8412,7 +8917,7 @@ output+="return " + returntype + ";\n}\n";
         private string genCSharpAccessorFakeCreate()
         {
             string result = "";
-           
+
             result += "public int add(" + name + " _" + name.ToLower() + ")  {\n";
             result += "if (duplicateKey(_" + name.ToLower() + ")){\n";
             result += "return 0;\n";
@@ -8471,7 +8976,6 @@ output+="return " + returntype + ";\n}\n";
             {
                 type = name;
             }
-            
 
             result += "public " + type + " get" + name + "ByPrimaryKey(" + type + " _" + name.ToLower() + ") {\n";
             result += type + " result = null;\n";
@@ -8505,7 +9009,7 @@ output+="return " + returntype + ";\n}\n";
             string result = "\n";
 
             result += "public List<" + name + vmTag + "> getActive" + name + "() {\n";
-            result += "List<" + name + vmTag + "> results = new List<"+name+">();\n";
+            result += "List<" + name + vmTag + "> results = new List<" + name + ">();\n";
             result += "foreach (" + name + vmTag + " " + name.ToLower() + " in " + name.ToLower() + vmTag + "s){\n";
             result += "if (" + name.ToLower() + ".Is_Active){\n";
             result += "results.Add(" + name.ToLower() + ");\n";
@@ -8515,9 +9019,10 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string genCSharpAccessorFakeretrieveAll() {
+        private string genCSharpAccessorFakeretrieveAll()
+        {
             string result = "";
-            
+
             if (hasVM)
             {
                 result += "public List <" + name + "_VM> getAll" + name + "(int limit, int offset, string search_term";
@@ -8530,7 +9035,7 @@ output+="return " + returntype + ";\n}\n";
                 }
 
                 result += ")  {\n";
-                result += "List<" + name + "_VM> results = new List<"+name+">();\n";
+                result += "List<" + name + "_VM> results = new List<" + name + ">();\n";
                 result += "foreach (" + name + "_VM " + name.ToLower() + " in " + name.ToLower() + "VMs){\n";
                 result += "if (";
                 string andand = "";
@@ -8558,7 +9063,7 @@ output+="return " + returntype + ";\n}\n";
             else
             {
                 result += "public List <" + name + "> getAll" + name + "(int limit, int offset, String search_term)  {\n";
-                result += "List<" + name + "> results = new List<"+name+">();\n";
+                result += "List<" + name + "> results = new List<" + name + ">();\n";
                 result += "foreach (" + name + " " + name.ToLower() + " in " + name.ToLower() + "s){\n";
                 result += "if (search_term.Equals(\"\") ";
                 foreach (Column r in columns)
@@ -8597,7 +9102,7 @@ output+="return " + returntype + ";\n}\n";
             }
             if (stringKey)
             {
-                result += "public List<"+name+"> getDistinct" + name + "ForDropdown() {\n";
+                result += "public List<" + name + "> getDistinct" + name + "ForDropdown() {\n";
                 result += "List<string> results = new List<string>();\n";
                 result += "foreach (" + name + vmTag + " " + name.ToLower() + " in " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
                 result += "results.Add(" + name.ToLower() + "." + columns[0].column_name + ");\n";
@@ -8607,7 +9112,7 @@ output+="return " + returntype + ";\n}\n";
             else
             {
                 result += "public List<" + name + "> getDistinct" + name + "ForDropdown() {\n";
-                result += "List<" + name + "> results = new List<"+name+">();\n";
+                result += "List<" + name + "> results = new List<" + name + ">();\n";
                 result += "foreach (" + name + vmTag + " " + name.ToLower() + " in " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
                 result += name + " _" + name.ToLower() + " = new " + name + "();\n";
                 result += "_" + name.ToLower() + "." + columns[0].column_name + "=" + name.ToLower() + "." + columns[0].column_name + ";\n";
@@ -8632,7 +9137,7 @@ output+="return " + returntype + ";\n}\n";
                     string fk_name = parts[1];
                     result += "\n";
                     result += "public List<" + name + "_VM> get" + name + "by" + fk_table + "(" + r.data_type.toCSharpDataType() + " " + fk_name + "){\n";
-                    result += "List<" + name + vmTag + "> results = new List<"+name+">();\n";
+                    result += "List<" + name + vmTag + "> results = new List<" + name + ">();\n";
                     result += "foreach (" + name + vmTag + " " + name.ToLower() + " in " + name.ToLower() + vmTag.Replace("_", "") + "s){\n";
                     result += "if (" + name.ToLower() + "." + r.column_name + ".Equals(" + fk_name + ")){\n";
                     result += "results.Add(" + name.ToLower() + ");\n";
@@ -8850,7 +9355,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += ") {\n";
-            result += "List<" + name + "_VM> results = new List<"+name+">();\n";
+            result += "List<" + name + "_VM> results = new List<" + name + ">();\n";
             result += "foreach (" + name + "_VM " + name.ToLower() + " in " + name.ToLower() + "VMs){\n";
             result += "if (";
             string andand = "";
@@ -8876,6 +9381,68 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
+
+        private string genJavaDAOFakeUpdateSingle()
+        {
+            string results = "";
+            string VMTag = "";
+            if (hasVM)
+            {
+                VMTag = "_VM";
+            }
+            //edit each filed
+            foreach (Column r in columns)
+            {
+                if (r.primary_key.Equals('Y') || r.primary_key.Equals('y'))
+                {
+                    continue;
+                }
+                results += "int update" + name + "_" + r.column_name + "(_old" + name + " , " + name + " _new" + name + ") throws SQLException{\n";
+                results += "if (_old" + name + ".get" + r.column_name + "().equals(_new" + name + ".get" + r.column_name + "())){\n";
+                results += "return 0;\n";
+                results += "}\n";
+                results += "int location =-1;\n";
+                results += "if (duplicateKey(_old" + name + ")){\n";
+                results += "return 0;\n";
+                results += "}\n";
+                results += "if (exceptionKey(_old" + name + ")){\n";
+                results += "throw new SQLException(\"error\");\n";
+                results += "}\n";
+                results += "for (int i=0;i<" + name.ToLower() + VMTag.Replace("_", "") + "s.size();i++){\n";
+                results += "if (";
+                string andand = "";
+                foreach (Column s in columns)
+                {
+                    if (s.primary_key.Equals('Y') || s.primary_key.Equals('y'))
+                    {
+                        results += andand + name.ToLower() + VMTag.Replace("_", "") + "s.get(i).get" + s.column_name + "().equals(_old" + name + ".get" + s.column_name + "()" + ")){\n";
+                        andand = "&&";
+                    }
+                }
+
+                results += "location =i;\n";
+                results += "break;\n";
+                results += "}\n";
+                results += "}\n";
+                results += "if (location==-1){\n";
+                results += "throw new SQLException();\n";
+                results += "}\n";
+                if (hasVM)
+                {
+                    results += name + "_VM updated = new " + name + "_VM(_new" + name + ");\n";
+                    results += name.ToLower() + VMTag.Replace("_", "") + "s.set(location,updated);\n";
+                }
+                else
+                {
+                    results += name.ToLower() + VMTag.Replace("_", "") + "s.set(location,new" + name + ");\n";
+                }
+                results += "return 1;\n}\n";
+
+            }
+
+            return results;
+        }
+
         private string genCSharpAccessorFakeFileWrite()
         {
             string result = "public int write" + name + "ToFile(List<" + name + "> _" + name + "s, string path) {\n";
@@ -8940,7 +9507,6 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-
         private string genJavaDAOFakeHeader(string databasename)
         {
             int x = 0;
@@ -8988,11 +9554,12 @@ output+="return " + returntype + ";\n}\n";
                         if (r.data_type.toCSharpDataType().Equals("string"))
                         {
                             int reletiveLength = 0;
-                            if (r.default_value.ToLower().Contains("uuid"))
+                            if (r.column_name.ToLower().Contains("id") || r.default_value.ToLower().Contains("uuid"))
                             {
                                 reletiveLength = 0;
                             }
-                            else {
+                            else
+                            {
                                 reletiveLength = 8 - r.length;
                             }
                             string randomtext = "\"" + generateRandomString(r, reletiveLength) + "\"";
@@ -9029,19 +9596,20 @@ output+="return " + returntype + ";\n}\n";
                     x++;
                 }
             }
-            else
+            else //has vm
                 for (int l = 0; l < 3; l++)
                 {
                     {
                         for (int j = 0; j < columns.Count; j++)
                         {
-                            if (columns[j].references != "")
+                            if (columns[j].references != "") // fk
                             {
                                 if (columns[j].data_type.toCSharpDataType().Equals("string"))
                                 {
-                                    
+
                                     string randomtext = "\"" + generateRandomString(columns[j], 8 - columns[j].length) + "\"";
-                                    if (columns[j].default_value.ToLower().Contains("uuid)")){
+                                    if (columns[j].column_name.ToLower().Contains("id") || columns[j].default_value.ToLower().Contains("uuid)"))
+                                    {
                                         randomtext = "\"" + generateRandomString(columns[j], 0) + "\"";
                                     }
                                     for (int i = 0; i < numberOfFakes; i++)
@@ -9059,9 +9627,9 @@ output+="return " + returntype + ";\n}\n";
                                                 else
                                                 {
                                                     string newrandomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
-                                                    if (columns[k].default_value.ToLower().Contains("uuid"))
+                                                    if (columns[k].column_name.ToLower().Contains("id")||columns[k].default_value.ToLower().Contains("uuid"))
                                                     {
-                                                         newrandomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
+                                                        newrandomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
 
                                                     }
 
@@ -9114,8 +9682,9 @@ output+="return " + returntype + ";\n}\n";
                                             {
 
                                                 string randomtext = "\"" + generateRandomString(columns[k], 8 - columns[k].length) + "\"";
-                                                if (columns[k].default_value.ToLower().Contains("uuid")) {
-                                                     randomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
+                                                if (columns[k].column_name.ToLower().Contains("id")||columns[k].default_value.ToLower().Contains("uuid"))
+                                                {
+                                                    randomtext = "\"" + generateRandomString(columns[k], 0) + "\"";
 
                                                 }
                                                 result += comma + randomtext;
@@ -9229,19 +9798,20 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        private string genJavaDAOFakeAddBatch() {
+        private string genJavaDAOFakeAddBatch()
+        {
 
             string result = "int addBatchOf" + name + "s(List<" + name + "> _" + name.ToLower() + "s) throws SQLException{\n";
             result += "int result = 0;\n";
-            result += "for ("+name+" "+name.ToLower()+" : _" +name.ToLower()+"s) {\n";
-            result += name.ToLower()+"VMs.add("+name.ToLower()+");\n";
+            result += "for (" + name + " " + name.ToLower() + " : _" + name.ToLower() + "s) {\n";
+            result += name.ToLower() + "VMs.add(" + name.ToLower() + ");\n";
             result += "result ++;\n";
             result += "}\n";
             result += "return result;\n";
             result += "}\n";
 
             return result;
-        
+
         }
         private string genJavaDAOFakeretrieveByKey()
         {
@@ -9297,24 +9867,32 @@ output+="return " + returntype + ";\n}\n";
                 }
 
                 result += ") throws SQLException {\n";
+                result += "search_term=search_term.toLowerCase();\n";
                 result += "List<" + name + "_VM> results = new ArrayList<>();\n";
                 result += "for (" + name + "_VM " + name.ToLower() + " : " + name.ToLower() + "VMs){\n";
                 result += "if (";
-                string andand = "";
                 foreach (Column r in columns)
                 {
                     if (r.references != "")
                     {
-                        result +=   "(!" + r.column_name + ".isEmpty()&& !" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
+                        result += "(!" + r.column_name + ".isEmpty()&& !" + name.ToLower() + ".get" + r.column_name + "().equals(" + r.column_name + "))\n";
                         result += "\n{continue;\n}\n}";
-                        
+
                     }
                 }
 
                 result += "){\n";
                 result += "if (!search_term.isEmpty() ";
-                foreach (Column r in columns) {
-                    result += "&& ! " + name.ToLower() + ".get" + r.column_name + "().contains(search_term)";
+                foreach (Column r in columns)
+                {
+                    if (r.data_type.toCSharpDataType().Equals("string"))
+                    {
+                        result += "&& ! " + name.ToLower() + ".get" + r.column_name + "().toLowerCase().contains(search_term)";
+                    }
+                    else {
+                        result += "&& ! " + name.ToLower() + ".get" + r.column_name + "().toString().toLowerCase().contains(search_term)";
+                    }
+                    
                 }
                 result += "){\n";
                 result += "continue;";
@@ -9366,12 +9944,11 @@ output+="return " + returntype + ";\n}\n";
                 vmTag = "_VM";
             }
             string result = "@Override\n";
-           
-            
-                result += "public List<"+name+"> getDistinct" + name + "ForDropdown() throws SQLException{\n";
-                
-                result += " return new ArrayList<>("+name+vmTag+");\n}\n";
-            
+
+            result += "public List<" + name + "> getDistinct" + name + "ForDropdown() throws SQLException{\n";
+
+            result += " return new ArrayList<>(" + name + vmTag + ");\n}\n";
+
             return result;
         }
         private string genJavaDAOFakeRetriveByFK()
@@ -9485,7 +10062,7 @@ output+="return " + returntype + ";\n}\n";
             results += "}\n";
             results += "}\n";
             results += "if (location==-1){\n";
-            results += "throw new SQLException(\"Unable To Find "+name+".\");\n";
+            results += "throw new SQLException(\"Unable To Find " + name + ".\");\n";
             results += "}\n";
             results += name.ToLower() + "VMs.remove(location);\n";
             if (hasVM)
@@ -9591,23 +10168,23 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        private string genJavaDAOFakeFileWrite() {
-            
+        private string genJavaDAOFakeFileWrite()
+        {
+
             string result = "int write" + name + "ToFile(List<" + name + "> _" + name + "s, String path) throws IOException{\n";
             result += "return _" + name + "s.size();\n";
             result += "}\n";
             return result;
-        
+
         }
         private string genJavaDAOFakeFileRead()
         {
-            
+
             string result = "List<" + name + "> read" + name + "sFromFile(File uploadedFile) throws Exception{\n";
             result += "return " + name.ToLower() + "VMs;\n";
             result += "}\n";
 
             return result;
-
 
         }
         private string genJavaDAODuplicateKey()
@@ -9662,8 +10239,6 @@ output+="return " + returntype + ";\n}\n";
                 }
             }
 
-            result += ") throws SQLException {\n";
-            result += "in result=0;\n";
             result = "result = getAll" + name + "(0,Integer.MAX_VALUE, Search_term";
             foreach (Column r in columns)
             {
@@ -9697,7 +10272,7 @@ output+="return " + returntype + ";\n}\n";
             result += TestGetAllCanSearch();
             result += TestGetAllCanSearchAndReturnZero();
             result += TestInitWithNoParamsDoesNotCrash();
-            
+
             result += "\n}\n";
             return result;
         }
@@ -9767,12 +10342,37 @@ output+="return " + returntype + ";\n}\n";
             result += TestGetOneGetsOne(); //done
             result += TestGetOneCanFail(); //done
             result += TestUpdateCanAddWithNoErrorsAndRedirects();
-            result += TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage();            
+            result += TestUpdateHasErrorsForEachFiledAndKeepsOnSamePage();
             result += testUpdateCanReturnZero();
             result += testUpdateCanThrowSQLException();
             result += TestInitWithNoParamsDoesNotCrash();
             result += "\n}\n";
             return result;
+        }
+
+        public string genJavaEditOneServletTest(Column r)
+        {
+            string result = "";
+            result += packageStatementForTests();
+            result += importStatementForTests();//done 
+            result += classNameAndStaticVariables(4);//done 
+            result += genAJXErrorCodes(r);
+            result += initTests(4);//done
+            result += tearDownTests();//done
+            result += testErrorCodeNeg1CanBeReached(r);
+            result += testErrorCodeNeg2CanBeReached(r);
+            result += testErrorCodeNeg3CanBeReached(r);
+            result += testErrorCodeNeg4CanBeReached(r);
+            result += testErrorCodeNeg5CanBeReached(r);
+            result += testErrorCodeNeg6CanBeReached(r);
+            result += testErrorCodeNeg7CanBeReached(r);
+            result += testErrorCodeNeg8CanBeReached(r);
+            result += testCode1CanBeReached(r);
+            result += testCode0CanBeReached(r);
+            result += TestInitWithNoParamsDoesNotCrash();
+            result += "\n}\n";
+            return result;
+
         }
         //done
         private string initTests(int mode)
@@ -9797,7 +10397,7 @@ output+="return " + returntype + ";\n}\n";
             }
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.setupTests, this);
             result += "@BeforeEach\n";
-            
+
             result += "public void setup() throws ServletException{\n\n";
             result += "servlet = new " + servletName + "();\n";
             result += "MockServletContext servletContext = new MockServletContext();\n";
@@ -9889,7 +10489,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.teardownTests, this);
             result += "@AfterEach\n";
-            
+
             result += "public void teardown(){\n";
             result += "servlet=null;\n";
             result += "request=null;\n";
@@ -9915,7 +10515,8 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        private string testLoggedInGets200OnDoPostWithNoFieldsSet() {
+        private string testLoggedInGets200OnDoPostWithNoFieldsSet()
+        {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.TwoHundredIfLoggedIn, this);
             result += "@Test\n";
             result += "public void TestLoggedInUserGets200OnDoPostWithNoFieldsSet() throws ServletException, IOException{\n";
@@ -9939,7 +10540,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int status = response.getStatus();\n";
             result += "assertEquals(302,status);\n";
             result += "String redirect_link = response.getRedirectedUrl();\n";
-            result += "String desired_redirect = \""+settings.database_name+"_in\";\n";
+            result += "String desired_redirect = \"" + settings.database_name + "_in\";\n";
             result += "assertEquals(desired_redirect,redirect_link);\n";
             result += "session = request.getSession(false);\n";
             result += "assertNull(session);\n";
@@ -9951,7 +10552,7 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.TwoHundredOnPost, this);
             result += "@Test\n";
-            result += "public void TestLoggedInUserGets302nDoPostWithNo"+name+"Set() throws ServletException, IOException{\n";
+            result += "public void TestLoggedInUserGets302nDoPostWithNo" + name + "Set() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
             result += "request.setSession(session);\n";
             result += "servlet.doPost(request,response);\n";
@@ -10027,7 +10628,7 @@ output+="return " + returntype + ";\n}\n";
             result += "int count = (int)  request.getAttribute(\"count\");\n";
             result += "assertNotNull(" + name.ToLower() + "s);\n";
             result += "assertEquals(20," + name.ToLower() + "s.size());\n";
-            
+
             result += "assertEquals(20,count);\n";
             result += "}\n";
 
@@ -10051,7 +10652,8 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ".toString());\n";
 
                         }
@@ -10074,11 +10676,8 @@ output+="return " + returntype + ";\n}\n";
             result += SetUserOnTest("Jonathan");
             foreach (Column r in columns)
             {
-                int columnToNull = 1;
                 if (columns.Count == 1)
                 {
-
-                    columnToNull = 0;
                 }
                 if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
                 {
@@ -10090,7 +10689,8 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"" + r.column_name.ToLower().Replace("_", "") + "\"," + r.column_name + ".toString());\n";
 
                         }
@@ -10100,7 +10700,7 @@ output+="return " + returntype + ";\n}\n";
             result += "request.setSession(session);\n";
             result += "servlet.doGet(request,response);\n";
             result += name + "_VM " + name.ToLower() + " = (" + name + "_VM) session.getAttribute(\"" + name.ToLower() + "\");\n";
-            result += "assertNull("+name.ToLower()+");\n";
+            result += "assertNull(" + name.ToLower() + ");\n";
             result += "assertEquals(302,response.getStatus());\n";
             result += "}\n";
             return result;
@@ -10134,7 +10734,7 @@ output+="return " + returntype + ";\n}\n";
 
         private string TestGetAllCanSearch()
         {
-            string result = "";       
+            string result = "";
             result += commentBox.genJavaTestJavaDoc(JavaTestType.GetAllCanFilter, this);
             result += "@Test\n";
             result += "public void testLoggedInUserCanSearch() throws ServletException, IOException{\n";
@@ -10148,7 +10748,7 @@ output+="return " + returntype + ";\n}\n";
             result += "assertEquals(20," + name.ToLower() + "s.size());\n";
             result += "int count = (int) request.getAttribute(\"count\");\n";
             result += "assertEquals(20,count);\n";
-            result += "}\n";         
+            result += "}\n";
             return result;
         }
         private string TestGetAllCanSearchAndReturnZero()
@@ -10173,7 +10773,7 @@ output+="return " + returntype + ";\n}\n";
 
         private string TestAddHasErrorsForEachFieldAndKeepsOnSamePage()
         {
-            string result  = commentBox.genJavaTestJavaDoc(JavaTestType.ErrorMessagesforEachField, this);
+            string result = commentBox.genJavaTestJavaDoc(JavaTestType.ErrorMessagesforEachField, this);
             result += "@Test\n";
             result += "public void TestAddHasErrorsForEachFieldAndKeepsOnSamePage() throws ServletException, IOException{\n";
             result += SetUserOnTest("Jonathan");
@@ -10220,15 +10820,16 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue@gmail.com\");\n";
 
                         }
-                        else if (r.column_name.isWebsite()) {
+                        else if (r.column_name.isWebsite())
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.TestValue.com\");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
 
                         }
-
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
                     {
@@ -10240,7 +10841,7 @@ output+="return " + returntype + ";\n}\n";
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
 
                     }
-                    if (r.data_type.toCSharpDataType().ToLower().Contains("date")|| r.data_type.toCSharpDataType().Contains("time"))
+                    if (r.data_type.toCSharpDataType().ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
                     {
                         result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
 
@@ -10288,11 +10889,11 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.EXCEPTION.com\");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
 
                         }
-
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
                     {
@@ -10356,11 +10957,11 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.DUPLICATE.com\");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
 
                         }
-
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
                     {
@@ -10454,11 +11055,11 @@ output+="return " + returntype + ";\n}\n";
                         result += name.ToLower() + ".set" + r.column_name + "(\"www.test" + name + ".com\");\n";
 
                     }
-                    else {
+                    else
+                    {
                         result += name.ToLower() + ".set" + r.column_name + "(\"test" + name + "\");\n";
 
                     }
-
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
                 {
@@ -10470,12 +11071,12 @@ output+="return " + returntype + ";\n}\n";
                     result += name.ToLower() + ".set" + r.column_name + "(true);\n";
 
                 }
-                else if(r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                else if (r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
                 {
                     result += name.ToLower() + ".set" + r.column_name + "(new Date());\n";
                 }
 
-                else if(r.data_type.ToLower().Contains("decimal"))
+                else if (r.data_type.ToLower().Contains("decimal"))
                 {
                     result += name.ToLower() + ".set" + r.column_name + "(23.2d);\n";
                 }
@@ -10487,7 +11088,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
-            result += "//create a new "+name+"s parameters\n";
+            result += "//create a new " + name + "s parameters\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -10504,11 +11105,11 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.TestValue.com\");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
 
                         }
-
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
                     {
@@ -10569,11 +11170,11 @@ output+="return " + returntype + ";\n}\n";
                         result += name.ToLower() + ".set" + r.column_name + "(\"www.EXCEPTION.com\");\n";
 
                     }
-                    else {
+                    else
+                    {
                         result += name.ToLower() + ".set" + r.column_name + "(\"EXCEPTION\");\n";
 
                     }
-
                 }
                 if (r.data_type.toCSharpDataType().Equals("int"))
                 {
@@ -10588,7 +11189,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
-            result += "//create a new "+name+"s parameters\n";
+            result += "//create a new " + name + "s parameters\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -10605,11 +11206,11 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.EXCEPTION.com\");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION\");\n";
 
                         }
-
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
                     {
@@ -10674,12 +11275,11 @@ output+="return " + returntype + ";\n}\n";
                         result += name.ToLower() + ".set" + r.column_name + "(\"www.DUPLICATE.com\");\n";
 
                     }
-                    else {
+                    else
+                    {
                         result += name.ToLower() + ".set" + r.column_name + "(\"DUPLICATE\");\n";
 
                     }
-
-
                 }
                 else if (r.data_type.toCSharpDataType().Equals("int"))
                 {
@@ -10698,7 +11298,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             result += "session.setAttribute(\"" + name.ToLower() + "\"," + name.ToLower() + ");\n";
-            result += "//create a new "+name+" parameters\n";
+            result += "//create a new " + name + " parameters\n";
             foreach (Column r in columns)
             {
                 if (r.increment == 0)
@@ -10715,11 +11315,11 @@ output+="return " + returntype + ";\n}\n";
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.DUPLICATE.com\");\n";
 
                         }
-                        else {
+                        else
+                        {
                             result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE\");\n";
 
                         }
-
                     }
                     if (r.data_type.toCSharpDataType().Equals("int"))
                     {
@@ -10862,6 +11462,250 @@ output+="return " + returntype + ";\n}\n";
             result += "}\n";
             return result;
         }
+
+        private string testErrorCodeNeg1CanBeReached(Column r)
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeUNAUTHORIZEDCanBeReachedByNullUser() throws ServletException, IOException {\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(UNAUTHORIZED);\n";
+            result += "assertEquals(expected,result);\n";
+
+            result += "}\n";
+
+            result += "\n";
+            result += "@Test\n";
+            result += "public void TestErrorCodeUNAUTHORIZEDCanBeReachedByWrongRoleuser() throws ServletException, IOException {\n";
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Wrong\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(UNAUTHORIZED);\n";
+            result += "assertEquals(expected,result);\n";
+
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg2CanBeReached(Column r)
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeINVALIDIDCanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            //result += "request.setParameter(\"" + name.ToLower() + "id\",\"-1\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected =String.valueOf( INVALID_" + name.ToUpper() + "_ID);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg3CanBeReached(Column r)
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeOLD_VALUE_MISSINGCanBeReachedByNullValue() throws ServletException, IOException {\n";
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(OLD_" + r.column_name.ToUpper() + "_MISSING);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+
+            result += "@Test\n";
+            result += "public void TestErrorCodeOLD_VALUE_MISSINGCanBeReachedByBlankValue() throws ServletException, IOException {\n";
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(OLD_" + r.column_name.ToUpper() + "_MISSING);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg4CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, -2);
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeNEW_VALUE_MISSINGCanBeReachedByNullValue() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(NEW_" + r.column_name.ToUpper() + "_MISSING);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+
+            result += "@Test\n";
+            result += "public void TestErrorCodeNEW_VALUE_MISSINGCanBeReachedByBlankValue() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(NEW_" + r.column_name.ToUpper() + "_MISSING);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg5CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, -2);
+            string randomNew = generateRandomString(r, -2);
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeINVALIDOBJECTCanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"-1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"" + randomNew + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(INVALID_" + name.ToUpper() + "_OBJECT);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg6CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, 2);
+            string randomNew = generateRandomString(r, -2);
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeINVALID_OLD_VALUECanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"" + randomNew + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(INVALID_OLD_" + r.column_name.ToUpper() + ");\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg7CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, -2);
+            string randomNew = generateRandomString(r, 2);
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeINVALID_NEW_VALUECanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1000\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"" + randomNew + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected =String.valueOf( INVALID_NEW_" + r.column_name.ToUpper() + ");\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testErrorCodeNeg8CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, -2);
+            string randomNew = "EXCEPTION";
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeDATABASE_ERRORCanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1000\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"" + randomNew + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(DATABASE_ERROR);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testCode1CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, -2);
+            string randomNew = generateRandomString(r, -2);
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestCodeSUCCESSCanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"" + randomNew + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected = String.valueOf(SUCCESS);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
+        private string testCode0CanBeReached(Column r)
+        {
+            string random = generateRandomString(r, -2);
+            string randomNew = random;
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestErrorCodeNO_CHANGECanBeReached() throws ServletException, IOException {\n";
+
+            result += "User user = new User();\n";
+            result += "user.setRole_ID(\"Jonathan\");\n";
+            result += "session.setAttribute(\"User\",user);\n";
+            result += "request.setParameter(\"" + name.ToLower() + "id\",\"1\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_old" + r.column_name + "\",\"" + random + "\");\n";
+            result += "request.setParameter(\"" + name.ToLower() + "_new" + r.column_name + "\",\"" + randomNew + "\");\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "String result = response.getContentAsString();\n";
+            result += "String expected =String.valueOf(NO_CHANGE);\n";
+            result += "assertEquals(expected,result);\n";
+            result += "}\n";
+            return result;
+        }
         private string TestInitWithNoParamsDoesNotCrash()
         {
             string result = commentBox.genJavaTestJavaDoc(JavaTestType.initTest, this);
@@ -10876,7 +11720,8 @@ output+="return " + returntype + ";\n}\n";
 
         }
 
-        public string GenLogoutServletTests() {
+        public string GenLogoutServletTests()
+        {
             string result = "";
             //package statement
 
@@ -10900,8 +11745,8 @@ output+="return " + returntype + ";\n}\n";
             result += "@BeforeEach\n";
             result += "public void setup() throws ServletException{\n\n";
             result += "servlet = new LogoutServlet();\n";
-            result += "servlet.init()\n";          
-            
+            result += "servlet.init()\n";
+
             result += "request =  new MockHttpServletRequest();\n";
             result += "response = new MockHttpServletResponse();\n";
             result += "session = new MockHttpSession();\n";
@@ -10935,7 +11780,6 @@ output+="return " + returntype + ";\n}\n";
             result += "assertNull(session);\n";
             result += "}\n";
 
-
             //logged out user is still logged out
             result += "@Test\n";
             result += "public void TestLoggeOutUserGets302OnDoGetAndSessionIsInvalid() throws ServletException, IOException{\r\n";
@@ -10944,13 +11788,7 @@ output+="return " + returntype + ";\n}\n";
             result += "assertEquals(302,status);\n";
             result += "session = request.getSession(false);;\n";
             result += "assertNull(session);\n";
-            result += "}\n";           
-
-
-            
-
-
-            
+            result += "}\n";
 
             //init test
             result += commentBox.genJavaTestJavaDoc(JavaTestType.initTest, this);
@@ -10969,16 +11807,15 @@ output+="return " + returntype + ";\n}\n";
         {
             string result = "";
             //package statement
-            
+
             result += packageStatementForTests();
 
             //import statements
             result += importStatementForTests();
-            
 
             //class name and static variables
             result += "\npublic class SignInServlet Test {\n";
-            
+
             result += "private static final String PAGE=\"WEB-INF/" + settings.database_name + "/" + servletName + ".jsp\";\n";
             result += "SignInServlet servlet;\n";
             result += "MockHttpServletRequest request;\n";
@@ -11027,7 +11864,6 @@ output+="return " + returntype + ";\n}\n";
             result += "assertNotNull(session);\n";
             result += "}\n";
 
-
             //logged out user is still logged out
             result += "@Test\n";
             result += "public void TestLoggeOutUserGets200OnDoGetAndSessionIsInvalid() throws ServletException, IOException{\r\n";
@@ -11053,8 +11889,6 @@ output+="return " + returntype + ";\n}\n";
             result += " assertEquals(200,responseStatus);\n";
             result += "}\n";
             result += "\n";
-            
-
 
             //bad log in info gives errors
             result += "@Test\n";
@@ -11071,8 +11905,6 @@ output+="return " + returntype + ";\n}\n";
             result += "assertEquals(200,responseStatus);\n";
             result += "}\n";
             result += "\n";
-         
-
 
             //good log in info gets us redirected
             result += "@Test\n";
@@ -11089,8 +11921,6 @@ output+="return " + returntype + ";\n}\n";
             result += "assertNotEquals(\"\",User_Added);\n";
             result += "}\n";
             result += "\n";
-         
-
 
             //init test
             result += commentBox.genJavaTestJavaDoc(JavaTestType.initTest, this);
@@ -11105,7 +11935,8 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        public string genManagementConsoleTests() {
+        public string genManagementConsoleTests()
+        {
             string result = "";
             //package statement
 
@@ -11117,7 +11948,6 @@ output+="return " + returntype + ";\n}\n";
             result += testLoggedInGets200OnDoGet();
 
             result += TestLoggedOutGets302onDoGet();
-
 
             return result;
 
@@ -11477,9 +12307,6 @@ output+="return " + returntype + ";\n}\n";
                     result = "\"" + generateRandomString(r, 0) + "\"";
 
                 }
-
-
-
             }
             else if (r.data_type.toCSharpDataType().Equals("bool"))
             {
@@ -11502,7 +12329,8 @@ output+="return " + returntype + ";\n}\n";
                 double toAdd = rand.Next(1000, 7000) / 100d;
                 result = toAdd.ToString();
             }
-            else if (r.data_type.ToLower().Equals("date")) {
+            else if (r.data_type.ToLower().Equals("date"))
+            {
                 result = genRandomDate();
             }
 
@@ -11522,12 +12350,13 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        private string genRandomTime() {
+        private string genRandomTime()
+        {
             double hour = rand.Next(1, 11);
             double minute = rand.Next(11, 59);
             string ampm = rand.Next(1, 3) == 1 ? "am" : "pm";
             return hour.ToString() + ":" + minute.ToString() + " " + ampm;
-            
+
         }
         private string genRandomDate()
         {
@@ -11537,7 +12366,8 @@ output+="return " + returntype + ";\n}\n";
             return month.ToString() + "/" + day.ToString() + "/" + year.ToString(); ;
         }
 
-        private string genServletJavaDoc(ServletType type) {
+        private string genServletJavaDoc(ServletType type)
+        {
             string result = "";
             switch (type)
             {
@@ -11564,27 +12394,28 @@ output+="return " + returntype + ";\n}\n";
             return result;
 
         }
-        private string uploadServletJavaDoc() {
+        private string uploadServletJavaDoc()
+        {
             string result = "/**\n";
-            string header = " * Servlet implementation class Up;oad"+name+"Servlet" +"\n*\n";
-            header += "* <p>This servlet handles the addition of new {@link "+name+"} entries in the application.\n";
+            string header = " * Servlet implementation class Up;oad" + name + "Servlet" + "\n*\n";
+            header += "* <p>This servlet handles the addition of new {@link " + name + "} entries in the application.\n";
             header += " * It is mapped to the URL pattern <code>/upload" + name + "</code>.</p>\n*\n";
-            string doGet = "* <p><strong>HTTP GET</strong>: Renders the form for adding a new "+name.ToLower()+". Access is restricted\n";
+            string doGet = "* <p><strong>HTTP GET</strong>: Renders the form for adding a new " + name.ToLower() + ". Access is restricted\n";
             doGet += " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n*\n";
-            string doPost = "* <p><strong>HTTP POST</strong>: Processes form submissions for adding a new "+name.ToLower()+". Validates input,\n";
-            doPost += " * attempts insertion into the database via {@link "+name+"DAO}, and forwards back to the form view with\r\n";
+            string doPost = "* <p><strong>HTTP POST</strong>: Processes form submissions for adding a new " + name.ToLower() + ". Validates input,\n";
+            doPost += " * attempts insertion into the database via {@link " + name + "DAO}, and forwards back to the form view with\r\n";
             doPost += " * success or error messages as necessary. Successful insertions redirect to the list of all " + name.ToLower() + "s.</p>\r\n*\n";
             string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
             access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
-            string created = " * <p>Created by Jonathan Beck on "+DateTime.Now.ToShortDateString()+"</p>\n*\n";
+            string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
             string see = " * @author Jonathan Beck\n";
             see += " * @version 1.0\n";
-            see += " * @see com."+settings.owner_name+"."+settings.database_name+".models."+name+"\n";
-            see += " * @see com."+settings.owner_name+"."+settings.database_name+".data."+name+"DAO\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".models." + name + "\n";
+            see += " * @see com." + settings.owner_name + "." + settings.database_name + ".data." + name + "DAO\n";
             see += " * @see jakarta.servlet.http.HttpServlet\n";
             result += header + doGet + doPost + access + created + see;
             result += "*/\n";
-            return result; 
+            return result;
         }
         private string deleteServletJavaDoc()
         {
@@ -11592,7 +12423,7 @@ output+="return " + returntype + ";\n}\n";
             string header = " * Servlet implementation class Add" + name + "Servlet" + "\n*\n";
             header += "* <p>This servlet handles the deletion of  {@link " + name + "} entries in the application.\n";
             header += " * It is mapped to the URL pattern <code>/delete" + name + "</code>.</p>\n*\n";
-            string doGet = " * <p><strong>HTTP GET</strong>: handles the request for deleting a"+name+ " via {@link "+name+"DAO}. Access is restricted\r\n " +
+            string doGet = " * <p><strong>HTTP GET</strong>: handles the request for deleting a" + name + " via {@link " + name + "DAO}. Access is restricted\r\n " +
                 "* to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>";
             string doPost = "";
             string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
@@ -11613,7 +12444,7 @@ output+="return " + returntype + ";\n}\n";
             string header = " * Servlet implementation class Add" + name + "Servlet" + "\n*\n";
             header += "* <p>This servlet handles the exporting of {@link " + name + "} entries in the application to csv.\n";
             header += " * It is mapped to the URL pattern <code>/export" + name + "</code>.</p>\n*\n";
-            string doGet = "* <p><strong>HTTP GET</strong>: Creates a txt file of all  " + name.ToLower() + "s via {@link "+name+"DAO} and allows the users to download. Access is restricted\n";
+            string doGet = "* <p><strong>HTTP GET</strong>: Creates a txt file of all  " + name.ToLower() + "s via {@link " + name + "DAO} and allows the users to download. Access is restricted\n";
             doGet += " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n*\n";
             string doPost = "*\n";
             string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
@@ -11634,11 +12465,11 @@ output+="return " + returntype + ";\n}\n";
             string header = " * Servlet implementation class Add" + name + "Servlet" + "\n*\n";
             header += "* <p>This servlet handles the addition of new {@link " + name + "} entries in the application.\n";
             header += " * It is mapped to the URL pattern <code>/add" + name + "</code>.</p>\n*\n";
-            string doGet = " * <p><strong>HTTP GET</strong>: Renders the form for adding a new "+name+". Access is restricted\r\n" +
+            string doGet = " * <p><strong>HTTP GET</strong>: Renders the form for adding a new " + name + ". Access is restricted\r\n" +
                 " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n";
-            string doPost = " * <p><strong>HTTP POST</strong>: Processes form submissions for adding a new "+name+". Validates input,\r\n" +
-                " * attempts insertion into the database via {@link "+name+"DAO}, and forwards back to the form view with\r\n " +
-                "* success or error messages as necessary. Successful insertions redirect to the list of all "+name+".</p\n>";
+            string doPost = " * <p><strong>HTTP POST</strong>: Processes form submissions for adding a new " + name + ". Validates input,\r\n" +
+                " * attempts insertion into the database via {@link " + name + "DAO}, and forwards back to the form view with\r\n " +
+                "* success or error messages as necessary. Successful insertions redirect to the list of all " + name + ".</p\n>";
             string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
             access += " * appropriate roles set (specifically the \"User\" role).</p>\n*\n";
             string created = " * <p>Created by Jonathan Beck on " + DateTime.Now.ToShortDateString() + "</p>\n*\n";
@@ -11657,7 +12488,7 @@ output+="return " + returntype + ";\n}\n";
             string header = " * Servlet implementation class All" + name + "Servlet" + "\n*\n";
             header += "* <p>This servlet handles the viewing of all {@link " + name + "} entries in the application.\n";
             header += " * It is mapped to the URL pattern <code>/all-" + name + "s</code>.</p>\n*\n";
-            string doGet = " * <p><strong>HTTP GET</strong>: Renders the table for viewing all " + name + "s from the database via {@link "+name+"DAO}. Allows earching and filtering by foreign keys. Access is restricted\r\n" +
+            string doGet = " * <p><strong>HTTP GET</strong>: Renders the table for viewing all " + name + "s from the database via {@link " + name + "DAO}. Allows earching and filtering by foreign keys. Access is restricted\r\n" +
                 " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>";
             string doPost = "*\n";
             string access = " * <p>Access to this servlet requires that the user session contain a {@link User} object that is logged in\n";
@@ -11674,12 +12505,11 @@ output+="return " + returntype + ";\n}\n";
         }
         private string viewEditServletJavaDoc()
         {
-            int x = 0;
             string result = "/**\n";
             string header = " * Servlet implementation class Edit" + name + "Servlet" + "\n*\n";
             header += "* <p>This servlet handles the editing of {@link " + name + "} entries in the application.\n";
             header += " * It is mapped to the URL pattern <code>/edit" + name + "</code>.</p>\n*\n";
-            string doGet = " * <p><strong>HTTP GET</strong>: Renders the table for viewing a single "+name+"s. Allows editing of appropriate fields. Access is restricted\r\n" +
+            string doGet = " * <p><strong>HTTP GET</strong>: Renders the table for viewing a single " + name + "s. Allows editing of appropriate fields. Access is restricted\r\n" +
                 " * to users with the \"User\" role. If unauthorized, the user is redirected to the login page.</p>\n";
             string doPost = " * <p><strong>HTTP POST</strong>: Processes form submissions for editing a " + name + ". Validates input,\r\n" +
                 " * attempts update of the the database via {@link " + name + "DAO}, and forwards back to the form view with\r\n " +
@@ -11785,7 +12615,7 @@ output+="return " + returntype + ";\n}\n";
                     postConditions += "<li>A list of " + name + " objects will be displayed that match the criteria</li>\n";
                     break;
                 case UseCaseType.DeleteThing:
-                    postConditions += "<li>The selected "+name+ " will be deleted</li>\n";
+                    postConditions += "<li>The selected " + name + " will be deleted</li>\n";
                     break;
             }
             postConditions += "</ul>";
@@ -11877,14 +12707,15 @@ output+="return " + returntype + ";\n}\n";
             return result;
         }
 
-        public string genCSVTempalte() {
+        public string genCSVTempalte()
+        {
             string result = "";
             string comma = "";
             foreach (Column r in columns)
             {
                 if (r.default_value == "" && (r.identity == null || r.identity == "" || r.identity.ToLower().StartsWith("n")))
                 {
-                    result += comma +" "+ r.column_name + " ";
+                    result += comma + " " + r.column_name + " ";
                     comma = ",";
                 }
             }
@@ -11894,9 +12725,9 @@ output+="return " + returntype + ";\n}\n";
             {
                 foreach (Column r in columns)
                 {
-                    if (r.default_value == "" && (r.identity==null ||r.identity == "" ||r.identity.ToLower().StartsWith("n")  ))
+                    if (r.default_value == "" && (r.identity == null || r.identity == "" || r.identity.ToLower().StartsWith("n")))
                     {
-                        result += comma + " " + genFakeData(r).Replace('\"',' ') + " ";
+                        result += comma + " " + genFakeData(r).Replace('\"', ' ') + " ";
                         comma = ",";
                     }
                 }
@@ -11905,10 +12736,7 @@ output+="return " + returntype + ";\n}\n";
             }
 
             return result;
-        
-        }
 
-        
-        
+        }
     }
 }

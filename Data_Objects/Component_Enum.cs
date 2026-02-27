@@ -93,7 +93,7 @@
         Java_DAO_Update,
         Java_DAO_Get_Distinct
     }
-    public enum  JavaTestType
+    public enum JavaTestType
     {
         SetterWorks,
         SetterThrowsException,
@@ -132,14 +132,15 @@
         DeleteCanFailIfIDNotExist
     }
 
-    public enum ServletType { 
+    public enum ServletType
+    {
         CreateServlet,
         DeleteServlet,
         ExportServlet,
         UploadServlet,
         ViewAllSErvlet,
-        ViewEditSErvlet 
-    
+        ViewEditSErvlet
+
     }
     public enum UseCaseType
     {

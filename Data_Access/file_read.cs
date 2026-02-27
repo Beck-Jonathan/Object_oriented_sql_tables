@@ -54,7 +54,7 @@ namespace Data_Access
             string tablename = " ";
             string description;
             char[] separator = { '\t' };
-            
+
             List<Column> rows = new List<Column>();
             int count = 0;
             try
@@ -92,7 +92,7 @@ namespace Data_Access
                         //parts[1] is blank for the first row of a table, so this catches the table name
                         if (parts[1].Length == 0 && count == 0)
                         {
-                            tablename = parts[0];
+                            tablename = parts[0].Trim();
                             description = parts[14];
                             count++;
                         }
@@ -141,14 +141,16 @@ namespace Data_Access
                         char nullable = ' ';
                         char unique = ' ';
                         char primary_key = ' ';
-                        
+
                         bool decimalLengthOverride = false;
                         //read each part of the row 
                         String data_type = parts[1].Replace("\"", "");
-                        if (!Int32.TryParse(parts[2], out length)){
-                            parts[2]= parts[2].Replace("\"", "");
+                        if (!Int32.TryParse(parts[2], out length))
+                        {
+                            parts[2] = parts[2].Replace("\"", "");
                             decimalLengthOverride = true;
-                        };
+                        }
+                        ;
                         String default_value = parts[3];
                         String identity = parts[4];
                         _ = Int32.TryParse(parts[5], out start);
@@ -184,7 +186,8 @@ namespace Data_Access
                         //create the row
                         Column _row = new Column(row_name, data_type, length, default_value, identity, start, increment,
                              nullable, index, unique, primary_key, foreign_key, integrity, references, description);
-                        if (decimalLengthOverride) {
+                        if (decimalLengthOverride)
+                        {
                             _row.length_text = parts[2];
                         }
                         //add row to row array
@@ -208,7 +211,8 @@ namespace Data_Access
                             if (length > 0)
                             {
                                 length_text = "(" + length + ")";
-                            };
+                            }
+                            ;
                             _key.lengthText = length_text;
                             data_tables.all_foreignKey.Add(_key);
                         }

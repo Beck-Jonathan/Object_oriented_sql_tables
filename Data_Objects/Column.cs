@@ -43,7 +43,8 @@ namespace Data_Objects
             this.length = length;
             this.default_value = default_value;
             this.identity = identity;
-            if (identity.ToLower().Equals("uuid") || default_value.ToLower().Equals("uuid()")) {
+            if (identity.ToLower().Equals("uuid") || default_value.ToLower().Equals("uuid()"))
+            {
                 uuid = true;
             }
             this.start = start;
@@ -65,9 +66,10 @@ namespace Data_Objects
             }
             if (length > 0)
             {
-                
+
                 length_text = "(" + length + ")";
-            };
+            }
+            ;
         }
 
         public Column()
@@ -82,7 +84,8 @@ namespace Data_Objects
             String Column_text = "";
             Column_text = Column_text + column_name + "\t";
             Column_text = Column_text + data_type + length_text + "\t";
-            if (uuid) {
+            if (uuid)
+            {
                 Column_text += "DEFAULT (uuid()) \t";
             }
             else if (default_value != "" && data_type.toCSharpDataType().ToLower() != "string")

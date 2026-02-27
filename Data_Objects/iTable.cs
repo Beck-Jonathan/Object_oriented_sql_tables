@@ -143,6 +143,8 @@ namespace Data_Objects
         /// </summary>
         /// <returns> a string comment box followed by a  string specified SQL language code that creates the the update SP for the table </returns>
         String gen_update();
+
+        String gen_update_each();
         String gen_select_distinct_for_dropdown();
         /// <summary>       
         /// generates a string comment box followed by a specified SQL language insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields.. 

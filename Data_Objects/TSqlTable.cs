@@ -64,7 +64,8 @@ namespace Data_Objects
                     }
                     count++;
                 }
-            };
+            }
+            ;
             foreach (string tuv in foreign_keys)
             {
                 String s = tuv;
@@ -101,7 +102,8 @@ namespace Data_Objects
                     }
                     count++;
                 }
-            };
+            }
+            ;
             foreach (string tuv in alternate_keys)
             {
                 String s = tuv;
@@ -236,6 +238,60 @@ namespace Data_Objects
                 full_text = comment_text + function_text;
             }
             return full_text;
+        }
+
+        public string gen_update_each()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    continue;
+                }
+                result += commentBox.genCommentBox(name, Component_Enum.SQL_Update);
+                string comma = "";
+
+                string function_text = "CREATE PROCEDURE[dbo].[sp_update_" + name + "_" + r.column_name + "];\n"
+                    + "(";
+
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                    {
+                        function_text += "old" + s.column_name.bracketStrip() + " " + s.data_type + s.length_text + "," + "\n";
+                        comma = ",";
+                    }
+                }
+                function_text += "old" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + ",\n";
+                function_text += "new" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + "\n";
+
+                function_text = function_text + ")\n" +
+                    "begin \n" +
+                    "UPDATE " + name + "\n set "
+                    ;
+                comma = "";
+                function_text += comma + r.column_name + " = " + "new" + r.column_name + "\n";
+                String initial_word = "WHERE ";
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                    {
+                        function_text += initial_word + s.column_name + "= old" + s.column_name + "\n";
+                        initial_word = "AND ";
+                    }
+                }
+                function_text += initial_word + r.column_name + "= old" + r.column_name + "\n";
+
+                function_text += "\nreturn @@rowcount\nend\ngo\n";
+                result += function_text;
+
+            }
+
+            return result;
         }
         /// <summary>
         /// 

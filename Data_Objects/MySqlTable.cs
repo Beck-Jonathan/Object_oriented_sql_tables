@@ -60,7 +60,8 @@ namespace Data_Objects
                     }
                     count++;
                 }
-            };
+            }
+            ;
             foreach (string tuv in foreign_keys)
             {
                 String s = tuv;
@@ -89,7 +90,8 @@ namespace Data_Objects
                     }
                     count++;
                 }
-            };
+            }
+            ;
             foreach (string tuv in alternate_keys)
             {
                 String s = tuv;
@@ -229,6 +231,63 @@ namespace Data_Objects
                " DELIMITER ;\n";
             full_text += function_text;
             return full_text;
+        }
+
+        public string gen_update_each()
+        {
+            string result = "";
+            foreach (Column r in columns)
+            {
+
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    continue;
+                }
+                result += commentBox.genCommentBox(name, Component_Enum.SQL_Update);
+                string comma = "";
+                string firstLine = "DROP PROCEDURE IF EXISTS sp_update_" + name + "_" + r.column_name + ";\n DELIMITER $$\n";
+                string secondLine = "CREATE PROCEDURE sp_update_" + name + "_" + r.column_name + ";\n"
+                    + "(";
+                String function_text =
+                     firstLine + secondLine;
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                    {
+                        function_text += "old" + s.column_name.bracketStrip() + " " + s.data_type + s.length_text + "," + "\n";
+                        comma = ",";
+                    }
+                }
+                function_text += "old" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + ",\n";
+                function_text += "new" + r.column_name.bracketStrip() + " " + r.data_type + r.length_text + "\n";
+
+                function_text = function_text + ")\n" +
+                    "begin \n" +
+                    "UPDATE " + name + "\n set "
+                    ;
+                comma = "";
+                function_text += comma + r.column_name + " = " + "new" + r.column_name + "\n";
+                String initial_word = "WHERE ";
+                foreach (Column s in columns)
+                {
+
+                    if (s.primary_key.Equals('y') || s.primary_key.Equals('Y'))
+                    {
+                        function_text += initial_word + s.column_name + "= old" + s.column_name + "\n";
+                        initial_word = "AND ";
+                    }
+                }
+                function_text += initial_word + r.column_name + "= old" + r.column_name + "\n";
+
+                function_text = function_text + "\n ; end $$\n" +
+                   " DELIMITER ;\n";
+                result += function_text;
+
+            }
+
+            return result;
+
         }
         /// <summary>
         /// 
@@ -531,7 +590,7 @@ namespace Data_Objects
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_retrieve_by_all_" + name + "(\n" +
                 "limit_param int ,\n " +
-                "offset_param int \n" +
+                "offset_param int ,\n" +
                 "search_param nvarchar(100)\n";
             foreach (Column t in columns)
             {
@@ -542,10 +601,10 @@ namespace Data_Objects
                     {
                         secondLine += ",";
                     }
-                    secondLine += "\n" + t.column_name + "_param " + t.data_type + t.length_text + ",\n";
+                    secondLine += "\n" + t.column_name + "_param " + t.data_type + t.length_text ;
                 }
             }
-            secondLine += ")" + "\n";
+            secondLine += "\n)" + "\n";
             String function_text = firstLine + secondLine;
             function_text += "begin \n SELECT \n";
             count = 0;
@@ -613,11 +672,12 @@ namespace Data_Objects
             }
             function_text += "and\n";
             function_text += "case \n";
-            function_text += "when search_param=\"\" then 0=0\n";
+            function_text += "when search_param=\'\' then 0=0\n";
             function_text += "when search_param!=\'\' then ";
             string or = "";
-            foreach(Column r in columns) {
-                function_text += or + name+"."+r.column_name+" LIKE CONCAT('%',search_param,'%')\n";
+            foreach (Column r in columns)
+            {
+                function_text += or + name + "." + r.column_name + " LIKE CONCAT('%',search_param,'%')\n";
                 or = " OR ";
             }
 
@@ -931,6 +991,7 @@ namespace Data_Objects
         {
             return "\n" + tablename + "." + column_name + " as \'" + tablename + "_" + column_name.bracketStrip() + "\'";
         }
+
         /// <summary>       
         /// generates a string comment box followed by a MySQL insert statement formatted for each <see cref="Column"/> of this table, excluding auto-increment fields.. 
         /// Jonathan Beck
@@ -990,7 +1051,7 @@ namespace Data_Objects
             string firstLine = "DROP PROCEDURE IF EXISTS sp_count_by_all_" + name + ";\n"
                 + "DELIMITER $$\n";
             string secondLine = "CREATE PROCEDURE sp_count_by_all_" + name + "(\n" +
-                
+
                 "search_param nvarchar(100)\n";
             foreach (Column t in columns)
             {
@@ -1001,7 +1062,7 @@ namespace Data_Objects
                     {
                         secondLine += ",";
                     }
-                    secondLine += "\n" + t.column_name + "_param " + t.data_type + t.length_text + ",\n";
+                    secondLine += ",\n" + t.column_name + "_param " + t.data_type + t.length_text ;
                 }
             }
             secondLine += ")" + "\n";
@@ -1009,13 +1070,13 @@ namespace Data_Objects
             function_text += "begin \n SELECT \n";
             function_text += "count(*)\n";
             function_text = function_text + "\n FROM " + name + "\n";
-            
-            String comma = "";
             count = 0;
             foreach (Column r in columns)
             {
                 if (r.foreign_key != "")
                 {
+
+                    string comma;
                     if (count == 0)
                     {
                         comma = "WHERE\n(\n";
@@ -1051,7 +1112,6 @@ namespace Data_Objects
                 or = " OR ";
             }
 
-            
             function_text += "\nEND ;\n END $$ \n DELIMITER ;\n";
             String full_text = comment_text + function_text;
             return full_text;

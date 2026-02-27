@@ -407,11 +407,9 @@ namespace Data_Objects
             return full_comment_box;
         }
 
-
-        public static String genJavaSetterJavaDoc(String tablename,Column r)
+        public static String genJavaSetterJavaDoc(String tablename, Column r)
         {
-            string result = "";
-            result = "\n";
+            string result = "\n";
             result += "/**\n";
             result += "* <p> Sets the " + r.column_name + " of the associated " + tablename + " object </p>\n";
             result += "* @param " + r.column_name + " the " + r.column_name.ToLower() + " of the " + tablename.ToLower() + ",\n";
@@ -434,8 +432,7 @@ namespace Data_Objects
         }
         public static String genJavaGetterJavaDoc(String tablename, Column r)
         {
-            string result = "";
-            result = "\n";
+            string result = "\n";
             result += "/**\n";
             result += "* <p> Gets the " + r.column_name + " of the associated " + tablename + " object </p>\n";
             result += "* @return the " + r.column_name + " of this " + tablename + " object.\n";
@@ -444,18 +441,20 @@ namespace Data_Objects
 
         }
 
-        public static String genJavaTestJavaDoc(JavaTestType test, table t) {
+        public static String genJavaTestJavaDoc(JavaTestType test, table t)
+        {
             Column r = new Column();
             return genJavaTestJavaDoc(test, t, r);
         }
-        public static String genJavaTestJavaDoc(JavaTestType test, table t, Column r) {
+        public static String genJavaTestJavaDoc(JavaTestType test, table t, Column r)
+        {
             String result = "\n/**\n";
             result += "<p> ";
-            
+
             switch (test)
             {
                 case JavaTestType.SetterWorks:
-                    result += "Tests That the Setters for the " + t.name + "."+r.column_name+" field work";
+                    result += "Tests That the Setters for the " + t.name + "." + r.column_name + " field work";
                     break;
                 case JavaTestType.SetterThrowsException:
                     result += "Tests That the Setters for the " + t.name + "." + r.column_name + " field can throw exceptions with invalid inputs";
@@ -517,13 +516,13 @@ namespace Data_Objects
                     result += "Test that a user in the wrong role will get a 302 on a doPost";
                     break;
                 case JavaTestType.LoggedInGetAllGetsAll:
-                    result += "Test that a logged in user is able to retrieve all of the " + t.name+ " objects.";
+                    result += "Test that a logged in user is able to retrieve all of the " + t.name + " objects.";
                     break;
                 case JavaTestType.GetOneGetsOne:
-                    result += "Test that a logged in user is able to retrieve a specific one of the "+t.name+" objects.";
+                    result += "Test that a logged in user is able to retrieve a specific one of the " + t.name + " objects.";
                     break;
                 case JavaTestType.GetOneCanFail:
-                    result += "Test that getting one "+ t.name+" can fail.";
+                    result += "Test that getting one " + t.name + " can fail.";
                     break;
                 case JavaTestType.GetAllCanFilter:
                     result += "Test that getting all " + t.name + " can filter.";
@@ -533,10 +532,10 @@ namespace Data_Objects
                         "side validation";
                     break;
                 case JavaTestType.DuplicateDoesNotGetAdded:
-                    result += "Test that "+t.name+ " objects with duplicate primary keys don't get added, and proper error handling exists.";
+                    result += "Test that " + t.name + " objects with duplicate primary keys don't get added, and proper error handling exists.";
                     break;
                 case JavaTestType.CanUpdateWithNoErrors:
-                    result += "Test that we are able to update " + t.name+" objects if there are no errors in the input fields";
+                    result += "Test that we are able to update " + t.name + " objects if there are no errors in the input fields";
                     break;
                 case JavaTestType.DuplicateDoesNotGetUpdated:
                     result += "Test that a duplicate primary key will get caught when trying to update " + t.name + " objects.";
@@ -546,21 +545,21 @@ namespace Data_Objects
                     result += "Test that the deactivation servlet can deactivate a " + t.name;
                     break;
                 case JavaTestType.DeactivateCanFailIfalreadyInactive:
-                    result += "Test that the deactivate servlet will fail if the "+ t.name + " is already insactive.";
+                    result += "Test that the deactivate servlet will fail if the " + t.name + " is already insactive.";
                     break;
-                    
+
                 case JavaTestType.ActivateCanActivate:
-                    result += "Test that the activation servlet can active a "+t.name;
+                    result += "Test that the activation servlet can active a " + t.name;
                     break;
                 case JavaTestType.ActivateCanFailIfAlreadayActive:
-                    result += "Test that the activation servlet can fail if the "+ t.name+" is already active";
-                   
+                    result += "Test that the activation servlet can fail if the " + t.name + " is already active";
+
                     break;
                 case JavaTestType.DeleteCanDelete:
-                    result += "Test that the delete servlet can delete a "+ t.name;
+                    result += "Test that the delete servlet can delete a " + t.name;
                     break;
                 case JavaTestType.DeleteCanFailIfIDNotExist:
-                    result += "Test that the delete servlet can fail if the given "+t.name + " does not exist.";
+                    result += "Test that the delete servlet can fail if the given " + t.name + " does not exist.";
                     break;
                 default:
                     result += "Test something, needs more specificity";
@@ -573,6 +572,5 @@ namespace Data_Objects
             return result;
 
         }
-
     }
 }
