@@ -857,5 +857,49 @@ namespace Data_Objects
         {
             throw new NotImplementedException();
         }
+
+        public string gen_AJAX_update()
+        {
+            string full_text = "";
+            String comment_text = commentBox.genCommentBox(name, Component_Enum.SQL_Delete);
+            if (settings.TSQLMode)
+            {
+                string function_text = "CREATE PROCEDURE [dbo].[sp_update_" + name + "AJAX]\n(";
+                int count = 0;
+                string comma = "";
+                foreach (Column r in columns)
+                {
+                    if (count > 0) { comma = ","; }
+                    String add = comma + "\n@" + r.column_name.bracketStrip()+"_param " + r.data_type + r.length_text + "";
+                    
+                    function_text += add;
+                    count++;
+                }
+                comma = "";
+                function_text = function_text + "\n)\nas\nBEGIN\nUPDATE " + name + "\nSET\n";
+                count = 0;
+                foreach (Column r in columns)
+                {
+                    if (count > 0) { comma = ","; }
+                    if (r.primary_key != 'Y' && r.primary_key != 'y')
+                    {
+                        function_text = function_text + comma + "\n" + r.column_name.bracketStrip() + " = @" + r.column_name.bracketStrip() + "_param";
+                        count++;
+                    }
+                }
+                function_text += "\nWHERE\n";
+                comma = "";
+                foreach (Column r in columns)
+                {
+                    if (r.primary_key == 'Y' || r.primary_key == 'y')
+                        if (count > 0) { comma = "and "; }
+                    function_text = function_text + "\n" + comma + r.column_name.bracketStrip() + " = @" + r.column_name.bracketStrip() + "_param";
+                    count++;
+                }
+                function_text += "\nreturn @@rowcount\nend\ngo\n";
+                full_text = comment_text + function_text;
+            }
+            return full_text;
+        }
     }
 }

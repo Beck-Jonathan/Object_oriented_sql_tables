@@ -1068,7 +1068,7 @@ namespace Data_Objects
             secondLine += ")" + "\n";
             String function_text = firstLine + secondLine;
             function_text += "begin \n SELECT \n";
-            function_text += "count(*)\n";
+            function_text += "count(DISTINCT " + name+"."+name+"_id)\n";
             function_text = function_text + "\n FROM " + name + "\n";
             count = 0;
             foreach (Column r in columns)
@@ -1114,6 +1114,56 @@ namespace Data_Objects
 
             function_text += "\nEND ;\n END $$ \n DELIMITER ;\n";
             String full_text = comment_text + function_text;
+            return full_text;
+        }
+
+        public string gen_AJAX_update()
+        {
+            string full_text = commentBox.genCommentBox(name, Component_Enum.SQL_Update);
+            int count = 0;
+            string comma = "";
+            string firstLine = "DROP PROCEDURE IF EXISTS sp_update_" + name + "AJAX;\n DELIMITER $$\n";
+            string secondLine = "CREATE PROCEDURE sp_update_" + name + "AJAX\n"
+                + "(";
+            String function_text =                 firstLine + secondLine;
+            foreach (Column r in columns)
+            {
+                if (count > 0) { comma = ","; }
+                String add = comma  + r.column_name.bracketStrip() + "_param " + r.data_type + r.length_text + "\n";
+                
+                count++;
+            }
+            function_text = function_text + ")\n" +
+                "begin \n" +
+                "UPDATE " + name + "\n set "
+                ;
+            comma = "";
+            count = 0;
+            foreach (Column r in columns)
+            {
+                if (count > 0) { comma = ","; }
+                if (!r.primary_key.Equals('y') && !r.primary_key.Equals('Y'))
+                {
+                    String add = comma + r.column_name + " = "  + r.column_name + "_param\n";
+                    function_text += add;
+                    count++;
+                }
+            }
+            int keys_count = 0;
+            String initial_word = "WHERE ";
+            foreach (Column r in columns)
+            {
+                if (keys_count > 0) { initial_word = "AND "; }
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    String add = initial_word + r.column_name + "= " + r.column_name + "_param\n";
+                    function_text += add;
+                    keys_count++;
+                }
+            }
+            function_text = function_text + "\n ; end $$\n" +
+               " DELIMITER ;\n";
+            full_text += function_text;
             return full_text;
         }
     }

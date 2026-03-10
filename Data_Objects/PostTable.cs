@@ -101,5 +101,10 @@ namespace Data_Objects
         {
             throw new NotImplementedException();
         }
+
+        public string gen_AJAX_update()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

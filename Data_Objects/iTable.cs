@@ -158,5 +158,7 @@ namespace Data_Objects
         /// </summary>
         /// generates a string comment box followed by a specified SQL language select count() statement that allows filtering by each <see cref="Column"/> of this table, excluding auto-increment fields.. 
         String gen_count();
+
+        String gen_AJAX_update();
     }
 }

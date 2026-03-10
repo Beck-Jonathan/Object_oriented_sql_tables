@@ -2598,6 +2598,7 @@ namespace Data_Objects
             result += genJavaDAOretrieveDistinct();
             result += genJavaDAORetriveByFK();
             result += genJavaDAOUpdate(); //rturns ""
+            result += genJavaDAOUpdateAJAX();
             result += genJavaDelete(); //returns ""
             result += genJavaunDelete(); //returns ""
             result += genJavaDAOCount();
@@ -2642,6 +2643,10 @@ namespace Data_Objects
             //update
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
             result += "int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException;\n";
+
+            //update AJAX
+            result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
+            result += "int updateAJAX(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException;\n";
             //get all
             result += commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_retrieve_All_);
             result += "List<" + name + "> getAll" + name + "(int offset, int limit, String search";
@@ -3146,6 +3151,45 @@ namespace Data_Objects
             result = result + "throw new RuntimeException(\"Could not update " + name + " . Try again later\");\n";
             result += "}\n}\n}\n return result;\n}\n";
             return result;
+        }
+
+        private string genJavaDAOUpdateAJAX() {
+            string result = commentBox.GenJavaDocMethodComment(this, JavaDoc_Method_Type.Java_DAO_Update);
+            result = result + "\n public int update(" + name + " old" + name + ", " + name + " new" + name + ") throws SQLException{\n";
+            result += "int result = 0;\n";
+            result += "try (Connection connection = getConnection()) {\n";
+            result += "if (connection !=null){\n";
+            result = result + "try(CallableStatement statement = connection.prepareCall(\"{CALL sp_update_" + name + "(";
+            string comma = "";
+            foreach (Column r in columns)
+            {
+                
+                    result = result + comma + "? ";
+                    comma = ",";
+                
+                
+            }
+            result += ")}\"))\n {\n";
+            int count = 1;
+            foreach (Column r in columns)
+            {
+
+                if (r.primary_key != 'y' && r.primary_key != 'Y')
+                {
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",new" + name + ".get" + r.column_name.bracketStrip() + "());\n";
+                    count++;
+                }
+                else {
+                    result = result + "statement.set" + r.data_type.toJavaDAODataType() + "(" + count + ",old" + name + ".get" + r.column_name.bracketStrip() + "());\n";
+                    count++;
+                }
+            }
+            result += "result=statement.executeUpdate();\n";
+            result += "} catch (SQLException e) {\n";
+            result = result + "throw new RuntimeException(\"Could not update " + name + " . Try again later\");\n";
+            result += "}\n}\n}\n return result;\n}\n";
+            return result;
+
         }
         /// <summary>
         /// Generates the delete method for the Java DAO object for this <see cref="table"/> 
@@ -4436,6 +4480,109 @@ namespace Data_Objects
             result = result + "req.setAttribute(\"pageTitle\", \"Edit " + name + "\");\n";
             result = result + "req.getRequestDispatcher(\"WEB-INF/" + settings.database_name + "/Edit" + name + ".jsp\").forward(req, resp);\n";
             result += "}\n}\n";
+            return result;
+        }
+
+        public string genEditAJAXServlet() {
+            string result = "";
+            result += importStatements(name, settings.database_name);
+            //do get
+            result += commentBox.genCommentBox(name, Component_Enum.Java_Servlet_ViewEdit);
+            result += genServletJavaDoc(ServletType.ViewEditSErvlet);
+            result = result + "\n@WebServlet(\"/edit" + name + "AJAX\")\n";
+            result = result + "public class Edit" + name + "ServletAJAX extends HttpServlet{\n";
+
+            result += initMethod();
+            result += "\n @Override\n";
+            
+            result += "protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {\n";
+            result += privLevelStatement();
+            result += "Integer response=0;\n";
+            result += name + "_old" + name + " = new " + name + "();\n";
+            result += name + "_new" + name + " = new " + name + "();\n";
+
+            foreach (Column r in columns)
+            {
+                if (r.increment == 0)
+                {
+                    string fieldname = "input" + name.ToLower() + r.column_name;
+                    result = result + "String _" + r.column_name + " = req.getParameter(\"" + fieldname + "\");\n";
+                    result += "if (_" + r.column_name + "!=null){\n";
+                    result = result + "_" + r.column_name + "=_" + r.column_name + ".trim();\n";
+                    result += "}\n";
+                }
+            }
+            int errorCount = -2;
+            string old_or_new = "_old";
+            foreach (Column r in columns)
+            {
+                
+                if (r.primary_key.Equals('y') || r.primary_key.Equals('Y'))
+                {
+                    old_or_new = "_new";
+                }
+                else {
+                    old_or_new = "_old";
+                }
+                if (r.increment == 0)
+                {
+                    string errorname = name.ToLower() + r.column_name + "error";
+                    result += "try {\n";
+                    if (r.data_type.ToLower().Equals("int"))
+                    {
+                        result = result + old_or_new + name + ".set" + r.column_name + "(Integer.valueOf(_" + r.column_name + "));\n";
+                    }
+                    else if (r.data_type.ToLower().Contains("date") || r.data_type.ToLower().Contains("time"))
+                    {
+                        result = result + old_or_new + name + ".set" + r.column_name + "(LocalDate.parse(_" + r.column_name + "));\n";
+                    }
+                    else if (r.data_type.ToLower().Contains("decimal"))
+                    {
+                        result = result + old_or_new + name + ".set" + r.column_name + "(Double.valueOf(_" + r.column_name + "));\n";
+                    }
+
+                    else
+                    {
+                        result = result + old_or_new + name + ".set" + r.column_name + "(_" + r.column_name + ");\n";
+                    }
+                    result += "} catch(Exception e) {";
+                    result += "response = " + errorCount + ";\n";
+                    result += "sendResponse(resp,response);\n";
+                    result += "return;\n";
+                    result += "}\n";
+                    errorCount--;
+                }
+            }
+
+            result += "try{\n";
+            result += "response = " + name.ToLower() + "DAO.update(_old" + name + ",_new" + name + ");\n";
+            result += "sendResponse(resp,response);\n";
+            result += "return;\n";
+            result += "}catch(Exception ex){\n";
+            result += "response =" + errorCount+";\n";
+            result += "sendResponse(resp,response);\n";
+            result += "}\n}\n";
+            result += genSendResponse();
+            return result;
+
+        }
+
+        private string genSendResponse() {
+            string result = "";
+            result += "  private void sendResponse(HttpServletResponse response, Integer Result) {\r\n\n";
+            result += "try{\n";
+            result += "response.setStatus(200);\n";
+            result += "response.setContentType(\"text/plain\");\n";
+            result += "response.setCharacterEncoding(\"UTF-8\");\n";
+            result += "PrintWriter out = response.getWriter();\n";
+            result += "out.print(Result.toString());\n";
+            result += "out.flush();\n";
+            result += "} catch (IOException e) {\n";
+            result += "System.err.println(\"Error writing response: \" + e.getMessage());\n";
+            result += "}\n";
+            result += "}\n";
+            result += "\n";
+            result += "\n";
             return result;
         }
 
@@ -10324,6 +10471,362 @@ namespace Data_Objects
             result += "\n}\n";
             return result;
         }
+
+        public string genJavaEditAJAXServletTests() {
+            string result = "";
+            result += packageStatementForTests();
+            result += importStatementForTests();//done 
+            result += classNameAndStaticVariables(4);//done 
+            result += initTests(4);//done
+            result += tearDownTests();//done
+            
+            result += testLoggedInGetsNeg2WithNoValuesSet();//done
+           
+            result += TestLoggedOutGetsNeg1onDoPostAndInvalidSession();//done
+            
+            result += TestWrongRoleGetsNeg1AndInvalidSessionOnonDoPost(); //  done
+            result += TestUpdateAJAXCanAddWithNoErrorsAndRedirects(); //done
+             
+            
+            result += TestUpdateAJAXHasErrorsForEachFiledAndKeepsOnSamePage();
+            result += testUpdateAJAXCanReturnZero();
+            result += testUpdateAJAXCanThrowSQLException();
+            result += TestInitWithNoParamsDoesNotCrash();
+            result += "\n}\n";
+            return result;
+        }
+
+        private string testLoggedInGetsNeg2WithNoValuesSet() {
+            string result = "";
+            result += "@Test\n";
+            result += "public void testLoggedInGetsNeg2WithNoValuesSet() throws ServletException, IOException{\n ";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"User\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User_B\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "int status = response.getStatus();\n";
+            result += "assertEquals(200,status);\n";
+            result += "}\n";
+            return result;
+        
+        }
+        private string TestLoggedOutGetsNeg1onDoPostAndInvalidSession()
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestLoggedOutGetsNeg1onDoPostAndInvalidSession() throws ServletException, IOException{\n ";
+            
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "session = request.getSession(false);\n";
+            result += "assertNull(session);\n";
+            result += "assertEquals(\"-1\", response.getContentAsString().trim());\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string TestWrongRoleGetsNeg1AndInvalidSessionOnonDoPost()
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestWrongRoleGetsNeg1AndInvalidSessionOnonDoPost() throws ServletException, IOException{\n ";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"WrongRole\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User_B\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "servlet.doPost(request,response);\n";
+            result += "session = request.getSession(false);\n";
+            result += "assertNull(session);\n";
+            result += "assertEquals(\"-1\", response.getContentAsString().trim());\n";
+            result += "}\n";
+            result += "\n";
+            return result;
+
+        }
+        private string TestUpdateAJAXCanAddWithNoErrorsAndRedirects()
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void TestUpdateAJAXCanAddWithNoErrorsAndRedirects() throws ServletException, IOException{\n ";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"User\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User_B\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "//setup the " + name + "s parameters\n";
+            foreach (Column r in columns)
+            {
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    if (r.column_name.isEmail())
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue@gmail.com\");\n";
+
+                    }
+                    else if (r.column_name.isWebsite())
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.TestValue.com\");\n";
+
+                    }
+                    else
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"TestValue\");\n";
+
+                    }
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                }
+
+                else if (r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                }
+
+                else if (r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
+
+                }
+                else {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + ",null);\n";
+                }
+                
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "assertEquals(\"1\", response.getContentAsString().trim());\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string TestUpdateAJAXHasErrorsForEachFiledAndKeepsOnSamePage()
+        {
+            string result = "";
+            int loop = 0;
+            foreach (Column r in columns) {
+                result += "@Test\n";
+                result += "public void TestInvalid" + r.column_name + "RespondsNeg" + (loop + 2) + "() throws ServletException, IOException{\n";
+                result += "User user = new User();\n";
+                result += "List<String> roles = new ArrayList<>();\n";
+                result += "roles.add(\"User\");\n";
+                result += "user.setRoles(roles);\n";
+                result += "session.setAttribute(\"User_B\",user);\n";
+                result += "request.setSession(session);\n";
+                result += "//setup the " + name + "s parameters\n";
+                if (loop == 0)
+                {
+
+                }
+                else
+                {
+                    for (int i = 0; i < loop; i++)
+                    {
+                        if (columns[i].data_type.toCSharpDataType().Equals("string"))
+                        {
+                            if (columns[i].column_name.isEmail())
+                            {
+                                result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"TestValue@gmail.com\");\n";
+
+                            }
+                            else if (columns[i].column_name.isWebsite())
+                            {
+                                result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"www.TestValue.com\");\n";
+
+                            }
+                            else
+                            {
+                                result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"TestValue\");\n";
+
+                            }
+                        }
+                        else if (columns[i].data_type.toCSharpDataType().Equals("int"))
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"406\");\n";
+
+                        }
+                        else if (columns[i].data_type.toCSharpDataType().Equals("bool"))
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"true\");\n";
+
+                        }
+
+                        else if (columns[i].data_type.ToLower().Contains("date") || columns[i].data_type.toCSharpDataType().Contains("time"))
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                        }
+
+                        else if (columns[i].data_type.ToLower().Contains("decimal"))
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + "\",\"243.6\");\n";
+
+                        }
+                        else
+                        {
+                            result += "request.setParameter(\"input" + name.ToLower() + columns[i].column_name + ",null);\n";
+                        }
+                    }
+                }
+
+                    result += "servlet.doPost(request,response);\n";
+                result += "assertEquals(\"-"+(loop +2)+"\", response.getContentAsString().trim());\n";
+                result += "}\n";
+                
+                loop++;
+            }
+            return result;
+
+        }
+        private string testUpdateAJAXCanReturnZero()
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void testUpdateAJAXCanReturnZero() throws ServletException, IOException{\n ";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"User\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User_B\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "//setup the " + name + "s parameters\n";
+            foreach (Column r in columns)
+            {
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    if (r.column_name.isEmail())
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATE@gmail.com\");\n";
+
+                    }
+                    else if (r.column_name.isWebsite())
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.DUPLICATE.com\");\n";
+
+                    }
+                    else
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"DUPLICATEDUPLICATEDUPLICATEDUPLICATE\");\n";
+
+                    }
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                }
+
+                else if (r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                }
+
+                else if (r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
+
+                }
+                else
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + ",null);\n";
+                }
+
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "assertEquals(\"1\", response.getContentAsString().trim());\n";
+            result += "}\n";
+            return result;
+
+        }
+        private string testUpdateAJAXCanThrowSQLException()
+        {
+            string result = "";
+            result += "@Test\n";
+            result += "public void testUpdateAJAXCanThrowSQLException() throws ServletException, IOException{\n ";
+            result += "User user = new User();\n";
+            result += "List<String> roles = new ArrayList<>();\n";
+            result += "roles.add(\"User\");\n";
+            result += "user.setRoles(roles);\n";
+            result += "session.setAttribute(\"User_B\",user);\n";
+            result += "request.setSession(session);\n";
+            result += "//setup the " + name + "s parameters\n";
+            foreach (Column r in columns)
+            {
+
+                if (r.data_type.toCSharpDataType().Equals("string"))
+                {
+                    if (r.column_name.isEmail())
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTION@gmail.com\");\n";
+
+                    }
+                    else if (r.column_name.isWebsite())
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"www.EXCEPTION.com\");\n";
+
+                    }
+                    else
+                    {
+                        result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"EXCEPTIONEXCEPTIONEXCEPTIONEXCEPTION\");\n";
+
+                    }
+                }
+                else if (r.data_type.toCSharpDataType().Equals("int"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"406\");\n";
+
+                }
+                else if (r.data_type.toCSharpDataType().Equals("bool"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"true\");\n";
+
+                }
+
+                else if (r.data_type.ToLower().Contains("date") || r.data_type.toCSharpDataType().Contains("time"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"12-31-06 06:21:22 PM\");\n";
+
+                }
+
+                else if (r.data_type.ToLower().Contains("decimal"))
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + "\",\"243.6\");\n";
+
+                }
+                else
+                {
+                    result += "request.setParameter(\"input" + name.ToLower() + r.column_name + ",null);\n";
+                }
+
+            }
+            result += "servlet.doPost(request,response);\n";
+            result += "assertEquals(\"-"+(columns.Count+2)+"\", response.getContentAsString().trim());\n";
+            result += "}\n";
+            return result;
+
+        }
+        
         //done
         public string genJavaEditServletTests()
         {

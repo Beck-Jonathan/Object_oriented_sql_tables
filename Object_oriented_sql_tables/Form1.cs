@@ -742,6 +742,19 @@ namespace Object_oriented_sql_tables
                         _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
                     }
                 }
+                if (true) {
+                    s = t.genEditAJAXServlet();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "JavaServlet", "EditAJAXServlet");
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+
+                }
                 if (true)
                 {    //change to these settings 31
                     s = t.jQueryValidation();
@@ -915,6 +928,19 @@ namespace Object_oriented_sql_tables
                     try
                     {
                         file_write.fileWrite(s, t.name, "Tests", "Create");
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = MessageBox.Show(ex.Message + "\n" + ex.InnerException.Message);
+                    }
+                }
+                if (true) {
+                    s = t.genJavaEditAJAXServletTests();
+
+                    try
+                    {
+                        file_write.fileWrite(s, t.name, "Tests", "AJAXEdit");
 
                     }
                     catch (Exception ex)
